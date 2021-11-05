@@ -1,0 +1,23 @@
+# blaze
+.VSCodeCounter
+node_modules
+yarn-error.log
+lib
+dev/main.d.ts
+dev/*.js
+
+# docs
+docs/node_modules
+docs/docs/api
+docs/build
+docs/.docusaurus
+docs/.cache-loader
+docs/.DS_Store
+docs/.env.local
+docs/.env.development.local
+docs/.env.test.local
+docs/.env.production.local
+docs/npm-debug.log*
+docs/yarn-debug.log*
+docs/yarn-error.log*
+

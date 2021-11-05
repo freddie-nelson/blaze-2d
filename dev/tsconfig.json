@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["@types", "node_modules/@types"],
+    "lib": ["es2020", "DOM"],
+    "module": "es2020",
+    "target": "es6",
+    "noImplicitAny": true,
+    "rootDir": "../",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "sourceMap": true
+  },
+  "include": ["*"],
+  "exclude": ["node_modules"]
+}
