@@ -1,6 +1,6 @@
 import { glMatrix, vec3 } from "gl-matrix";
-import Camera from "../camera";
-import Object3D from "../object3d";
+import Camera from "../camera/camera";
+import Object2D from "../object2d";
 import Controls from "./controls";
 
 export default class PointerLockControls extends Controls {
@@ -14,7 +14,7 @@ export default class PointerLockControls extends Controls {
    * @param object An optional object to follow the camera's yaw
    * @param sensitivity Movement sensitivity
    */
-  constructor(element: HTMLElement, camera: Camera, object?: Object3D, sensitivity: number = 0.1) {
+  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity: number = 0.1) {
     super(element, camera, object, sensitivity);
 
     element.addEventListener("click", this.clickHandler);
@@ -60,8 +60,6 @@ export default class PointerLockControls extends Controls {
    */
   update() {
     if (!this.isLocked) return;
-
-    this.calculateCameraDirection();
   }
 
   dispose() {

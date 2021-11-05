@@ -1,59 +1,35 @@
-import { vec3 } from "gl-matrix";
-import Plane from "./plane";
+import { vec2 } from "gl-matrix";
+import Rect from "../shapes/rect";
 
 /**
  * Represents a box in 3D space with a position and dimensions.
  */
-export default class Box {
-  position: vec3;
-  width: number;
-  height: number;
-  depth: number;
-
+export default class Box extends Rect {
   /**
    * Creates a new {@link Box} instance with a position and dimensions.
    *
    * @param position The box's position in world space
-   * @param width The width of the box (x size)
-   * @param height The height of the box (y size)
-   * @param depth The depth of the box (z size)
+   * @param width The width of the box
+   * @param height The height of the box
    */
-  constructor(position: vec3, width: number, height: number, depth: number) {
-    this.position = position;
-    this.width = width;
-    this.height = height;
-    this.depth = depth;
+  constructor(position: vec2, width: number, height: number) {
+    super(width, height, position);
   }
 
   /**
-   * Calculates the vertices of the {@link Box} instance.
+   * Calculates the bounding points of the {@link Box} instance.
    *
    * **NOTE: The box's vertices are recalculated everytime this function is called.**
    *
-   * @returns The vertices of the box
+   * @returns The bounding points of the box
    */
   getPoints() {
+    const vertices = this.getVerticesWorld(this.getPosition());
+
     const points = [];
-    points.push(vec3.fromValues(this.position[0], this.position[1], this.position[2]));
-    points.push(vec3.fromValues(this.position[0] + this.width, this.position[1], this.position[2]));
-    points.push(vec3.fromValues(this.position[0], this.position[1], this.position[2] + this.width));
-    points.push(
-      vec3.fromValues(this.position[0] + this.width, this.position[1], this.position[2] + this.width)
-    );
-    points.push(vec3.fromValues(this.position[0], this.position[1] + this.height, this.position[2]));
-    points.push(
-      vec3.fromValues(this.position[0] + this.width, this.position[1] + this.height, this.position[2])
-    );
-    points.push(
-      vec3.fromValues(this.position[0], this.position[1] + this.height, this.position[2] + this.width)
-    );
-    points.push(
-      vec3.fromValues(
-        this.position[0] + this.width,
-        this.position[1] + this.height,
-        this.position[2] + this.width
-      )
-    );
+    for (let i = 1; i < vertices.length - 1; i += 2) {
+      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
+    }
 
     return points;
   }

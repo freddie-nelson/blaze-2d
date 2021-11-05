@@ -1,13 +1,12 @@
 import { createRenderer, resizeRendererToCanvas } from "./renderer";
-import Player, { PlayerOptions } from "./player";
 import { clear } from "./utils/gl";
-import ChunkController, { ChunkControllerOptions } from "./chunk/controller";
 import Debug from "./debug";
 import { glMatrix } from "gl-matrix";
-import Tilesheet from "./tilesheet";
 import Color, { ColorLike } from "./utils/color";
 import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
+import Camera from "./camera/camera";
+import Player from "./player";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -23,8 +22,9 @@ export default class Blaze {
 
   debug: Debug;
 
+  private camera: Camera;
   private player: Player;
-  private skyColor = new Color("#000");
+  private bgColor = new Color("#000");
 
   private systems: System[] = [];
   private threadPool = new ThreadPool();
@@ -43,9 +43,6 @@ export default class Blaze {
 
     window.addEventListener("resize", () => {
       resizeRendererToCanvas(gl, this.resolutionScale);
-      if (this.player) {
-        this.player.getCamera().setProjectionMatrix(gl);
-      }
     });
 
     glMatrix.setMatrixArrayType(Array);
@@ -72,7 +69,7 @@ export default class Blaze {
     const delta = (performance.now() - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = performance.now();
 
-    clear(this.gl, this.skyColor);
+    clear(this.gl, this.bgColor);
 
     this.player?.update(delta);
 
@@ -139,6 +136,24 @@ export default class Blaze {
   }
 
   /**
+   * Sets the camera to use for rendering.
+   *
+   * @param camera The camera to use for rendering
+   */
+  useCamera(camera: Camera) {
+    this.camera = camera;
+  }
+
+  /**
+   * Gets the camera that is currently being used for rendering.
+   *
+   * @returns The camera that is currently being used for rendering
+   */
+  getCamera() {
+    return this.camera;
+  }
+
+  /**
    * Sets the engine's player from a {@link Player} instance.
    *
    * @param p The {@link Player} instance to set the engine's player to
@@ -152,9 +167,9 @@ export default class Blaze {
    * @param opts The options to use when instantiating the player
    * @returns The set {@link Player} instance
    */
-  setPlayer(opts?: PlayerOptions): Player;
+  // setPlayer(opts?: PlayerOptions): Player;
 
-  setPlayer(p: Player | PlayerOptions) {
+  setPlayer(p: Player) {
     if (p instanceof Player) {
       this.player = p;
     } else {
@@ -178,9 +193,9 @@ export default class Blaze {
    *
    * @returns The engine's current chunk controller or undefined
    */
-  getChunkController(): ChunkController {
-    return <ChunkController>this.systems[this.systems.findIndex((s) => s instanceof ChunkController)];
-  }
+  // getChunkController(): ChunkController {
+  //   return <ChunkController>this.systems[this.systems.findIndex((s) => s instanceof ChunkController)];
+  // }
 
   // /**
   //  * Sets the engine's chunk controller from a {@link ChunkController} instance.
@@ -239,38 +254,38 @@ export default class Blaze {
   // }
 
   /**
-   * Sets the clear color to be used when clearing the webgl buffer, mimics having a sky color.
+   * Sets the clear color to be used when clearing the webgl buffer, mimics having a bg color.
    *
-   * @param color The {@link Color} instance to set the engine's sky color to
+   * @param color The {@link Color} instance to set the engine's bg color to
    * @returns The set {@link Color} instance
    */
-  setSkyColor(color: Color): Color;
+  setBgColor(color: Color): Color;
 
   /**
-   * Sets the clear color to be used when clearing the webgl buffer, mimics having a sky color.
+   * Sets the clear color to be used when clearing the webgl buffer, mimics having a bg color.
    *
-   * @param color The {@link ColorLike} representation to use when instantiating the sky color
+   * @param color The {@link ColorLike} representation to use when instantiating the bg color
    * @returns The set {@link Color} instance
    */
-  setSkyColor(color: ColorLike): Color;
+  setBgColor(color: ColorLike): Color;
 
-  setSkyColor(color: Color | ColorLike): Color {
+  setBgColor(color: Color | ColorLike): Color {
     if (color instanceof Color) {
-      this.skyColor = color;
+      this.bgColor = color;
     } else {
-      this.skyColor = new Color(color);
+      this.bgColor = new Color(color);
     }
 
-    return this.skyColor;
+    return this.bgColor;
   }
 
   /**
-   * Gets the engine's current sky color.
+   * Gets the engine's current bg color.
    *
-   * @returns The engine's current sky color
+   * @returns The engine's current bg color
    */
-  getSkyColor(): Color {
-    return this.skyColor;
+  getBgColor(): Color {
+    return this.bgColor;
   }
 
   /**

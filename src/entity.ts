@@ -1,13 +1,13 @@
-import { vec3 } from "gl-matrix";
-import Object3D from "./object3d";
+import { vec2 } from "gl-matrix";
+import Object2D from "./object2d";
 import Box from "./physics/box";
-import Cuboid from "./shapes/cuboid";
+import Rect from "./shapes/rect";
 
 /**
  * Represents a generic entity in 3D space.
  */
-export default class Entity extends Object3D {
-  private pieces: Cuboid[];
+export default class Entity extends Object2D {
+  private pieces: Rect[];
   boundingBox: Box;
 
   /**
@@ -17,7 +17,7 @@ export default class Entity extends Object3D {
    * @param boundingBox The entity's bounding box to use for collisions/physics
    * @param pieces The entity's body pieces for rendering
    */
-  constructor(position: vec3, boundingBox: Box, pieces: Cuboid[] = []) {
+  constructor(position: vec2, boundingBox: Box, pieces: Rect[] = []) {
     super();
     this.setPosition(position);
 
@@ -30,7 +30,7 @@ export default class Entity extends Object3D {
    *
    * @param pieces The entity's new pieces
    */
-  setPieces(pieces: Cuboid[]) {
+  setPieces(pieces: Rect[]) {
     this.pieces = pieces;
   }
 
@@ -48,7 +48,7 @@ export default class Entity extends Object3D {
    *
    * @param piece The piece to add to the entity
    */
-  addPiece(piece: Cuboid) {
+  addPiece(piece: Rect) {
     this.pieces.push(piece);
   }
 }

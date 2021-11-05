@@ -39,20 +39,25 @@ export default class Rect extends Object2D {
    * @returns The rects vertices
    */
   getVertices() {
-    const noRot = [
+    const base = [
       this.vertexAdd(baseVertices.tl, [0, this.height]),
       this.vertexAdd(baseVertices.tr, [this.width, this.height]),
       this.vertexAdd(baseVertices.br, [this.width, 0]),
       baseVertices.bl,
     ];
 
-    const rotatedVec = vec2.create();
-    const rotated = noRot.map((v) => {
-      vec2.rotate(rotatedVec, v, noRot[noRot.length - 1], this.getRotation());
-      return [...rotatedVec];
+    const temp = vec2.create();
+    const rotated = base.map((v) => {
+      vec2.rotate(temp, v, base[base.length - 1], this.getRotation());
+      return <vec2>[...temp];
     });
 
-    return [...rotated[0], ...rotated[1], ...rotated[2], ...rotated[3]];
+    const translated = rotated.map((v) => {
+      vec2.add(temp, v, this.getPosition());
+      return <vec2>[...temp];
+    });
+
+    return [...translated[0], ...translated[1], ...translated[2], ...translated[3]];
   }
 
   /**
@@ -64,12 +69,10 @@ export default class Rect extends Object2D {
   getVerticesWorld(origin: vec2) {
     const vertices = this.getVertices();
 
-    return {
-      vertices: vertices.map((v, i) => {
-        if (i % 2 === 0) return v + origin[0];
-        else if (i % 2 === 1) return v + origin[1];
-      }),
-    };
+    return vertices.map((v, i) => {
+      if (i % 2 === 0) return v + origin[0];
+      else if (i % 2 === 1) return v + origin[1];
+    });
   }
 
   /**

@@ -47,12 +47,12 @@ export default class Debug {
     this.frustum = this.createText();
 
     this.lineMode = this.createToggle("Draw Lines: ", (val) => {
-      val
-        ? blz.getChunkController().setDrawMode(WebGL2RenderingContext.LINES)
-        : blz.getChunkController().setDrawMode(WebGL2RenderingContext.TRIANGLES);
+      // val
+      //   ? blz.getChunkController().setDrawMode(WebGL2RenderingContext.LINES)
+      //   : blz.getChunkController().setDrawMode(WebGL2RenderingContext.TRIANGLES);
     });
     this.reloadChunks = this.createButton("Reload Chunks", () => {
-      blz.getChunkController().refreshAllChunks();
+      // blz.getChunkController().refreshAllChunks();
     });
     this.reloadChunks.id = "reload-btn";
 
@@ -65,18 +65,17 @@ export default class Debug {
     });
 
     this.exportBtn = this.createButton("Export Chunks", () => {
-      const chunks = this.blz.getChunkController().getChunks();
-      const str = ChunkParser.chunksToString(chunks);
-
-      localStorage.setItem("debug_chunks", str);
+      // const chunks = this.blz.getChunkController().getChunks();
+      // const str = ChunkParser.chunksToString(chunks);
+      // localStorage.setItem("debug_chunks", str);
     });
 
     this.importBtn = this.createButton("Import Chunks", () => {
       const str = localStorage.getItem("debug_chunks");
       if (!str) return;
 
-      const chunks = ChunkParser.stringToChunks(str);
-      this.blz.getChunkController().setChunks(chunks);
+      // const chunks = ChunkParser.stringToChunks(str);
+      // this.blz.getChunkController().setChunks(chunks);
     });
 
     this.showBtn = this.createButton("Show/Hide Menu", () => {
@@ -104,18 +103,16 @@ export default class Debug {
 
     const player = this.blz.getPlayer();
     const position = player.getPosition();
-    const chunkController = this.blz.getChunkController();
-    if (!chunkController) return;
+    // const chunkController = this.blz.getChunkController();
+    // if (!chunkController) return;
 
-    const chunk = chunkController.getChunk(position);
-    chunk.x -= chunkController.getChunkOffset();
-    chunk.y -= chunkController.getChunkOffset();
+    // const chunk = chunkController.getChunk(position);
+    // chunk.x -= chunkController.getChunkOffset();
+    // chunk.y -= chunkController.getChunkOffset();
 
     this.fps.textContent = `FPS: ${(1 / delta).toFixed(1)}`;
 
-    this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(
-      1
-    )}, z: ${position[2].toFixed(1)} }`;
+    this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(1)} }`;
 
     // const neighbours = chunkController.getChunkNeighbours(chunk);
     // const emptyNeighbours = Object.keys(neighbours).map((k) => {
@@ -125,15 +122,17 @@ export default class Debug {
     //   chunkController.chunks[`${chunk.x} ${chunk.y}`] &&
     //   chunkController.chunks[`${chunk.x} ${chunk.y}`][0] === 0
     // }, emptyNs: ${emptyNeighbours} }`;
-    this.chunk.textContent = `Chunk { x: ${chunk.x}, y: ${chunk.y} }`;
+    // this.chunk.textContent = `Chunk { x: ${chunk.x}, y: ${chunk.y} }`;
 
-    this.chunks.textContent = `Chunks { loaded: ${
-      Object.keys(chunkController.getChunks()).length
-    }, drawn: ${chunkController.getDrawn()} }`;
+    // this.chunks.textContent = `Chunks { loaded: ${
+    // Object.keys(chunkController.getChunks()).length
+    // }, drawn: ${chunkController.getDrawn()} }`;
 
-    this.queued.textContent = `Queued { render: ${chunkController.getRenderQueueLength()}, generation: ${chunkController.getQueueLength()} }`;
+    // this.queued.textContent = `Queued { render: ${chunkController.getRenderQueueLength()}, generation: ${chunkController.getQueueLength()} }`;
 
-    this.camera.textContent = `Camera { yaw: ${((player.getRotation()[1] / Math.PI) * 180).toFixed(2)} }`;
+    this.camera.textContent = `Camera { center: { x: ${player.getCamera().getPosition()[0]}, y: ${
+      player.getCamera().getPosition()[1]
+    } }`;
 
     this.threads.textContent = `Threads { poolQueue: ${this.blz.getThreadPool().getQueueLength()}, ${this.blz
       .getThreadPool()
