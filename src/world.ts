@@ -1,3 +1,5 @@
+import { vec2 } from "gl-matrix";
+import Camera from "./camera/camera";
 import Entity from "./entity";
 import { System } from "./system";
 
@@ -5,47 +7,54 @@ import { System } from "./system";
  * Represents the 2D world.
  */
 export default class World implements System {
-  cellWidth = 10;
-  cellHeight = 10;
+  cellSize: vec2;
   private gl: WebGL2RenderingContext;
 
+  private camera: Camera;
   private entities: Entity[] = [];
 
   /**
    * Creates a {@link World} instance.
    *
-   * @param cellWidth The width of each world cell in pixels
-   * @param cellHeight The height of each world cell in pixels
+   * @param cellSize The width and height of each world cell in pixels
    * @param gl The webgl context to use for rendering
    */
-  constructor(cellWidth: number, cellHeight: number, gl: WebGL2RenderingContext) {
-    this.cellWidth = cellWidth;
-    this.cellHeight = cellHeight;
+  constructor(cellSize: vec2, gl: WebGL2RenderingContext) {
+    this.cellSize = cellSize;
     this.gl = gl;
+    this.camera = new Camera(vec2.fromValues(0, 0), gl.canvas.width, gl.canvas.height);
   }
 
   update(delta: number) {
-    const cellClipSpace = this.getCellDimensionsClipSpace();
+    const worldToClipSpaceScale = this.getWorldtoClipSpaceScale();
+    const worldCellToClipSpaceScale = vec2.fromValues(
+      this.cellSize[0] * worldToClipSpaceScale[0],
+      this.cellSize[1] * worldToClipSpaceScale[1]
+    );
 
     for (const e of this.entities) {
       e.update();
-      e.render(this.gl, cellClipSpace);
+      if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace()))
+        e.render(this.gl, this.camera, worldCellToClipSpaceScale);
     }
   }
 
   /**
-   * Calculates the world cell dimensions in clip space coordinates.
+   * Calculates the world space to clip space scale.
    *
-   * @returns The world cell dimensions in clip space coordinates
+   * @returns The number that multiplying a world space coordinate by provides the equivalent clip space coordinate.
    */
-  getCellDimensionsClipSpace() {
-    const width = this.gl.canvas.width;
-    const height = this.gl.canvas.height;
+  getWorldtoClipSpaceScale() {
+    const width = this.camera.viewport.getWidth();
+    const height = this.camera.viewport.getHeight();
 
-    return {
-      width: this.cellWidth / width,
-      height: this.cellHeight / height,
-    };
+    return vec2.fromValues(2 / width, 2 / height);
+  }
+
+  getWorldToPixelSpace() {
+    const v = vec2.clone(this.cellSize);
+    vec2.scale(v, v, 0.5);
+    return v;
   }
 
   /**
@@ -78,5 +87,23 @@ export default class World implements System {
 
     this.entities.splice(i, 1);
     return true;
+  }
+
+  /**
+   * Sets the camera to use for rendering.
+   *
+   * @param camera The camera to use for rendering
+   */
+  useCamera(camera: Camera) {
+    this.camera = camera;
+  }
+
+  /**
+   * Gets the camera that is currently being used for rendering.
+   *
+   * @returns The camera that is currently being used for rendering
+   */
+  getCamera() {
+    return this.camera;
   }
 }

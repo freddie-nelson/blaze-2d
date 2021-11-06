@@ -41,6 +41,8 @@ export function resizeRendererToCanvas(gl: WebGL2RenderingContext, resolutionSca
 
 let rectProgram: WebGLProgram;
 let rectProgramInfo: ShaderProgramInfo;
+let positionBuffer: WebGLBuffer;
+let indexBuffer: WebGLBuffer;
 
 /**
  *
@@ -69,7 +71,7 @@ export function renderRect(
     };
   }
 
-  const positionBuffer = gl.createBuffer();
+  if (!positionBuffer) positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
     gl.ARRAY_BUFFER,
@@ -95,7 +97,7 @@ export function renderRect(
     gl.enableVertexAttribArray(rectProgramInfo.attribLocations.vertex);
   }
 
-  const indexBuffer = gl.createBuffer();
+  if (!indexBuffer) indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 

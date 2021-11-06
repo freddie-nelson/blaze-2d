@@ -13,13 +13,6 @@ import { glMatrix, vec2 } from "gl-matrix";
 
 const blz = new Blaze(<HTMLCanvasElement>document.getElementById("canvas"));
 
-const player = blz.setPlayer(new Player(blz.gl));
-
-if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-  // player.useTouchControls();
-  createVirtualJoystick(document.body, player);
-}
-
 // optifine like zoom
 addKeyListener("KeyC", (pressed) => {
   const camera = player.getCamera();
@@ -35,13 +28,20 @@ addKeyListener("KeyC", (pressed) => {
 
 blz.setBgColor("skyblue");
 
-const world = new World(40, 40, blz.gl);
+const world = new World(vec2.fromValues(40, 40), blz.gl);
 blz.addSystem(world);
 
-const test = new Entity(vec2.fromValues(0, 0), new Box(vec2.fromValues(0, 0), 2, 3), [
-  new Rect(2, 3, vec2.create(), glMatrix.toRadian(0)),
-]);
+const player = new Player(blz.gl, vec2.fromValues(0, 0), vec2.fromValues(2, 3));
+world.addEntity(player);
+world.useCamera(player.getCamera());
+
+const test = new Entity(vec2.fromValues(-5, 0), new Box(vec2.create(), 5, 5), [new Rect(5, 5)], "test");
 world.addEntity(test);
+
+if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+  // player.useTouchControls();
+  createVirtualJoystick(document.body, player);
+}
 
 blz.toggleDebug();
 blz.start();

@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Box from "../physics/box";
 
 /**
  * Represents a {@link Camera}'s viewable area and can be used to perform culling.
@@ -6,6 +7,7 @@ import { vec2 } from "gl-matrix";
 export default class Viewport {
   private width: number;
   private height: number;
+  private center: vec2;
 
   private right: number;
   private left: number;
@@ -31,10 +33,32 @@ export default class Viewport {
    * @param center The center of the viewport
    */
   update(center: vec2) {
+    this.center = center;
     this.right = center[0] + this.width / 2;
     this.left = center[0] - this.width / 2;
     this.top = center[1] + this.height / 2;
     this.bottom = center[1] - this.height / 2;
+  }
+
+  /**
+   * Checks wether the provided box is contained within the viewport.
+   *
+   * @param box The box to check
+   * @returns Wether or not the box is withing the viewport
+   */
+  containsBox(box: Box, worldToPixelScale: vec2) {
+    const points = box.getPoints();
+    const maxDistX = this.right - this.center[0];
+    const maxDistY = this.top - this.center[1];
+
+    for (const p of points) {
+      const distX = Math.abs(p[0] - this.center[0]) * worldToPixelScale[0];
+      const distY = Math.abs(p[1] - this.center[1]) * worldToPixelScale[1];
+
+      if (distX < maxDistX && distY < maxDistY) return true;
+    }
+
+    return false;
   }
 
   /**

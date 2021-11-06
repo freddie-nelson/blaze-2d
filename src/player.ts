@@ -7,6 +7,7 @@ import Camera from "./camera/camera";
 import { vec2 } from "gl-matrix";
 import Box from "./physics/box";
 import Rect from "./shapes/rect";
+import { isKeyPressed } from "./keyboard";
 
 export interface PlayerKeyMap {
   forward?: string;
@@ -39,14 +40,16 @@ export default class Player extends Entity {
    *
    * @param gl The webgl context to use when creating the player's camera
    * @param pos The player's initial world position
+   * @param dimensions The width and height of the player's bounding box and body.
    * @param keys The key map to use for player controls
    */
   constructor(
     gl: WebGL2RenderingContext,
     pos: vec2 = vec2.fromValues(0, 0),
+    dimensions: vec2 = vec2.fromValues(2, 3),
     keys: PlayerKeyMap = defaultKeys
   ) {
-    super(pos, new Box(pos, 2, 3), [new Rect(2, 3)]);
+    super(pos, new Box(pos, dimensions[0], dimensions[1]), [new Rect(dimensions[0], dimensions[1])]);
 
     // right most value wins key collisions
     this.keys = mergeDeep(defaultKeys, keys);
@@ -60,7 +63,23 @@ export default class Player extends Entity {
    *
    * @param delta The time since the last tick in ms
    */
-  update(delta: number) {}
+  update(delta: number) {
+    const speed = 0.5;
+    if (isKeyPressed("KeyD")) {
+      this.moveRight(speed);
+    }
+    if (isKeyPressed("KeyA")) {
+      this.moveRight(-speed);
+    }
+    if (isKeyPressed("KeyW")) {
+      this.moveUp(speed);
+    }
+    if (isKeyPressed("KeyS")) {
+      this.moveUp(-speed);
+    }
+
+    this.camera.setPosition(this.getCenter());
+  }
 
   /**
    * Gets the player's current camera.

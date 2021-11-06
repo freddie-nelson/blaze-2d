@@ -22,8 +22,6 @@ export default class Blaze {
 
   debug: Debug;
 
-  private camera: Camera;
-  private player: Player;
   private bgColor = new Color("#000");
 
   private systems: System[] = [];
@@ -70,8 +68,6 @@ export default class Blaze {
     this.lastUpdateTime = performance.now();
 
     clear(this.gl, this.bgColor);
-
-    this.player?.update(delta);
 
     for (const system of this.systems) {
       system.update(delta);
@@ -133,59 +129,6 @@ export default class Blaze {
    */
   getResolutionScale() {
     return this.resolutionScale;
-  }
-
-  /**
-   * Sets the camera to use for rendering.
-   *
-   * @param camera The camera to use for rendering
-   */
-  useCamera(camera: Camera) {
-    this.camera = camera;
-  }
-
-  /**
-   * Gets the camera that is currently being used for rendering.
-   *
-   * @returns The camera that is currently being used for rendering
-   */
-  getCamera() {
-    return this.camera;
-  }
-
-  /**
-   * Sets the engine's player from a {@link Player} instance.
-   *
-   * @param p The {@link Player} instance to set the engine's player to
-   * @returns The set {@link Player} instance
-   */
-  setPlayer(p: Player): Player;
-
-  /**
-   * Sets the engine's player from a {@link PlayerOptions} object.
-   *
-   * @param opts The options to use when instantiating the player
-   * @returns The set {@link Player} instance
-   */
-  // setPlayer(opts?: PlayerOptions): Player;
-
-  setPlayer(p: Player) {
-    if (p instanceof Player) {
-      this.player = p;
-    } else {
-      this.player = new Player(this.gl, p);
-    }
-
-    return this.player;
-  }
-
-  /**
-   * Gets the engine's current player.
-   *
-   * @returns The engine's current player or undefined
-   */
-  getPlayer(): Player {
-    return this.player;
   }
 
   /**

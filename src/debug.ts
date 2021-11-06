@@ -101,8 +101,8 @@ export default class Debug {
   update(delta: number) {
     if (!this.show) return;
 
-    const player = this.blz.getPlayer();
-    const position = player.getPosition();
+    // const player = this.blz.getPlayer();
+    // const position = player.getPosition();
     // const chunkController = this.blz.getChunkController();
     // if (!chunkController) return;
 
@@ -112,7 +112,7 @@ export default class Debug {
 
     this.fps.textContent = `FPS: ${(1 / delta).toFixed(1)}`;
 
-    this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(1)} }`;
+    // this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(1)} }`;
 
     // const neighbours = chunkController.getChunkNeighbours(chunk);
     // const emptyNeighbours = Object.keys(neighbours).map((k) => {
@@ -130,9 +130,9 @@ export default class Debug {
 
     // this.queued.textContent = `Queued { render: ${chunkController.getRenderQueueLength()}, generation: ${chunkController.getQueueLength()} }`;
 
-    this.camera.textContent = `Camera { center: { x: ${player.getCamera().getPosition()[0]}, y: ${
-      player.getCamera().getPosition()[1]
-    } }`;
+    // this.camera.textContent = `Camera { center: { x: ${player.getCamera().getPosition()[0]}, y: ${
+    // player.getCamera().getPosition()[1]
+    // } }`;
 
     this.threads.textContent = `Threads { poolQueue: ${this.blz.getThreadPool().getQueueLength()}, ${this.blz
       .getThreadPool()

@@ -130,4 +130,48 @@ export default class Rect extends Object2D {
   private vertexScale(v1: vec2, v2: vec2): vec2 {
     return [v1[0] * v2[0], v1[1] * v2[1]];
   }
+
+  /**
+   * Sets the rectangle's width.
+   *
+   * @throws When the the provided width is <= 0
+   *
+   * @param width The rectangle's new width
+   */
+  setWidth(width: number) {
+    if (width <= 0) throw new Error("Rect: Width cannot be <= 0.");
+
+    this.width = width;
+  }
+
+  /**
+   * Gets the rectangle's width in world space units.
+   *
+   * @returns The rectangle's width in world space
+   */
+  getWidth() {
+    return this.width;
+  }
+
+  /**
+   * Sets the rectangle's height.
+   *
+   * @throws When the the provided height is <= 0
+   *
+   * @param height The rectangle's new height
+   */
+  setHeight(height: number) {
+    if (height <= 0) throw new Error("Rect: Width cannot be <= 0.");
+
+    this.height = height;
+  }
+
+  /**
+   * Gets the rectangle's height in world space units.
+   *
+   * @returns The rectangle's height in world space
+   */
+  getHeight() {
+    return this.height;
+  }
 }
