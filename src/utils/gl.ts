@@ -9,8 +9,7 @@ export interface ShaderProgramInfo {
     [index: string]: number;
   };
   uniformLocations: {
-    projectionViewMatrix: WebGLUniformLocation;
-    modelMatrix: WebGLUniformLocation;
+    zIndex: WebGLUniformLocation;
     texture?: WebGLUniformLocation;
     numOfTiles?: WebGLUniformLocation;
   };

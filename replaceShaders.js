@@ -19,7 +19,7 @@ function replaceShaders(dir) {
       matches.forEach((m) => {
         const p = m.match(/"(.*)"/)[0];
         let file = path.resolve(lib, p.substring(1, p.length - 1));
-        file = file.replace("/lib", "/src");
+        file = file.replace("/lib", "");
 
         const shaderSource = fs.readFileSync(file, "utf-8");
         let shaderName = m.match(/import (.*) from/)[0];

@@ -9,6 +9,8 @@ const baseVertices = {
   br: vec2.fromValues(1, 0),
 };
 
+const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+
 /**
  * Represents a Cuboid in 3D space with a width, height and depth.
  */
@@ -34,21 +36,34 @@ export default class Rect extends Object2D {
   }
 
   /**
+   * Calculates the center point of the rectangle, with an origin point added to it.
+   *
+   * Rectangle rotations are not taken into account.
+   *
+   * @param origin The origin in world space to get the center relative to.
+   */
+  getCenter(origin = baseVertices.bl) {
+    const center = vec2.fromValues(this.width / 2, this.height / 2);
+    vec2.add(center, center, origin);
+    return center;
+  }
+
+  /**
    * Calculates the rect's vertices.
    *
    * @returns The rects vertices
    */
   getVertices() {
     const base = [
-      this.vertexAdd(baseVertices.tl, [0, this.height]),
-      this.vertexAdd(baseVertices.tr, [this.width, this.height]),
-      this.vertexAdd(baseVertices.br, [this.width, 0]),
       baseVertices.bl,
+      this.vertexScale(baseVertices.br, [this.width, 1]),
+      this.vertexScale(baseVertices.tr, [this.width, this.height]),
+      this.vertexScale(baseVertices.tl, [1, this.height]),
     ];
 
     const temp = vec2.create();
     const rotated = base.map((v) => {
-      vec2.rotate(temp, v, base[base.length - 1], this.getRotation());
+      vec2.rotate(temp, v, this.getCenter(), this.getRotation());
       return <vec2>[...temp];
     });
 
@@ -57,7 +72,10 @@ export default class Rect extends Object2D {
       return <vec2>[...temp];
     });
 
-    return [...translated[0], ...translated[1], ...translated[2], ...translated[3]];
+    const final: number[] = [];
+    translated.forEach((v) => final.push(...v));
+
+    return final;
   }
 
   /**
@@ -76,13 +94,23 @@ export default class Rect extends Object2D {
   }
 
   /**
-   * Adds the components of v1 and v2 and returns the resulting vector.
+   * Gets the rect's vertex indices for drawing using element arrays.
+   *
+   * @param offset An offset to apply to each index
+   * @returns The rect's vertex indices with the given offset added to each index
+   */
+  getIndices(offset = 0) {
+    return indices.map((i) => i + offset);
+  }
+
+  /**
+   * Scales the first vector by the components in the second vector, returning the resultant vector.
    *
    * @param v1 The first vector
    * @param v2 The second vector
-   * @returns A new vector with the added components
+   * @returns A new vector with the scaled components
    */
-  private vertexAdd(v1: vec2, v2: vec2): vec2 {
-    return [v1[0] + v2[0], v1[1] + v2[1]];
+  private vertexScale(v1: vec2, v2: vec2): vec2 {
+    return [v1[0] * v2[0], v1[1] * v2[1]];
   }
 }

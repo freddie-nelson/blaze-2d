@@ -1,9 +1,12 @@
 import Blaze from "../lib/src/blaze";
 import Tilesheet from "../lib/src/tilesheet";
+import { renderRect } from "../lib/src/renderer";
+import Rect from "../lib/src/shapes/rect";
 import Player from "../lib/src/player";
 import { createVirtualJoystick } from "../lib/src/dropins/player/controls";
 import { addKeyListener } from "../lib/src/keyboard";
 import { isMouseDown, Mouse } from "../lib/src/mouse";
+import { glMatrix, vec2 } from "gl-matrix";
 
 const blz = new Blaze(<HTMLCanvasElement>document.getElementById("canvas"));
 
@@ -31,3 +34,10 @@ blz.setBgColor("skyblue");
 
 blz.toggleDebug();
 blz.start();
+
+const rect = new Rect(0.5, 0.8, vec2.fromValues(-0.25, -0.4), glMatrix.toRadian(0));
+blz.addSystem({
+  update() {
+    renderRect(blz.gl, rect);
+  },
+});
