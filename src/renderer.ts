@@ -49,7 +49,13 @@ let rectProgramInfo: ShaderProgramInfo;
  * @param position The x and y position to render the rectangle at
  * @param zIndex The z position of the rendered rectangle
  */
-export function renderRect(gl: WebGL2RenderingContext, rect: Rect, position = vec2.create(), zIndex = 0) {
+export function renderRect(
+  gl: WebGL2RenderingContext,
+  rect: Rect,
+  position = vec2.create(),
+  zIndex = 0,
+  scale = vec2.fromValues(1, 1)
+) {
   if (!rectProgram) {
     rectProgram = createShaderProgram(gl, vsRect, fsRect);
     rectProgramInfo = {
@@ -65,7 +71,11 @@ export function renderRect(gl: WebGL2RenderingContext, rect: Rect, position = ve
 
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rect.getVerticesWorld(position)), gl.STATIC_DRAW);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(rect.getVerticesClipSpace(position, scale)),
+    gl.STATIC_DRAW
+  );
 
   {
     const numComponents = 2;

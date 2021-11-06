@@ -44,6 +44,7 @@ export default class Rect extends Object2D {
    */
   getCenter(origin = baseVertices.bl) {
     const center = vec2.fromValues(this.width / 2, this.height / 2);
+    vec2.add(center, center, this.getPosition());
     vec2.add(center, center, origin);
     return center;
   }
@@ -81,15 +82,31 @@ export default class Rect extends Object2D {
   /**
    * Calculates the rect's vertices relative to the provided origin in world space.
    *
-   * @param origin The origin to calculate the vertices relative to, should be a world position.
-   * @returns The rect's vertices relative to the provided origin in world space.
+   * @param origin The origin to calculate the vertices relative to, should be a world position
+   * @returns The rect's vertices relative to the provided origin in world space
    */
   getVerticesWorld(origin: vec2) {
     const vertices = this.getVertices();
 
     return vertices.map((v, i) => {
       if (i % 2 === 0) return v + origin[0];
-      else if (i % 2 === 1) return v + origin[1];
+      else return v + origin[1];
+    });
+  }
+
+  /**
+   * Calculates the rect's vertices relative to the provided origin in world space.
+   *
+   * @param origin The origin to calculate the vertices relative to, should be a world position
+   * @param scale The vector to scale the world space vertices by to obtain clip space values
+   * @returns The rect's vertices relative to the provided origin in clip space
+   */
+  getVerticesClipSpace(origin: vec2, scale: vec2) {
+    const world = this.getVerticesWorld(origin);
+
+    return world.map((v, i) => {
+      if (i % 2 === 0) return v * scale[0];
+      else return v * scale[1];
     });
   }
 

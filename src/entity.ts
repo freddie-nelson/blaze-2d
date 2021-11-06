@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
 import Object2D from "./object2d";
 import Box from "./physics/box";
+import { renderRect } from "./renderer";
 import Rect from "./shapes/rect";
 
 /**
@@ -23,6 +24,16 @@ export default class Entity extends Object2D {
 
     this.boundingBox = boundingBox;
     this.pieces = pieces;
+  }
+
+  update(delta?: number) {}
+
+  render(gl: WebGL2RenderingContext, scale: { width: number; height: number }) {
+    const position = this.getPosition();
+
+    for (const p of this.pieces) {
+      renderRect(gl, p, position, 1, vec2.fromValues(scale.width, scale.height));
+    }
   }
 
   /**

@@ -1,6 +1,9 @@
 import Blaze from "../lib/src/blaze";
 import Tilesheet from "../lib/src/tilesheet";
 import { renderRect } from "../lib/src/renderer";
+import World from "../lib/src/world";
+import Entity from "../lib/src/entity";
+import Box from "../lib/src/physics/box";
 import Rect from "../lib/src/shapes/rect";
 import Player from "../lib/src/player";
 import { createVirtualJoystick } from "../lib/src/dropins/player/controls";
@@ -32,12 +35,13 @@ addKeyListener("KeyC", (pressed) => {
 
 blz.setBgColor("skyblue");
 
+const world = new World(40, 40, blz.gl);
+blz.addSystem(world);
+
+const test = new Entity(vec2.fromValues(0, 0), new Box(vec2.fromValues(0, 0), 2, 3), [
+  new Rect(2, 3, vec2.create(), glMatrix.toRadian(0)),
+]);
+world.addEntity(test);
+
 blz.toggleDebug();
 blz.start();
-
-const rect = new Rect(0.5, 0.8, vec2.fromValues(-0.25, -0.4), glMatrix.toRadian(0));
-blz.addSystem({
-  update() {
-    renderRect(blz.gl, rect);
-  },
-});
