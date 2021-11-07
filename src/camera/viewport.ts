@@ -34,10 +34,6 @@ export default class Viewport {
    */
   update(center: vec2) {
     this.center = center;
-    this.right = center[0] + this.width / 2;
-    this.left = center[0] - this.width / 2;
-    this.top = center[1] + this.height / 2;
-    this.bottom = center[1] - this.height / 2;
   }
 
   /**
@@ -48,8 +44,8 @@ export default class Viewport {
    */
   containsBox(box: Box, worldToPixelScale: vec2) {
     const points = box.getPoints();
-    const maxDistX = this.right - this.center[0];
-    const maxDistY = this.top - this.center[1];
+    const maxDistX = this.width / 2;
+    const maxDistY = this.height / 2;
 
     for (const p of points) {
       const distX = Math.abs(p[0] - this.center[0]) * worldToPixelScale[0];

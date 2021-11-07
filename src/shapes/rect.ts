@@ -52,9 +52,11 @@ export default class Rect extends Object2D {
   /**
    * Calculates the rect's vertices.
    *
+   * @param translate Wether or not to apply the rectangle's position to the vertex positions.
+   *
    * @returns The rects vertices
    */
-  getVertices() {
+  getVertices(translate = false) {
     const base = [
       baseVertices.bl,
       this.vertexScale(baseVertices.br, [this.width, 1]),
@@ -68,10 +70,12 @@ export default class Rect extends Object2D {
       return <vec2>[...temp];
     });
 
-    const translated = rotated.map((v) => {
-      vec2.add(temp, v, this.getPosition());
-      return <vec2>[...temp];
-    });
+    const translated = !translate
+      ? rotated
+      : rotated.map((v) => {
+          vec2.add(temp, v, this.getPosition());
+          return <vec2>[...temp];
+        });
 
     const final: number[] = [];
     translated.forEach((v) => final.push(...v));

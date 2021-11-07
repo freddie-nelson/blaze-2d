@@ -46,6 +46,8 @@ export default class Entity extends Object2D {
     const position = vec2.clone(this.getPosition());
     vec2.sub(position, position, camera.getPosition());
 
+    // if (this.name) console.log(this.name);
+
     for (const p of this.pieces) {
       renderRect(gl, p, position, 1, worldCellToClipSpaceScale);
     }

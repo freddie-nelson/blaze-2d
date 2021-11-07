@@ -46,7 +46,7 @@ export default class Camera extends Object2D {
    * Updates the camera's viewport if the camera has changed position since the last call to update.
    */
   update() {
-    if (!vec2.exactEquals(this.getPosition(), this.lastPos)) return;
+    if (vec2.exactEquals(this.getPosition(), this.lastPos)) return;
 
     this.viewport.update(this.getPosition());
     vec2.copy(this.lastPos, this.getPosition());

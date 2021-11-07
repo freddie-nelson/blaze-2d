@@ -32,6 +32,8 @@ export default class World implements System {
       this.cellSize[1] * worldToClipSpaceScale[1]
     );
 
+    this.camera.update();
+
     for (const e of this.entities) {
       e.update();
       if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace()))
@@ -53,7 +55,6 @@ export default class World implements System {
 
   getWorldToPixelSpace() {
     const v = vec2.clone(this.cellSize);
-    vec2.scale(v, v, 0.5);
     return v;
   }
 
