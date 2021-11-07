@@ -45,11 +45,13 @@ let positionBuffer: WebGLBuffer;
 let indexBuffer: WebGLBuffer;
 
 /**
+ * Renders a rectangle using the given webgl context.
  *
  * @param gl The webgl context to render to
  * @param rect The rectangle to render
  * @param position The x and y position to render the rectangle at
  * @param zIndex The z position of the rendered rectangle
+ * @param scale The world cell size to clip space scale value
  */
 export function renderRect(
   gl: WebGL2RenderingContext,

@@ -1,17 +1,18 @@
 import { vec2 } from "gl-matrix";
 import Camera from "./camera/camera";
-import Object2D from "./object2d";
 import Box from "./physics/box";
-import { renderRect } from "./renderer";
-import Rect from "./shapes/rect";
+import RigidBody from "./physics/rigidbody";
+import Shape from "./shapes/shape";
 
 /**
  * Represents a generic entity in 3D space.
  */
-export default class Entity extends Object2D {
-  private pieces: Rect[];
+export default class Entity extends RigidBody {
+  private pieces: Shape[];
   boundingBox: Box;
   stickyBoundingBox = true;
+
+  hasPhysics = false;
 
   name = "";
 
@@ -22,7 +23,7 @@ export default class Entity extends Object2D {
    * @param boundingBox The entity's bounding box to use for collisions/physics
    * @param pieces The entity's body pieces for rendering
    */
-  constructor(position: vec2, boundingBox: Box, pieces: Rect[] = [], name = "") {
+  constructor(position: vec2, boundingBox: Box, pieces: Shape[] = [], name = "") {
     super();
     this.setPosition(position);
 
@@ -32,6 +33,11 @@ export default class Entity extends Object2D {
     this.name = name;
   }
 
+  /**
+   * Updates the entity's physics and stick bounds.
+   *
+   * @param delta Time since last tick
+   */
   update(delta?: number) {
     if (this.stickyBoundingBox) {
       if (!vec2.exactEquals(this.getPosition(), this.boundingBox.getPosition())) {
@@ -40,8 +46,19 @@ export default class Entity extends Object2D {
 
       this.boundingBox.setRotation(this.getRotation());
     }
+
+    if (this.hasPhysics) {
+      // TODO physics system
+    }
   }
 
+  /**
+   * Renders the entity's pieces.
+   *
+   * @param gl The webgl context to render to
+   * @param camera The camera to use for rendering
+   * @param worldCellToClipSpaceScale The world cell to clip space cell scale value
+   */
   render(gl: WebGL2RenderingContext, camera: Camera, worldCellToClipSpaceScale: vec2) {
     const position = vec2.clone(this.getPosition());
     vec2.sub(position, position, camera.getPosition());
@@ -49,7 +66,7 @@ export default class Entity extends Object2D {
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      renderRect(gl, p, position, 1, worldCellToClipSpaceScale);
+      p.render(gl, position, 1, worldCellToClipSpaceScale);
     }
   }
 
@@ -58,7 +75,7 @@ export default class Entity extends Object2D {
    *
    * @param pieces The entity's new pieces
    */
-  setPieces(pieces: Rect[]) {
+  setPieces(pieces: Shape[]) {
     this.pieces = pieces;
   }
 
@@ -76,7 +93,7 @@ export default class Entity extends Object2D {
    *
    * @param piece The piece to add to the entity
    */
-  addPiece(piece: Rect) {
+  addPiece(piece: Shape) {
     this.pieces.push(piece);
   }
 

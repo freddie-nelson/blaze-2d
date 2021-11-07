@@ -1,5 +1,6 @@
 import { vec2 } from "gl-matrix";
-import Object2D from "../object2d";
+import { renderRect } from "../renderer";
+import Shape from "./shape";
 
 // vertices for a rect
 const baseVertices = {
@@ -14,10 +15,7 @@ const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
 /**
  * Represents a Cuboid in 3D space with a width, height and depth.
  */
-export default class Rect extends Object2D {
-  private width: number;
-  private height: number;
-
+export default class Rect extends Shape {
   /**
    * Creates a new {@link Rect} instance with dimensions, position and rotation.
    *
@@ -33,6 +31,18 @@ export default class Rect extends Object2D {
 
     this.width = width;
     this.height = height;
+  }
+
+  /**
+   * Renders the rectangle using the given webgl context.
+   *
+   * @param gl The webgl context to render to
+   * @param position The x and y position to render the rectangle at
+   * @param zIndex The z position of the rendered rectangle
+   * @param scale The world cell size to clip space scale value
+   */
+  render(gl: WebGL2RenderingContext, position: vec2, zIndex: number, scale: vec2) {
+    renderRect(gl, this, position, zIndex, scale);
   }
 
   /**

@@ -35,8 +35,16 @@ const player = new Player(blz.gl, vec2.fromValues(0, 0), vec2.fromValues(2, 3));
 world.addEntity(player);
 world.useCamera(player.getCamera());
 
-const test = new Entity(vec2.fromValues(-5, 0), new Box(vec2.create(), 5, 5), [new Rect(5, 5)], "test");
-world.addEntity(test);
+for (let i = 0; i < 1000; i++) {
+  const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
+  const test = new Entity(
+    vec2.fromValues(Math.random() * 50 - 25, Math.random() * 50 - 25),
+    new Box(vec2.create(), size[0], size[1]),
+    [new Rect(size[0], size[1])],
+    "test"
+  );
+  world.addEntity(test);
+}
 
 if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
   // player.useTouchControls();

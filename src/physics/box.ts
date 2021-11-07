@@ -27,7 +27,7 @@ export default class Box extends Rect {
     const vertices = this.getVerticesWorld(this.getPosition());
 
     const points: vec2[] = [];
-    for (let i = 1; i < vertices.length - 1; i += 2) {
+    for (let i = 1; i < vertices.length; i += 2) {
       points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
     }
 
