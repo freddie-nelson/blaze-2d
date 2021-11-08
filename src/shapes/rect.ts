@@ -12,6 +12,8 @@ const baseVertices = {
 
 const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
 
+const uvs = new Float32Array([0, 1, 1, 1, 1, 0, 0, 0]);
+
 /**
  * Represents a Cuboid in 3D space with a width, height and depth.
  */
@@ -132,6 +134,15 @@ export default class Rect extends Shape {
    */
   getIndices(offset = 0) {
     return indices.map((i) => i + offset);
+  }
+
+  /**
+   * Calculates the rects's UV coords to be used for texture rendering.
+   *
+   * @returns the rect's UV coords
+   */
+  getUVCoords() {
+    return uvs;
   }
 
   /**

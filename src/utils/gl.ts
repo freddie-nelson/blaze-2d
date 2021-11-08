@@ -1,3 +1,4 @@
+import { TextureUnit } from "../texture/texture";
 import Color from "./color";
 
 /**
@@ -99,9 +100,14 @@ export function clear(gl: WebGL2RenderingContext, color: Color = new Color("#000
  * @param path The path for the texture image
  * @returns The WebGL texture that was created with the image loaded on it
  */
-export function loadTexture(gl: WebGL2RenderingContext, path: string) {
-  const texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
+export function loadTexture(gl: WebGL2RenderingContext, textureUnit: TextureUnit) {
+  const texture = textureUnit.texture;
+  if (!texture) throw new Error("GL: No texture in unit provided to loadTexture.");
+
+  gl.activeTexture(textureUnit.unit);
+
+  const glTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, glTexture);
 
   const level = 0;
   const internalFormat = gl.RGBA;
@@ -110,25 +116,33 @@ export function loadTexture(gl: WebGL2RenderingContext, path: string) {
   const border = 0;
   const srcFormat = gl.RGBA;
   const srcType = gl.UNSIGNED_BYTE;
-  const pixel = new Uint8Array([0, 255, 0, 255]);
+  const pixel = new Uint8Array([
+    texture.color.rgba.r,
+    texture.color.rgba.g,
+    texture.color.rgba.b,
+    (texture.color.rgba.a || 0) * 255,
+  ]);
 
   gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
 
-  const image = new Image();
-  image.onload = () => {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, 5);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  };
-  image.onerror = (e) => {
-    throw new Error("Failed to load texture: " + e);
-  };
-  image.src = path;
+  if (texture.image) {
+    const image = new Image();
+    image.onload = () => {
+      gl.activeTexture(textureUnit.unit);
+      gl.bindTexture(gl.TEXTURE_2D, glTexture);
+      gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, 5);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    };
+    image.onerror = (e) => {
+      throw new Error("GL: Failed to load texture, " + e);
+    };
+    image.src = texture.image;
+  }
 
-  return texture;
+  return glTexture;
 }

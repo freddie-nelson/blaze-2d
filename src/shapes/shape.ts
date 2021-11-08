@@ -1,5 +1,10 @@
 import { vec2 } from "gl-matrix";
 import Object2D from "../object2d";
+import Texture from "../texture/texture";
+import Color from "../utils/color";
+
+const defaultTexture = new Texture(new Color("gray"));
+console.log(defaultTexture);
 
 /**
  * Represents an arbitrary shape in 2D world space.
@@ -9,6 +14,7 @@ import Object2D from "../object2d";
 export default abstract class Shape extends Object2D {
   protected width: number;
   protected height: number;
+  texture = defaultTexture;
 
   constructor() {
     super();
@@ -23,6 +29,13 @@ export default abstract class Shape extends Object2D {
    * @param scale The world cell size to clip space scale value
    */
   abstract render(gl: WebGL2RenderingContext, position: vec2, zIndex: number, scale: vec2): void;
+
+  /**
+   * Calculates the shape's UV coords to be used for texture rendering.
+   *
+   * @returns the shape's UV coords
+   */
+  abstract getUVCoords(): Float32Array;
 
   /**
    * Sets the shapes's width.

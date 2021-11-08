@@ -1,5 +1,7 @@
 import Blaze from "../lib/src/blaze";
 import Tilesheet from "../lib/src/tilesheet";
+import Texture from "../lib/src/texture/texture";
+import Color from "../lib/src/utils/color";
 import { renderRect } from "../lib/src/renderer";
 import World from "../lib/src/world";
 import Entity from "../lib/src/entity";
@@ -35,7 +37,11 @@ const player = new Player(blz.gl, vec2.fromValues(0, 0), vec2.fromValues(2, 3));
 world.addEntity(player);
 world.useCamera(player.getCamera());
 
-for (let i = 0; i < 1000; i++) {
+const body = player.getPieces()[0];
+body.texture = new Texture("./tilesheet.png");
+console.log(body.texture);
+
+for (let i = 0; i < 10; i++) {
   const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
   const test = new Entity(
     vec2.fromValues(Math.random() * 50 - 25, Math.random() * 50 - 25),

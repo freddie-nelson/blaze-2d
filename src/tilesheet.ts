@@ -19,7 +19,7 @@ export default class Tilesheet {
    * @param numOfTiles The number of tiles in the tilesheet
    */
   constructor(gl: WebGL2RenderingContext, path: string, tileSize: number, numOfTiles: number) {
-    this.texture = loadTexture(gl, path);
+    // this.texture = loadTexture(gl, path);
     this.numOfTiles = numOfTiles;
     this.tileSize = tileSize;
     this.width = tileSize * 3;

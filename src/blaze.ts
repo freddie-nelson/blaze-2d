@@ -7,6 +7,7 @@ import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
 import Camera from "./camera/camera";
 import Player from "./player";
+import TextureLoader from "./texture/loader";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -38,6 +39,8 @@ export default class Blaze {
   constructor(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
     const gl = createRenderer(canvas, { antialias: opts.antialias });
     this.gl = gl;
+
+    TextureLoader.init(gl);
 
     window.addEventListener("resize", () => {
       resizeRendererToCanvas(gl, this.resolutionScale);

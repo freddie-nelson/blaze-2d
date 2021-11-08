@@ -4,6 +4,7 @@ import { clear, createShaderProgram, ShaderProgramInfo } from "./utils/gl";
 import vsRect from "./shaders/rect/vertex.glsl";
 import fsRect from "./shaders/rect/fragment.glsl";
 import { vec2 } from "gl-matrix";
+import TextureLoader from "./texture/loader";
 
 /**
  * Creates the webgl2 rendering context for the canvas and clears the webgl buffer.
@@ -42,6 +43,7 @@ export function resizeRendererToCanvas(gl: WebGL2RenderingContext, resolutionSca
 let rectProgram: WebGLProgram;
 let rectProgramInfo: ShaderProgramInfo;
 let positionBuffer: WebGLBuffer;
+let uvBuffer: WebGLBuffer;
 let indexBuffer: WebGLBuffer;
 
 /**
@@ -66,13 +68,16 @@ export function renderRect(
       program: rectProgram,
       attribLocations: {
         vertex: gl.getAttribLocation(rectProgram, "a_Vertex"),
+        texCoord: gl.getAttribLocation(rectProgram, "a_TexCoord"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(rectProgram, "u_ZIndex"),
+        texture: gl.getUniformLocation(rectProgram, "u_Texture"),
       },
     };
   }
 
+  // vertex positions
   if (!positionBuffer) positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
@@ -99,12 +104,45 @@ export function renderRect(
     gl.enableVertexAttribArray(rectProgramInfo.attribLocations.vertex);
   }
 
+  // uv coords
+  const uvs = rect.getUVCoords();
+  if (!uvBuffer) uvBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+
+  {
+    const numComponents = 2;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+
+    gl.vertexAttribPointer(
+      rectProgramInfo.attribLocations.texCoord,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset
+    );
+    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.texCoord);
+  }
+
   if (!indexBuffer) indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 
   gl.useProgram(rectProgramInfo.program);
   gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex);
+
+  // set active texture
+  if (rect.texture) {
+    TextureLoader.loadTexture(rect.texture);
+
+    const unit = rect.texture.getTextureUnit();
+    TextureLoader.updateLastUsed(unit);
+    gl.uniform1i(rectProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
+  }
 
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
