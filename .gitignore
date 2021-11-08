@@ -4,7 +4,8 @@ node_modules
 yarn-error.log
 lib
 dev/main.d.ts
-dev/*.js
+dev/main.js
+dev/lib_src_threading_worker_js.js
 
 # docs
 docs/node_modules
