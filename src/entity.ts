@@ -8,13 +8,15 @@ import Shape from "./shapes/shape";
  * Represents a generic entity in 3D space.
  */
 export default class Entity extends RigidBody {
+  name = "";
+
   private pieces: Shape[];
+  zIndex = 0;
+
   boundingBox: Box;
   stickyBoundingBox = true;
 
   hasPhysics = false;
-
-  name = "";
 
   /**
    * Creates a new {@link Entity} instance with a position, bounding box and body pieces.
@@ -66,7 +68,7 @@ export default class Entity extends RigidBody {
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      p.render(gl, position, 1, worldCellToClipSpaceScale);
+      p.render(gl, position, this.zIndex, worldCellToClipSpaceScale);
     }
   }
 

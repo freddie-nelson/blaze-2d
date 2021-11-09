@@ -7,6 +7,15 @@ import { vec2 } from "gl-matrix";
 import TextureLoader from "./texture/loader";
 
 /**
+ * The value that any zIndex is divided by before being passed to a shader.
+ *
+ * Allows the user to specify zIndexes as integer values (-1, 1, 2, 3) that are scaled into a -1.0 - 1.0 range.
+ *
+ * The higher this value the more zIndexes the camera will be able to see.
+ */
+export const zScale = 100;
+
+/**
  * Creates the webgl2 rendering context for the canvas and clears the webgl buffer.
  *
  * @param canvas
@@ -19,6 +28,10 @@ export function createRenderer(canvas: HTMLCanvasElement, opts?: WebGLContextAtt
   if (!gl) throw new Error("Your browser does not support WebGL 2.0");
 
   resizeRendererToCanvas(gl);
+
+  // transparency
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.CULL_FACE);
@@ -133,7 +146,7 @@ export function renderRect(
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 
   gl.useProgram(rectProgramInfo.program);
-  gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex);
+  gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex / zScale);
 
   // set active texture
   if (rect.texture) {

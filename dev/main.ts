@@ -34,11 +34,12 @@ const world = new World(vec2.fromValues(40, 40), blz.gl);
 blz.addSystem(world);
 
 const player = new Player(blz.gl, vec2.fromValues(0, 0), vec2.fromValues(2, 3));
+player.zIndex = 1;
 world.addEntity(player);
 world.useCamera(player.getCamera());
 
 const body = player.getPieces()[0];
-body.texture = new Texture("./tilesheet.png");
+body.texture = new Texture("./player.png");
 console.log(body.texture);
 
 for (let i = 0; i < 10; i++) {
