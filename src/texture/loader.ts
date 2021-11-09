@@ -23,7 +23,7 @@ export default abstract class TextureLoader {
     this.textureUnits = [];
     this.loaded.clear();
 
-    for (let i = 0; i < gl.MAX_TEXTURE_IMAGE_UNITS / 2; i++) {
+    for (let i = 0; i < gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS) - 1; i++) {
       this.textureUnits.push({
         unit: (gl as any)[`TEXTURE${i}`],
         texture: undefined,
@@ -53,7 +53,10 @@ export default abstract class TextureLoader {
     if (this.isLoaded(texture)) return true;
 
     const unit = this.findReplaceableTextureUnit();
+    if (unit.texture) this.unloadTexture(unit.texture, unit);
+
     unit.texture = texture;
+    unit.lastUsed = performance.now();
 
     this.loaded.set(texture, unit.unit);
     texture.setTextureUnit(unit.unit);
@@ -65,16 +68,19 @@ export default abstract class TextureLoader {
    * Unloads the texture from the GPU.
    *
    * @param texture The texture to unload
+   * @param unit The texture unit the `texture` belongs to, improves performance as the unit does not need to be searched for.
    * @returns Wether or not the texture was unloaded
    */
-  static unloadTexture(texture: Texture) {
+  static unloadTexture(texture: Texture, unit?: TextureUnit) {
     this.checkReady();
     if (!this.isLoaded(texture)) return true;
 
     this.loaded.delete(texture);
 
-    const unit = this.getUnitOfTexture(texture);
-    if (!unit) return false;
+    if (!unit) {
+      unit = this.getUnitOfTexture(texture);
+      if (!unit) return false;
+    }
 
     unit.texture = undefined;
     return true;

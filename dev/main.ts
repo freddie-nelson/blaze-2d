@@ -1,7 +1,7 @@
 import Blaze from "../lib/src/blaze";
 import Tilesheet from "../lib/src/tilesheet";
 import Texture from "../lib/src/texture/texture";
-import Color from "../lib/src/utils/color";
+import Color, { RGBAColor } from "../lib/src/utils/color";
 import { renderRect } from "../lib/src/renderer";
 import World from "../lib/src/world";
 import Entity from "../lib/src/entity";
@@ -42,7 +42,7 @@ const body = player.getPieces()[0];
 body.texture = new Texture("./player.png");
 console.log(body.texture);
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 20; i++) {
   const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
   const test = new Entity(
     vec2.fromValues(Math.random() * 50 - 25, Math.random() * 50 - 25),
@@ -50,6 +50,12 @@ for (let i = 0; i < 10; i++) {
     [new Rect(size[0], size[1])],
     "test"
   );
+  const rgba: RGBAColor = {
+    r: Math.floor(Math.random() * 255),
+    g: Math.floor(Math.random() * 255),
+    b: Math.floor(Math.random() * 255),
+  };
+  test.getPieces()[0].texture = new Texture(new Color(rgba));
   world.addEntity(test);
 }
 
