@@ -8,7 +8,6 @@ import { System } from "./system";
  */
 export default class World implements System {
   cellSize: vec2;
-  private gl: WebGL2RenderingContext;
 
   private camera: Camera;
   private entities: Entity[] = [];
@@ -17,12 +16,11 @@ export default class World implements System {
    * Creates a {@link World} instance.
    *
    * @param cellSize The width and height of each world cell in pixels
-   * @param gl The webgl context to use for rendering
+   * @param cameraViewport The width and height of the camera's viewport in pixels
    */
-  constructor(cellSize: vec2, gl: WebGL2RenderingContext) {
+  constructor(cellSize: vec2, cameraViewport: vec2) {
     this.cellSize = cellSize;
-    this.gl = gl;
-    this.camera = new Camera(vec2.fromValues(0, 0), gl.canvas.width, gl.canvas.height);
+    this.camera = new Camera(vec2.fromValues(0, 0), cameraViewport[0], cameraViewport[1]);
   }
 
   update(delta: number) {
@@ -37,7 +35,7 @@ export default class World implements System {
     for (const e of this.entities) {
       e.update();
       if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace()))
-        e.render(this.gl, this.camera, worldCellToClipSpaceScale);
+        e.render(this.camera, worldCellToClipSpaceScale);
     }
   }
 

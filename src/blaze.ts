@@ -1,13 +1,11 @@
-import { createRenderer, resizeRendererToCanvas } from "./renderer";
 import { clear } from "./utils/gl";
 import Debug from "./debug";
 import { glMatrix } from "gl-matrix";
 import Color, { ColorLike } from "./utils/color";
 import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
-import Camera from "./camera/camera";
-import Player from "./player";
 import TextureLoader from "./texture/loader";
+import Renderer from "./renderer/renderer";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -17,18 +15,15 @@ const defaultOpts: BlazeOptions = {
   antialias: false,
 };
 
-export default class Blaze {
-  gl: WebGL2RenderingContext;
-  private resolutionScale = 1;
+export default abstract class Blaze {
+  static debug: Debug;
 
-  debug: Debug;
+  private static bgColor = new Color("#000");
 
-  private bgColor = new Color("#000");
+  private static systems: System[] = [];
+  private static threadPool = new ThreadPool();
 
-  private systems: System[] = [];
-  private threadPool = new ThreadPool();
-
-  private lastUpdateTime = performance.now();
+  private static lastUpdateTime = performance.now();
 
   /**
    * Initializes the engine and creates the renderer.
@@ -36,14 +31,12 @@ export default class Blaze {
    * @param canvas The canvas to use to create the renderer
    * @param opts The options to use when setting up the engine
    */
-  constructor(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
-    const gl = createRenderer(canvas, { antialias: opts.antialias });
-    this.gl = gl;
-
-    TextureLoader.init(gl);
+  static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
+    Renderer.init(canvas, { antialias: opts.antialias });
+    TextureLoader.init(Renderer.getGL());
 
     window.addEventListener("resize", () => {
-      resizeRendererToCanvas(gl, this.resolutionScale);
+      Renderer.resizeToCanvas();
     });
 
     glMatrix.setMatrixArrayType(Array);
@@ -54,7 +47,7 @@ export default class Blaze {
    *
    * i.e. calls `this.update`
    */
-  start() {
+  static start() {
     this.update();
   }
 
@@ -65,12 +58,12 @@ export default class Blaze {
    *
    * Also calls any before and after update hooks.
    */
-  private update() {
+  static update() {
     requestAnimationFrame(() => this.update());
     const delta = (performance.now() - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = performance.now();
 
-    clear(this.gl, this.bgColor);
+    Renderer.clear(this.bgColor);
 
     for (const system of this.systems) {
       system.update(delta);
@@ -84,7 +77,7 @@ export default class Blaze {
    *
    * @returns The engine's top level systems
    */
-  getSystems() {
+  static getSystems() {
     return this.systems;
   }
 
@@ -93,7 +86,7 @@ export default class Blaze {
    *
    * @param system The system to add
    */
-  addSystem(system: System) {
+  static addSystem(system: System) {
     this.systems.push(system);
   }
 
@@ -103,35 +96,12 @@ export default class Blaze {
    * @param system The system to remove
    * @returns Wether or not the system was removed
    */
-  removeSystem(system: System) {
+  static removeSystem(system: System) {
     const i = this.systems.findIndex((s) => s === system);
     if (i === -1) return false;
 
     this.systems.splice(i, 1);
     return true;
-  }
-
-  /**
-   * Sets the resolution scale to use when rendering.
-   *
-   * The width and height of the renderer canvas are set to `clientWidth * resolutionScale` and `clientHeight * resolutionScale` respectively.
-   *
-   * @param resolutionScale The new resolution scale to use
-   */
-  setResolutionScale(resolutionScale: number) {
-    if (resolutionScale <= 0) throw new Error("Blaze: Resolution scale must be a number greater than 0.");
-
-    this.resolutionScale = resolutionScale;
-    resizeRendererToCanvas(this.gl, resolutionScale);
-  }
-
-  /**
-   * Gets the renderer's current resolution scale.
-   *
-   * @returns The renderer's current resolution scale
-   */
-  getResolutionScale() {
-    return this.resolutionScale;
   }
 
   /**
@@ -205,7 +175,7 @@ export default class Blaze {
    * @param color The {@link Color} instance to set the engine's bg color to
    * @returns The set {@link Color} instance
    */
-  setBgColor(color: Color): Color;
+  static setBgColor(color: Color): Color;
 
   /**
    * Sets the clear color to be used when clearing the webgl buffer, mimics having a bg color.
@@ -213,9 +183,9 @@ export default class Blaze {
    * @param color The {@link ColorLike} representation to use when instantiating the bg color
    * @returns The set {@link Color} instance
    */
-  setBgColor(color: ColorLike): Color;
+  static setBgColor(color: ColorLike): Color;
 
-  setBgColor(color: Color | ColorLike): Color {
+  static setBgColor(color: Color | ColorLike): Color {
     if (color instanceof Color) {
       this.bgColor = color;
     } else {
@@ -230,7 +200,7 @@ export default class Blaze {
    *
    * @returns The engine's current bg color
    */
-  getBgColor(): Color {
+  static getBgColor(): Color {
     return this.bgColor;
   }
 
@@ -241,7 +211,7 @@ export default class Blaze {
    *
    * @returns The time of the last update
    */
-  getLastUpdateTime() {
+  static getLastUpdateTime() {
     return this.lastUpdateTime;
   }
 
@@ -250,14 +220,14 @@ export default class Blaze {
    *
    * @returns The thread pool in use by the engine
    */
-  getThreadPool() {
+  static getThreadPool() {
     return this.threadPool;
   }
 
   /**
    * Enables/disables the debug menu.
    */
-  toggleDebug() {
+  static toggleDebug() {
     if (!this.debug) this.debug = new Debug(this);
     else {
       this.debug.dispose();

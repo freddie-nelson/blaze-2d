@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import { renderRect } from "../renderer";
+import Renderer from "../renderer/renderer";
 import Shape from "./shape";
 
 // vertices for a rect
@@ -36,15 +36,14 @@ export default class Rect extends Shape {
   }
 
   /**
-   * Renders the rectangle using the given webgl context.
+   * Renders the rectangle using the {@link Renderer}.
    *
-   * @param gl The webgl context to render to
    * @param position The x and y position to render the rectangle at
    * @param zIndex The z position of the rendered rectangle
    * @param scale The world cell size to clip space scale value
    */
-  render(gl: WebGL2RenderingContext, position: vec2, zIndex: number, scale: vec2) {
-    renderRect(gl, this, position, zIndex, scale);
+  render(position: vec2, zIndex: number, scale: vec2) {
+    Renderer.renderRect(this, position, zIndex, scale);
   }
 
   /**

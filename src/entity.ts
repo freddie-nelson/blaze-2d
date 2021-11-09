@@ -57,18 +57,17 @@ export default class Entity extends RigidBody {
   /**
    * Renders the entity's pieces.
    *
-   * @param gl The webgl context to render to
    * @param camera The camera to use for rendering
    * @param worldCellToClipSpaceScale The world cell to clip space cell scale value
    */
-  render(gl: WebGL2RenderingContext, camera: Camera, worldCellToClipSpaceScale: vec2) {
+  render(camera: Camera, worldCellToClipSpaceScale: vec2) {
     const position = vec2.clone(this.getPosition());
     vec2.sub(position, position, camera.getPosition());
 
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      p.render(gl, position, this.zIndex, worldCellToClipSpaceScale);
+      p.render(position, this.zIndex, worldCellToClipSpaceScale);
     }
   }
 

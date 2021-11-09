@@ -21,14 +21,13 @@ export default abstract class Shape extends Object2D {
   }
 
   /**
-   * Renders the shape using the given webgl context.
+   * Renders the shape using the {@link Renderer}.
    *
-   * @param gl The webgl context to render to
    * @param position The x and y position to render the rectangle at
    * @param zIndex The z position of the rendered shape
    * @param scale The world cell size to clip space scale value
    */
-  abstract render(gl: WebGL2RenderingContext, position: vec2, zIndex: number, scale: vec2): void;
+  abstract render(position: vec2, zIndex: number, scale: vec2): void;
 
   /**
    * Calculates the shape's UV coords to be used for texture rendering.

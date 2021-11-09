@@ -4,6 +4,7 @@ import Controls from "./controls/controls";
 import TouchControls from "./controls/touchControls";
 import Entity from "./entity";
 import Camera from "./camera/camera";
+import Viewport from "./camera/viewport";
 import { vec2 } from "gl-matrix";
 import Box from "./physics/box";
 import Rect from "./shapes/rect";
@@ -38,15 +39,15 @@ export default class Player extends Entity {
   /**
    * Creates a {@link Player} instance with the given settings.
    *
-   * @param gl The webgl context to use when creating the player's camera
    * @param pos The player's initial world position
-   * @param dimensions The width and height of the player's bounding box and body.
+   * @param dimensions The width and height of the player's bounding box and body
+   * @param cameraViewport The width and height of the player camera's viewport
    * @param keys The key map to use for player controls
    */
   constructor(
-    gl: WebGL2RenderingContext,
     pos: vec2 = vec2.fromValues(0, 0),
     dimensions: vec2 = vec2.fromValues(2, 3),
+    cameraViewport: vec2,
     keys: PlayerKeyMap = defaultKeys
   ) {
     super(pos, new Box(pos, dimensions[0], dimensions[1]), [new Rect(dimensions[0], dimensions[1])]);
@@ -54,7 +55,7 @@ export default class Player extends Entity {
     // right most value wins key collisions
     this.keys = mergeDeep(defaultKeys, keys);
 
-    this.camera = new Camera(this.getPosition(), gl.canvas.width, gl.canvas.height);
+    this.camera = new Camera(this.getPosition(), new Viewport(pos, cameraViewport[0], cameraViewport[1]));
     // this.controls = new PointerLockControls(<HTMLCanvasElement>gl.canvas, this.camera, this);
   }
 
