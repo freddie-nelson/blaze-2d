@@ -9,11 +9,6 @@ export default class Viewport {
   private height: number;
   private center: vec2;
 
-  private right: number;
-  private left: number;
-  private top: number;
-  private bottom: number;
-
   /**
    * Creates a {@link Viewport} instance.
    *
@@ -108,10 +103,10 @@ export default class Viewport {
    */
   getBoundaries() {
     return {
-      right: this.right,
-      left: this.left,
-      top: this.top,
-      bottom: this.bottom,
+      right: this.center[0] + this.width / 2,
+      left: this.center[0] - this.width / 2,
+      top: this.center[1] + this.height / 2,
+      bottom: this.center[1] - this.height / 2,
     };
   }
 }

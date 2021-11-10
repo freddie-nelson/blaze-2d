@@ -1,40 +1,46 @@
 import LZUTF8 from "lzutf8";
 import Blaze from "./blaze";
 import ChunkParser from "./chunk/parser";
+import Player from "./player";
+import World from "./world";
 
-export default class Debug {
-  blz: Blaze;
+export default abstract class Debug {
+  private static ready = false;
+  private static enable = false;
+  static show = true;
 
-  show = true;
+  static player: Player;
+  static world: World;
 
   // elements
-  container: HTMLDivElement;
-  fps: HTMLSpanElement;
-  coords: HTMLSpanElement;
-  chunk: HTMLSpanElement;
-  chunks: HTMLSpanElement;
-  queued: HTMLSpanElement;
-  camera: HTMLSpanElement;
-  frustum: HTMLSpanElement;
-  threads: HTMLSpanElement;
+  static container: HTMLDivElement;
+  static fps: HTMLSpanElement;
+  static coords: HTMLSpanElement;
+  static chunk: HTMLSpanElement;
+  static chunks: HTMLSpanElement;
+  static queued: HTMLSpanElement;
+  static camera: HTMLSpanElement;
+  static viewport: HTMLSpanElement;
+  static threads: HTMLSpanElement;
 
-  lineMode: HTMLInputElement;
+  static lineMode: HTMLInputElement;
 
-  reloadChunks: HTMLButtonElement;
-  fullscreenBtn: HTMLButtonElement;
-  exportBtn: HTMLButtonElement;
-  importBtn: HTMLButtonElement;
-  showBtn: HTMLButtonElement;
+  static reloadChunks: HTMLButtonElement;
+  static fullscreenBtn: HTMLButtonElement;
+  static exportBtn: HTMLButtonElement;
+  static importBtn: HTMLButtonElement;
+  static showBtn: HTMLButtonElement;
 
-  constructor(blz: Blaze) {
-    this.blz = blz;
+  static init() {
+    if (this.ready) return;
+    this.ready = true;
 
     const container = document.createElement("div");
     container.setAttribute(
       "style",
       "position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; background-color: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 4px; z-index: 2;"
     );
-    document.body.appendChild(container);
+
     this.container = container;
 
     this.fps = this.createText();
@@ -44,7 +50,7 @@ export default class Debug {
     this.queued = this.createText();
     this.threads = this.createText();
     this.camera = this.createText();
-    this.frustum = this.createText();
+    this.viewport = this.createText();
 
     this.lineMode = this.createToggle("Draw Lines: ", (val) => {
       // val
@@ -96,13 +102,34 @@ export default class Debug {
         });
       }
     });
+
+    this.showBtn.click();
   }
 
-  update(delta: number) {
-    if (!this.show) return;
+  static update(delta: number) {
+    if (!Debug.show || !Debug.enable) return;
 
-    // const player = this.blz.getPlayer();
-    // const position = player.getPosition();
+    const player = this.player;
+    const position = player?.getPosition();
+
+    if (position)
+      this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(1)} }`;
+
+    const world = this.world;
+    const camera = world?.getCamera();
+
+    if (camera)
+      this.camera.textContent = `Camera { center: { x: ${camera.getPosition()[0]}, y: ${
+        camera.getPosition()[1]
+      } }`;
+
+    if (camera) {
+      const viewport = camera.viewport;
+      const bounds = viewport.getBoundaries();
+
+      this.viewport.textContent = `Viewport: { left: ${bounds.left}, right: ${bounds.right}, top: ${bounds.top}, bottom: ${bounds.bottom} }`;
+    }
+
     // const chunkController = this.blz.getChunkController();
     // if (!chunkController) return;
 
@@ -111,8 +138,6 @@ export default class Debug {
     // chunk.y -= chunkController.getChunkOffset();
 
     this.fps.textContent = `FPS: ${(1 / delta).toFixed(1)}`;
-
-    // this.coords.textContent = `Position { x: ${position[0].toFixed(1)}, y: ${position[1].toFixed(1)} }`;
 
     // const neighbours = chunkController.getChunkNeighbours(chunk);
     // const emptyNeighbours = Object.keys(neighbours).map((k) => {
@@ -130,32 +155,26 @@ export default class Debug {
 
     // this.queued.textContent = `Queued { render: ${chunkController.getRenderQueueLength()}, generation: ${chunkController.getQueueLength()} }`;
 
-    // this.camera.textContent = `Camera { center: { x: ${player.getCamera().getPosition()[0]}, y: ${
-    // player.getCamera().getPosition()[1]
-    // } }`;
-
-    this.threads.textContent = `Threads { poolQueue: ${this.blz.getThreadPool().getQueueLength()}, ${this.blz
-      .getThreadPool()
-      .threads.map((t) => `${t.getId()}: ${t.getNumInQueue()}`)} }`;
-
-    // const frustum = player.camera.frustum;
-    // this.frustum.textContent = `Frustum: { \n__${frustum.planeKeys
-    //   .map((k) => {
-    //     const plane = frustum.planes[k];
-    //     return `${k[0]}: {${Object.keys(plane).reduce((acc, c) => {
-    //       // @ts-expect-error
-    //       acc += `${c}: ${plane[c].toFixed(2)},`;
-    //       return acc;
-    //     }, "")}}`;
-    //   })
-    //   .join("\n__")} \n}`;
+    this.threads.textContent = `Threads { poolQueue: ${Blaze.getThreadPool().getQueueLength()}, ${Blaze.getThreadPool().threads.map(
+      (t) => `${t.getId()}: ${t.getNumInQueue()}`
+    )} }`;
   }
 
-  dispose() {
+  static toggle() {
+    if (this.enable) {
+      this.container.remove();
+    } else {
+      document.body.appendChild(this.container);
+    }
+
+    this.enable = !this.enable;
+  }
+
+  static dispose() {
     document.body.removeChild(this.container);
   }
 
-  private createText() {
+  private static createText() {
     const text = document.createElement("span");
     text.setAttribute(
       "style",
@@ -165,7 +184,7 @@ export default class Debug {
     return text;
   }
 
-  private createToggle(text: string, cb: (val: boolean) => void) {
+  private static createToggle(text: string, cb: (val: boolean) => void) {
     const box = document.createElement("input");
     box.type = "checkbox";
     box.addEventListener("input", (e) => cb((e.target as HTMLInputElement).checked));
@@ -180,7 +199,7 @@ export default class Debug {
     return box;
   }
 
-  private createButton(text: string, cb: () => void) {
+  private static createButton(text: string, cb: () => void) {
     const btn = document.createElement("button");
     btn.setAttribute("style", "font-family: monospace; font-size: .8rem; color: black;  margin: 4px 0;");
     btn.innerText = text;

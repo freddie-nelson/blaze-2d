@@ -2,6 +2,7 @@ import BLZ from "../lib/src/blaze";
 import Renderer from "../lib/src/renderer/renderer";
 import Tilesheet from "../lib/src/tilesheet";
 import Texture from "../lib/src/texture/texture";
+import Debug from "../lib/src/debug";
 import Color, { RGBAColor } from "../lib/src/utils/color";
 import World from "../lib/src/world";
 import Entity from "../lib/src/entity";
@@ -65,5 +66,8 @@ if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
 }
 
 BLZ.toggleDebug();
+Debug.player = player;
+Debug.world = world;
+
 BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
 BLZ.start();

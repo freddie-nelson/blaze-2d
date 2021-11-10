@@ -69,7 +69,7 @@ export default abstract class Blaze {
       system.update(delta);
     }
 
-    if (this.debug) this.debug.update(delta);
+    if (Debug.show) Debug.update(delta);
   }
 
   /**
@@ -228,10 +228,7 @@ export default abstract class Blaze {
    * Enables/disables the debug menu.
    */
   static toggleDebug() {
-    if (!this.debug) this.debug = new Debug(this);
-    else {
-      this.debug.dispose();
-      this.debug = undefined;
-    }
+    Debug.init();
+    Debug.toggle();
   }
 }
