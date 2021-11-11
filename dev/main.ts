@@ -2,6 +2,7 @@ import BLZ from "../lib/src/blaze";
 import Renderer from "../lib/src/renderer/renderer";
 import Tilesheet from "../lib/src/tilesheet";
 import Texture from "../lib/src/texture/texture";
+import TextureAtlas from "../lib/src/texture/atlas";
 import Debug from "../lib/src/debug";
 import Color, { RGBAColor } from "../lib/src/utils/color";
 import World from "../lib/src/world";
@@ -40,8 +41,8 @@ world.addEntity(player);
 world.useCamera(player.getCamera());
 
 const body = player.getPieces()[0];
-body.texture = new Texture("./player.png");
-console.log(body.texture);
+body.texture = new Texture();
+body.texture.loadImage("./player.png");
 
 for (let i = 0; i < 30; i++) {
   const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
@@ -71,3 +72,26 @@ Debug.world = world;
 
 BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
 BLZ.start();
+
+// const atlas = new TextureAtlas(2000);
+// (async () => {
+//   for (let i = 0; i < 100; i++) {
+//     const canvas = document.createElement("canvas");
+//     const ctx = canvas.getContext("2d");
+
+//     canvas.height = Math.floor(Math.random() * 200) + 50;
+//     canvas.width = Math.floor(Math.random() * 200) + 50;
+//     ctx.fillStyle = `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(
+//       Math.random() * 255
+//     )})`;
+//     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+//     const texture = new Texture();
+//     await texture.loadImage(canvas.toDataURL());
+
+//     atlas.addTexture(texture);
+//   }
+
+//   atlas.refreshAtlas();
+//   document.body.appendChild(atlas.image);
+// })();

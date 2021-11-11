@@ -6,9 +6,13 @@ export interface TextureUnit {
   texture?: Texture;
 }
 
+/**
+ * Represents a texture with a color and optionally an image that can be applied to {@link Shape}s
+ */
 export default class Texture {
-  color = new Color("gray");
-  image: string;
+  color: Color;
+  imagePath: string;
+  image: HTMLImageElement;
 
   private unit: typeof WebGL2RenderingContext.TEXTURE0 = -1;
 
@@ -17,21 +21,27 @@ export default class Texture {
    *
    * @param color The color of the texture
    */
-  constructor(color: Color);
+  constructor(color = new Color("gray")) {
+    this.color = color;
+  }
 
   /**
-   * Creates a {@link Texture} instance with an image.
+   * Loads an image from a path and stores it in the {@link Texture}.
    *
-   * @param image A relative or absolute path to an image file.
+   * @param imagePath A path to an image
+   * @returns A promise that resolves once the image has loaded or rejects if there is an error while loading the image.
    */
-  constructor(image: string);
+  loadImage(imagePath: string) {
+    this.imagePath = imagePath;
 
-  constructor(color: Color | string) {
-    if (color instanceof Color) {
-      this.color = color;
-    } else {
-      this.image = color;
-    }
+    this.image = new Image();
+    const promise = new Promise<void>((resolve, reject) => {
+      this.image.onload = () => resolve();
+      this.image.onerror = () => reject();
+    });
+
+    this.image.src = this.imagePath;
+    return promise;
   }
 
   /**

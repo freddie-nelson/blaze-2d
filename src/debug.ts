@@ -7,7 +7,7 @@ import World from "./world";
 export default abstract class Debug {
   private static ready = false;
   private static enable = false;
-  static show = true;
+  static show = false;
 
   static player: Player;
   static world: World;

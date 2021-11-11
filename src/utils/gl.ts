@@ -97,8 +97,8 @@ export function clear(gl: WebGL2RenderingContext, color: Color = new Color("#000
  * Creates a {@link WebGLTexture} and loads an image onto it.
  *
  * @param gl The {@link WebGL2RenderingContext} to use to load the texture
- * @param path The path for the texture image
- * @returns The WebGL texture that was created with the image loaded on it
+ * @param textureUnit The texture unit to to take the {@link Texture} from and to bind the {@link WebGLTexture} to
+ * @returns The WebGL texture that was created
  */
 export function loadTexture(gl: WebGL2RenderingContext, textureUnit: TextureUnit) {
   const texture = textureUnit.texture;
@@ -126,22 +126,15 @@ export function loadTexture(gl: WebGL2RenderingContext, textureUnit: TextureUnit
   gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
 
   if (texture.image) {
-    const image = new Image();
-    image.onload = () => {
-      gl.activeTexture(textureUnit.unit);
-      gl.bindTexture(gl.TEXTURE_2D, glTexture);
-      gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, 5);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    };
-    image.onerror = (e) => {
-      throw new Error("GL: Failed to load texture, " + e);
-    };
-    image.src = texture.image;
+    gl.activeTexture(textureUnit.unit);
+    gl.bindTexture(gl.TEXTURE_2D, glTexture);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, texture.image);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAX_LEVEL, 5);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   }
 
   return glTexture;
