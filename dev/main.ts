@@ -44,7 +44,7 @@ const body = player.getPieces()[0];
 body.texture = new Texture();
 body.texture.loadImage("./player.png");
 
-for (let i = 0; i < 30; i++) {
+for (let i = 0; i < 1000; i++) {
   const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
   const test = new Entity(
     vec2.fromValues(Math.random() * 50 - 25, Math.random() * 50 - 25),
@@ -73,23 +73,33 @@ Debug.world = world;
 BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
 BLZ.start();
 
-// const atlas = new TextureAtlas(2000);
+// const atlas = new TextureAtlas(1200);
 // (async () => {
-//   for (let i = 0; i < 100; i++) {
+//   for (let i = 0; i < 50; i++) {
 //     const canvas = document.createElement("canvas");
 //     const ctx = canvas.getContext("2d");
 
-//     canvas.height = Math.floor(Math.random() * 200) + 50;
-//     canvas.width = Math.floor(Math.random() * 200) + 50;
-//     ctx.fillStyle = `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(
-//       Math.random() * 255
-//     )})`;
-//     ctx.fillRect(0, 0, canvas.width, canvas.height);
+//     if (Math.random() < 0.9) {
+//       canvas.height = Math.floor(Math.random() * 200) + 50;
+//       canvas.width = Math.floor(Math.random() * 200) + 50;
+//       ctx.fillStyle = `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(
+//         Math.random() * 255
+//       )}, ${Math.floor(Math.random() * 255)})`;
+//       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-//     const texture = new Texture();
-//     await texture.loadImage(canvas.toDataURL());
-
-//     atlas.addTexture(texture);
+//       const texture = new Texture();
+//       await texture.loadImage(canvas.toDataURL());
+//       atlas.addTexture(texture);
+//     } else {
+//       const texture = new Texture(
+//         new Color({
+//           r: Math.floor(Math.random() * 255),
+//           g: Math.floor(Math.random() * 255),
+//           b: Math.floor(Math.random() * 255),
+//         })
+//       );
+//       atlas.addTexture(texture);
+//     }
 //   }
 
 //   atlas.refreshAtlas();

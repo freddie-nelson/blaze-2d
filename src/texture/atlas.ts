@@ -4,9 +4,9 @@ import Texture from "./texture";
 /**
  * Represents an image/texture stored on the atlas.
  *
- * @param tl The top left corner of the image on the atlas in pixels
- * @param br The bottom right corner of the image on the atlas in pixels
- * @param texture The texture stored
+ * @field **tl** The top left corner of the image on the atlas in pixels
+ * @field **br** The bottom right corner of the image on the atlas in pixels
+ * @field **texture** The texture stored
  */
 export interface TextureAtlasImage {
   tl: vec2;
@@ -17,9 +17,11 @@ export interface TextureAtlasImage {
 /**
  * Combines {@link Texture}s into one single image using an offscreen canvas.
  *
- * Also provides an api to get the locations of textures on the atlas.
+ * If a {@link Texture} is added to the atlas that has no image then a 1x1 pixel is used with the color of the texture.
  *
- * The maximum size of the atlas should be taken from `MAX_TEXTURE_SIZE` to insure the atlas can be stored on the GPU.
+ * The size of the atlas should be no larger than `MAX_TEXTURE_SIZE` to insure the atlas can be stored on the GPU.
+ *
+ * Also provides an api to get the locations of textures on the atlas.
  */
 export default class TextureAtlas extends Texture {
   private size: number;
@@ -135,15 +137,18 @@ export default class TextureAtlas extends Texture {
       textures.splice(i, 1);
 
       const image = t.texture.image;
-      if (image.height > rowHeight || col + image.width > maxWidth) {
+      const width = image ? image.width : 1;
+      const height = image ? image.height : 1;
+
+      if (height > rowHeight || col + width > maxWidth) {
         row += rowHeight;
-        rowHeight = image.height;
+        rowHeight = height;
         col = 0;
       }
 
       t.tl = vec2.fromValues(col, row);
-      t.br = vec2.fromValues(col + image.width, row + image.height);
-      col += image.width;
+      t.br = vec2.fromValues(col + width, row + height);
+      col += width;
     }
   }
 
@@ -154,10 +159,16 @@ export default class TextureAtlas extends Texture {
    */
   drawTexturesOnCanvas() {
     const textures = this.getAllTextures();
+    this.ctx.clearRect(0, 0, this.size, this.size);
 
-    console.log(textures);
     for (const t of textures) {
-      this.ctx.drawImage(t.texture.image, t.tl[0], t.tl[1]);
+      if (!t.texture.image) {
+        // when texture has no image substitute with 1x1 pixel of textures color
+        this.ctx.fillStyle = t.texture.color.hex;
+        this.ctx.fillRect(t.tl[0], t.tl[1], 1, 1);
+      } else {
+        this.ctx.drawImage(t.texture.image, t.tl[0], t.tl[1]);
+      }
     }
   }
 
@@ -174,7 +185,7 @@ export default class TextureAtlas extends Texture {
 
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i];
-      const h = t.texture.image.height;
+      const h = t.texture.image ? t.texture.image.height : 1;
 
       if (h > maxHeight) {
         maxHeight = h;
