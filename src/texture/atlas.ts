@@ -14,6 +14,9 @@ export interface TextureAtlasImage {
   texture: Texture;
 }
 
+const colorBlockSize = 8;
+const padding = 1;
+
 /**
  * Combines {@link Texture}s into one single image using an offscreen canvas.
  *
@@ -102,11 +105,13 @@ export default class TextureAtlas extends Texture {
 
   /**
    * Packs all textures in the atlas together, draws them to the canvas and loads the canvas as a data URL to `this.image`.
+   *
+   * @returns A promise that resolves once the image has loaded or rejects if there is an error while loading the atlas image.
    */
   refreshAtlas() {
     this.packTextures();
     this.drawTexturesOnCanvas();
-    this.loadImage();
+    return this.loadImage();
   }
 
   /**
@@ -137,18 +142,18 @@ export default class TextureAtlas extends Texture {
       textures.splice(i, 1);
 
       const image = t.texture.image;
-      const width = image ? image.width : 1;
-      const height = image ? image.height : 1;
+      const width = image ? image.width : colorBlockSize;
+      const height = image ? image.height : colorBlockSize;
 
       if (height > rowHeight || col + width > maxWidth) {
-        row += rowHeight;
+        row += rowHeight + padding;
         rowHeight = height;
         col = 0;
       }
 
       t.tl = vec2.fromValues(col, row);
       t.br = vec2.fromValues(col + width, row + height);
-      col += width;
+      col += width + padding;
     }
   }
 
@@ -165,7 +170,7 @@ export default class TextureAtlas extends Texture {
       if (!t.texture.image) {
         // when texture has no image substitute with 1x1 pixel of textures color
         this.ctx.fillStyle = t.texture.color.hex;
-        this.ctx.fillRect(t.tl[0], t.tl[1], 1, 1);
+        this.ctx.fillRect(t.tl[0], t.tl[1], colorBlockSize, colorBlockSize);
       } else {
         this.ctx.drawImage(t.texture.image, t.tl[0], t.tl[1]);
       }
@@ -195,5 +200,14 @@ export default class TextureAtlas extends Texture {
     }
 
     return { i: tallestIndex, t: tallestTexture };
+  }
+
+  /**
+   * Gets the size of the atlas image.
+   *
+   * @returns The size of the atlas image
+   */
+  getSize() {
+    return this.size;
   }
 }

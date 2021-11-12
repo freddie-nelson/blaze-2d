@@ -4,7 +4,6 @@ import Texture from "../texture/texture";
 import Color from "../utils/color";
 
 const defaultTexture = new Texture(new Color("gray"));
-console.log(defaultTexture);
 
 /**
  * Represents an arbitrary shape in 2D world space.

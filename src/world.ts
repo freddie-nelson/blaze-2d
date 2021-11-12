@@ -1,6 +1,8 @@
 import { vec2 } from "gl-matrix";
 import Camera from "./camera/camera";
 import Entity from "./entity";
+import BatchRenderer from "./renderer/batchRenderer";
+import Renderer from "./renderer/renderer";
 import { System } from "./system";
 
 /**
@@ -8,6 +10,7 @@ import { System } from "./system";
  */
 export default class World implements System {
   cellSize: vec2;
+  useBatchRenderer = false;
 
   private camera: Camera;
   private entities: Entity[] = [];
@@ -32,11 +35,18 @@ export default class World implements System {
 
     this.camera.update();
 
+    const renderQueue: Entity[] = [];
+
     for (const e of this.entities) {
       e.update();
-      if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace()))
-        e.render(this.camera, worldCellToClipSpaceScale);
+      if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace())) {
+        if (this.useBatchRenderer) renderQueue.push(e);
+        else e.render(this.camera, worldCellToClipSpaceScale);
+      }
     }
+
+    if (this.useBatchRenderer)
+      BatchRenderer.renderEntities(this.entities, this.camera, 0, worldCellToClipSpaceScale);
   }
 
   /**

@@ -8,6 +8,9 @@ import vsRect from "../shaders/rect/vertex.glsl";
 import fsRect from "../shaders/rect/fragment.glsl";
 import Color from "../utils/color";
 
+/**
+ * Renders single instances of shapes at a time.
+ */
 export default abstract class Renderer {
   private static gl: WebGL2RenderingContext;
   private static resolutionScale = 1;
@@ -46,6 +49,33 @@ export default abstract class Renderer {
     gl.depthFunc(gl.LEQUAL);
     gl.depthMask(true);
     clear(gl);
+
+    this.initShaders(gl);
+  }
+
+  static rectProgram: WebGLProgram;
+  static rectProgramInfo: ShaderProgramInfo;
+  static rectPositionBuffer: WebGLBuffer;
+  static rectUvBuffer: WebGLBuffer;
+  static rectIndexBuffer: WebGLBuffer;
+
+  private static initShaders(gl: WebGL2RenderingContext) {
+    this.rectPositionBuffer = gl.createBuffer();
+    this.rectIndexBuffer = gl.createBuffer();
+    this.rectUvBuffer = gl.createBuffer();
+
+    this.rectProgram = createShaderProgram(gl, vsRect, fsRect);
+    this.rectProgramInfo = {
+      program: this.rectProgram,
+      attribLocations: {
+        vertex: gl.getAttribLocation(this.rectProgram, "a_Vertex"),
+        texCoord: gl.getAttribLocation(this.rectProgram, "a_TexCoord"),
+      },
+      uniformLocations: {
+        zIndex: gl.getUniformLocation(this.rectProgram, "u_ZIndex"),
+        texture: gl.getUniformLocation(this.rectProgram, "u_Texture"),
+      },
+    };
   }
 
   /**
@@ -62,12 +92,6 @@ export default abstract class Renderer {
     clear(this.gl, clearColor);
   }
 
-  static rectProgram: WebGLProgram;
-  static rectProgramInfo: ShaderProgramInfo;
-  static positionBuffer: WebGLBuffer;
-  static uvBuffer: WebGLBuffer;
-  static indexBuffer: WebGLBuffer;
-
   /**
    * Renders a rectangle.
    *
@@ -78,27 +102,10 @@ export default abstract class Renderer {
    */
   static renderRect(rect: Rect, position = vec2.create(), zIndex = 0, scale = vec2.fromValues(1, 1)) {
     const gl = this.gl;
-
-    if (!this.rectProgram) {
-      this.rectProgram = createShaderProgram(gl, vsRect, fsRect);
-      this.rectProgramInfo = {
-        program: this.rectProgram,
-        attribLocations: {
-          vertex: gl.getAttribLocation(this.rectProgram, "a_Vertex"),
-          texCoord: gl.getAttribLocation(this.rectProgram, "a_TexCoord"),
-        },
-        uniformLocations: {
-          zIndex: gl.getUniformLocation(this.rectProgram, "u_ZIndex"),
-          texture: gl.getUniformLocation(this.rectProgram, "u_Texture"),
-        },
-      };
-    }
-
     const rectProgramInfo = this.rectProgramInfo;
 
     // vertex positions
-    if (!this.positionBuffer) this.positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array(rect.getVerticesClipSpace(position, scale)),
@@ -125,8 +132,7 @@ export default abstract class Renderer {
 
     // uv coords
     const uvs = rect.getUVCoords();
-    if (!this.uvBuffer) this.uvBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
 
     {
@@ -147,8 +153,7 @@ export default abstract class Renderer {
       gl.enableVertexAttribArray(rectProgramInfo.attribLocations.texCoord);
     }
 
-    if (!this.indexBuffer) this.indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 
     gl.useProgram(rectProgramInfo.program);

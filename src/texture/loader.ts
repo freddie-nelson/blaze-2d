@@ -1,4 +1,5 @@
 import { loadTexture } from "../utils/gl";
+import TextureAtlas from "./atlas";
 import Texture, { TextureUnit } from "./texture";
 
 /**
