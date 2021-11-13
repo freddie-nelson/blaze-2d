@@ -35,10 +35,6 @@ export default abstract class Blaze {
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
 
-    window.addEventListener("resize", () => {
-      Renderer.resizeToCanvas();
-    });
-
     glMatrix.setMatrixArrayType(Array);
   }
 

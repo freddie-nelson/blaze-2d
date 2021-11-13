@@ -49,6 +49,13 @@ if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
   createVirtualJoystick(document.body, player);
 }
 
+window.addEventListener("resize", () => {
+  Renderer.resizeToCanvas();
+  const canvas = Renderer.getGL().canvas;
+  world.getCamera().viewport.setWidth(canvas.width);
+  world.getCamera().viewport.setHeight(canvas.height);
+});
+
 BLZ.toggleDebug();
 Debug.player = player;
 Debug.world = world;
