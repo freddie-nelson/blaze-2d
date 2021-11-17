@@ -1,6 +1,8 @@
 import { vec2 } from "gl-matrix";
 import Camera from "./camera/camera";
 import Entity from "./entity";
+import Box from "./physics/box";
+import Physics from "./physics/physics";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
 import { System } from "./system";
@@ -39,7 +41,7 @@ export default class World implements System {
 
     for (const e of this.entities) {
       e.update();
-      if (this.camera.viewport.containsBox(e.boundingBox, this.getWorldToPixelSpace())) {
+      if (this.camera.viewport.containsBox(e.bounds as Box, this.getWorldToPixelSpace())) {
         if (this.useBatchRenderer) renderQueue.push(e);
         else e.render(this.camera, worldCellToClipSpaceScale);
       }

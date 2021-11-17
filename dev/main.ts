@@ -61,7 +61,7 @@ Debug.player = player;
 Debug.world = world;
 
 (async () => {
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 250; i++) {
     const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
     const test = new Entity(
       vec2.fromValues(Math.random() * 50 - 25, Math.random() * 50 - 25),

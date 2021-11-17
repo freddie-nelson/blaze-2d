@@ -1,10 +1,11 @@
 import { vec2 } from "gl-matrix";
 import Rect from "../shapes/rect";
+import Bounds, { CollisionResult } from "./bounds";
 
 /**
- * Represents a box in 3D space with a position and dimensions.
+ * Represents a box in 2D space with a position and dimensions.
  */
-export default class Box extends Rect {
+export default class Box extends Rect implements Bounds {
   /**
    * Creates a new {@link Box} instance with a position and dimensions.
    *
@@ -14,6 +15,16 @@ export default class Box extends Rect {
    */
   constructor(position: vec2, width: number, height: number) {
     super(width, height, position);
+  }
+
+  /**
+   * Checks if the Box is colliding with the provided {@link Bounds} object.
+   *
+   * @param b Another bounds object to check collisions against
+   * @returns An {@link CollisionResult} if there is a collision, false otherwise
+   */
+  collidingWith(b: Bounds): false | CollisionResult {
+    return false;
   }
 
   /**

@@ -34,6 +34,8 @@ export default class Viewport {
   /**
    * Checks wether the provided box is contained within the viewport.
    *
+   * TODO: Change this to use physics collision system so it works with more than just Box
+   *
    * @param box The box to check
    * @returns Wether or not the box is withing the viewport
    */

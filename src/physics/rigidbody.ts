@@ -1,4 +1,5 @@
 import Object2D from "../object2d";
+import Bounds from "./bounds";
 
 /**
  * Represents a rigidbody physics object in 2D world space.
@@ -8,14 +9,16 @@ import Object2D from "../object2d";
  */
 export default class RigidBody extends Object2D {
   private terrainCollisionFlags: { [index: number]: boolean } = {};
-  gravity = 0;
+  bounds: Bounds;
+  gravity = 9.8;
 
   /**
    * Creates a {@link RigidBody}
    */
-  constructor(gravity = 0) {
+  constructor(bounds: Bounds, gravity = 9.8) {
     super();
 
+    this.bounds = bounds;
     this.gravity = gravity;
   }
 

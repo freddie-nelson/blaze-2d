@@ -13,25 +13,20 @@ export default class Entity extends RigidBody {
   private pieces: Shape[];
   zIndex = 0;
 
-  boundingBox: Box;
-  stickyBoundingBox = true;
-
-  hasPhysics = false;
+  stickyBounds = true;
 
   /**
    * Creates a new {@link Entity} instance with a position, bounding box and body pieces.
    *
    * @param position The entity's position in world space
-   * @param boundingBox The entity's bounding box to use for collisions/physics
+   * @param bounds The entity's bounding box
    * @param pieces The entity's body pieces for rendering
    */
-  constructor(position: vec2, boundingBox: Box, pieces: Shape[] = [], name = "") {
-    super();
+  constructor(position: vec2, bounds: Box, pieces: Shape[] = [], name = "", gravity = 9.8) {
+    super(bounds);
     this.setPosition(position);
 
-    this.boundingBox = boundingBox;
     this.pieces = pieces;
-
     this.name = name;
   }
 
@@ -41,16 +36,12 @@ export default class Entity extends RigidBody {
    * @param delta Time since last tick
    */
   update(delta?: number) {
-    if (this.stickyBoundingBox) {
-      if (!vec2.exactEquals(this.getPosition(), this.boundingBox.getPosition())) {
-        this.boundingBox.setPosition(vec2.clone(this.getPosition()));
+    if (this.stickyBounds) {
+      if (!vec2.exactEquals(this.getPosition(), this.bounds.getPosition())) {
+        this.bounds.setPosition(vec2.clone(this.getPosition()));
       }
 
-      this.boundingBox.setRotation(this.getRotation());
-    }
-
-    if (this.hasPhysics) {
-      // TODO physics system
+      this.bounds.setRotation(this.getRotation());
     }
   }
 
@@ -106,7 +97,7 @@ export default class Entity extends RigidBody {
    * @param origin The origin in world space to get the center relative to.
    */
   getCenter(origin = vec2.fromValues(0, 0)) {
-    const center = vec2.fromValues(this.boundingBox.getWidth() / 2, this.boundingBox.getHeight() / 2);
+    const center = vec2.fromValues(this.bounds.getWidth() / 2, this.bounds.getHeight() / 2);
     vec2.add(center, center, this.getPosition());
     vec2.add(center, center, origin);
     return center;
