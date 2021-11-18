@@ -1,4 +1,5 @@
 import Object2D from "../object2d";
+import validateZIndex from "../utils/validators";
 import Bounds from "./bounds";
 
 /**
@@ -25,10 +26,15 @@ export default class RigidBody extends Object2D {
   /**
    * Sets wether or not the rigidbody should collide with the given terrain level.
    *
+   * @throws When {@link validateZIndex} returns a string.
+   *
    * @param zIndex The Z level of terrain
    * @param collides Wether or not to collide with the given terrain level
    */
   collidesWithTerrain(zIndex: number, collides: boolean) {
+    const valid = validateZIndex(zIndex);
+    if (valid !== true) throw new Error(valid);
+
     this.terrainCollisionFlags[zIndex] = collides;
   }
 }

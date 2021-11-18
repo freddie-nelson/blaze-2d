@@ -3,6 +3,7 @@ import Camera from "./camera/camera";
 import Box from "./physics/box";
 import RigidBody from "./physics/rigidbody";
 import Shape from "./shapes/shape";
+import validateZIndex from "./utils/validators";
 
 /**
  * Represents a generic entity in 3D space.
@@ -11,7 +12,7 @@ export default class Entity extends RigidBody {
   name = "";
 
   private pieces: Shape[];
-  zIndex = 0;
+  private zIndex = 0;
 
   stickyBounds = true;
 
@@ -101,5 +102,28 @@ export default class Entity extends RigidBody {
     vec2.add(center, center, this.getPosition());
     vec2.add(center, center, origin);
     return center;
+  }
+
+  /**
+   * Sets the entites z index.
+   *
+   * @throws When {@link validateZIndex} returns a string.
+   *
+   * @param zIndex The entites new zIndex
+   */
+  setZIndex(zIndex: number) {
+    const valid = validateZIndex(zIndex);
+    if (valid !== true) throw new Error(valid);
+
+    this.zIndex = zIndex;
+  }
+
+  /**
+   * Gets the entities z index.
+   *
+   * @returns The entities z index
+   */
+  getZIndex() {
+    return this.zIndex;
   }
 }

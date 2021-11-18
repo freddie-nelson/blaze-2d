@@ -6,6 +6,7 @@ import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
 import TextureLoader from "./texture/loader";
 import Renderer from "./renderer/renderer";
+import validateZIndex from "./utils/validators";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -19,6 +20,15 @@ export default abstract class Blaze {
   static debug: Debug;
 
   private static bgColor = new Color("#000");
+
+  /**
+   * This value represents the number of Z positions that can be used within the world space.
+   *
+   * Allows the user to specify zIndexes as integer values (-1, 1, 2, 3) that are scaled into a -1.0 - 1.0 range.
+   *
+   * The higher this value the more zIndexes the camera will be able to see.
+   */
+  private static zLevels = 100;
 
   private static systems: System[] = [];
   private static threadPool = new ThreadPool();
@@ -198,6 +208,29 @@ export default abstract class Blaze {
    */
   static getBgColor(): Color {
     return this.bgColor;
+  }
+
+  /**
+   * Sets the amount of zLevels the engine (physics, world, renderer) will use.
+   *
+   * @throws When zLevels is < 0 or zLevels is a floating point number.
+   *
+   * @param zLevels The number to set zLevels to
+   */
+  static setZLevels(zLevels: number) {
+    const valid = validateZIndex(zLevels);
+    if (valid !== true) throw new Error(valid);
+
+    this.zLevels = zLevels;
+  }
+
+  /**
+   * Gets the current number of zLevels the engine is set to support.
+   *
+   * @returns The number of zLevels for the engine
+   */
+  static getZLevels(): number {
+    return this.zLevels;
   }
 
   /**

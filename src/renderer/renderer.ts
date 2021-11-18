@@ -7,6 +7,7 @@ import TextureLoader from "../texture/loader";
 import vsRect from "../shaders/rect/vertex.glsl";
 import fsRect from "../shaders/rect/fragment.glsl";
 import Color from "../utils/color";
+import Blaze from "../blaze";
 
 /**
  * Renders single instances of shapes at a time.
@@ -14,15 +15,6 @@ import Color from "../utils/color";
 export default abstract class Renderer {
   private static gl: WebGL2RenderingContext;
   private static resolutionScale = 1;
-
-  /**
-   * The value that any zIndex is divided by before being passed to a shader.
-   *
-   * Allows the user to specify zIndexes as integer values (-1, 1, 2, 3) that are scaled into a -1.0 - 1.0 range.
-   *
-   * The higher this value the more zIndexes the camera will be able to see.
-   */
-  static zScale = 100;
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -157,7 +149,7 @@ export default abstract class Renderer {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 
     gl.useProgram(rectProgramInfo.program);
-    gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex / this.zScale);
+    gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
 
     // set active texture
     if (rect.texture) {

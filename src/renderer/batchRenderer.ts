@@ -12,6 +12,7 @@ import Entity from "../entity";
 import Shape from "../shapes/shape";
 import TextureAtlas from "../texture/atlas";
 import Camera from "../camera/camera";
+import Blaze from "../blaze";
 
 interface Renderable<T> {
   shape: T;
@@ -133,7 +134,7 @@ export default abstract class BatchRenderer extends Renderer {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
 
     gl.useProgram(programInfo.program);
-    gl.uniform1f(programInfo.uniformLocations.zIndex, zIndex / this.zScale);
+    gl.uniform1f(programInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
 
     // bind atlas texture
     TextureLoader.loadTexture(this.atlas);

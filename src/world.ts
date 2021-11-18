@@ -37,18 +37,26 @@ export default class World implements System {
 
     this.camera.update();
 
-    const renderQueue: Entity[] = [];
+    const renderQueue: { [index: number]: Entity[] } = {};
 
     for (const e of this.entities) {
       e.update();
       if (this.camera.viewport.containsBox(e.bounds as Box, this.getWorldToPixelSpace())) {
-        if (this.useBatchRenderer) renderQueue.push(e);
-        else e.render(this.camera, worldCellToClipSpaceScale);
+        if (this.useBatchRenderer) {
+          const z = e.getZIndex();
+
+          if (renderQueue[z]) renderQueue[z].push(e);
+          else renderQueue[z] = [e];
+        } else {
+          e.render(this.camera, worldCellToClipSpaceScale);
+        }
       }
     }
 
     if (this.useBatchRenderer)
-      BatchRenderer.renderEntities(this.entities, this.camera, 0, worldCellToClipSpaceScale);
+      for (const queue of Object.values(renderQueue)) {
+        BatchRenderer.renderEntities(queue, this.camera, 0, worldCellToClipSpaceScale);
+      }
   }
 
   /**

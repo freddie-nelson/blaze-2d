@@ -15,7 +15,24 @@ import { addKeyListener } from "../lib/src/keyboard";
 import { isMouseDown, Mouse } from "../lib/src/mouse";
 import { glMatrix, vec2 } from "gl-matrix";
 import BatchRenderer from "../lib/src/renderer/batchRenderer";
-import InstanceRenderer from "../lib/src/renderer/renderer";
+
+BLZ.setBgColor("skyblue");
+
+const cameraViewport = vec2.fromValues(window.innerWidth, window.innerHeight);
+const world = new World(vec2.fromValues(40, 40), cameraViewport);
+BLZ.addSystem(world);
+
+const atlas = new TextureAtlas(8000);
+
+const player = new Player(vec2.fromValues(0, 0), vec2.fromValues(2, 3), cameraViewport);
+player.setZIndex(5);
+world.addEntity(player);
+world.useCamera(player.getCamera());
+
+if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+  // player.useTouchControls();
+  createVirtualJoystick(document.body, player);
+}
 
 // optifine like zoom
 addKeyListener("KeyC", (pressed) => {
@@ -31,24 +48,6 @@ addKeyListener("KeyC", (pressed) => {
   }
 });
 
-BLZ.setBgColor("skyblue");
-
-const cameraViewport = vec2.fromValues(window.innerWidth, window.innerHeight);
-const world = new World(vec2.fromValues(40, 40), cameraViewport);
-BLZ.addSystem(world);
-
-const atlas = new TextureAtlas(8000);
-
-const player = new Player(vec2.fromValues(0, 0), vec2.fromValues(2, 3), cameraViewport);
-player.zIndex = 1;
-world.addEntity(player);
-world.useCamera(player.getCamera());
-
-if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-  // player.useTouchControls();
-  createVirtualJoystick(document.body, player);
-}
-
 window.addEventListener("resize", () => {
   Renderer.resizeToCanvas();
   const canvas = Renderer.getGL().canvas;
@@ -57,7 +56,7 @@ window.addEventListener("resize", () => {
 });
 
 BLZ.toggleDebug();
-Debug.player = player;
+// Debug.player = player;
 Debug.world = world;
 
 (async () => {
@@ -75,6 +74,9 @@ Debug.world = world;
       b: Math.floor(Math.random() * 255),
     };
     test.getPieces()[0].texture = new Texture(new Color(rgba));
+
+    test.setZIndex(Math.floor(Math.random() * 10));
+
     world.addEntity(test);
     atlas.addTexture(test.getPieces()[0].texture);
   }
