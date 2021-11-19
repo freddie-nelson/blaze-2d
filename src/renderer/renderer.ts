@@ -8,6 +8,7 @@ import vsRect from "../shaders/rect/vertex.glsl";
 import fsRect from "../shaders/rect/fragment.glsl";
 import Color from "../utils/color";
 import Blaze from "../blaze";
+import Camera from "../camera/camera";
 
 /**
  * Renders single instances of shapes at a time.
@@ -15,6 +16,8 @@ import Blaze from "../blaze";
 export default abstract class Renderer {
   private static gl: WebGL2RenderingContext;
   private static resolutionScale = 1;
+  private static mode: "TRIANGLES" | "LINES" = "TRIANGLES";
+  private static camera: Camera;
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -92,17 +95,23 @@ export default abstract class Renderer {
    * @param zIndex The z position of the rendered rectangle
    * @param scale The world cell size to clip space scale value
    */
-  static renderRect(rect: Rect, position = vec2.create(), zIndex = 0, scale = vec2.fromValues(1, 1)) {
+  static renderRect(
+    rect: Rect,
+    position = vec2.create(),
+    rotation = 0,
+    zIndex = 0,
+    scale = vec2.fromValues(1, 1)
+  ) {
     const gl = this.gl;
     const rectProgramInfo = this.rectProgramInfo;
 
     // vertex positions
+    const renderPos = vec2.clone(rect.getCenter());
+    vec2.sub(renderPos, position, this.camera.getPosition());
+    const vertices = rect.getVerticesClipSpace(position, scale, rotation);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(rect.getVerticesClipSpace(position, scale)),
-      gl.STATIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
     {
       const numComponents = 2;
@@ -160,7 +169,7 @@ export default abstract class Renderer {
       gl.uniform1i(rectProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
     }
 
-    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);
   }
 
   /**
@@ -193,5 +202,46 @@ export default abstract class Renderer {
    */
   static getResolutionScale() {
     return this.resolutionScale;
+  }
+
+  /**
+   * Sets the mode the renderer will use for drawing.
+   *
+   * @throws When the provided mode is not TRIANGLES or LINES
+   *
+   * @param mode The mode to use
+   */
+  static setMode(mode: "TRIANGLES" | "LINES") {
+    const m = mode.toUpperCase();
+    if (m !== "TRIANGLES" && m !== "LINES") throw new Error("Renderer: Mode can only be TRIANGLES or LINES.");
+
+    this.mode = m;
+  }
+
+  /**
+   * Gets the current webgl rendering mode being used by the renderer.
+   *
+   * @returns The rendering mode
+   */
+  static getMode() {
+    return this.mode;
+  }
+
+  /**
+   * Sets the camera to use for rendering.
+   *
+   * @param camera The camera to use for rendering
+   */
+  static useCamera(camera: Camera) {
+    this.camera = camera;
+  }
+
+  /**
+   * Gets the camera that is currently being used for rendering.
+   *
+   * @returns The camera that is currently being used for rendering
+   */
+  static getCamera() {
+    return this.camera;
   }
 }

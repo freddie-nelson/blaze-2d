@@ -105,7 +105,7 @@ export default class Object2D {
    *
    * @param angle The angle to rotate by in radians
    */
-  rotateX(angle: number) {
+  rotate(angle: number) {
     this.rotation += angle;
   }
 }

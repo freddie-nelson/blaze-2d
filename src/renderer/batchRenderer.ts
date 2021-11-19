@@ -14,9 +14,17 @@ import TextureAtlas from "../texture/atlas";
 import Camera from "../camera/camera";
 import Blaze from "../blaze";
 
+/**
+ * Stores the data needed to render a shape in the world.
+ *
+ * @field `shape` The shape to be rendered
+ * @field `pos` The world position to start drawing the shape at
+ * @field `rot` A base rotation to apply to the shape's vertices, in radians
+ */
 interface Renderable<T> {
   shape: T;
   pos: vec2;
+  rot: number;
 }
 
 interface Geometry {
@@ -37,30 +45,23 @@ export default abstract class BatchRenderer extends Renderer {
    * Batch render an array of entities.
    *
    * @param entities The entities to render
-   * @param camera The camera to use when drawing
    * @param zIndex The z position of the rendered rectangle
    * @param scale The world cell size to clip space scale value
    */
-  static renderEntities(entities: Entity[], camera: Camera, zIndex = 0, scale = vec2.fromValues(1, 1)) {
+  static renderEntities(entities: Entity[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
     const shapes = this.getRenderableShapesFromEntites(entities);
 
-    this.renderRects(shapes.rects, camera, zIndex, scale);
+    this.renderRects(shapes.rects, zIndex, scale);
   }
 
   /**
    * Batch render an array of rectangles.
    *
    * @param rects The rects to render
-   * @param camera The camera to use when drawing
    * @param zIndex The z position of the rendered rectangle
    * @param scale The world cell size to clip space scale value
    */
-  static renderRects(
-    rects: (Rect | Renderable<Rect>)[],
-    camera: Camera,
-    zIndex = 0,
-    scale = vec2.fromValues(1, 1)
-  ) {
+  static renderRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
     const renderable =
       rects[0] instanceof Rect
         ? this.getRenderableRectsFromRects(<Rect[]>rects)
@@ -72,9 +73,9 @@ export default abstract class BatchRenderer extends Renderer {
 
     for (const r of renderable) {
       const pos = vec2.clone(r.pos);
-      vec2.sub(pos, pos, camera.getPosition());
+      vec2.sub(pos, pos, this.getCamera().getPosition());
 
-      const v = r.shape.getVerticesClipSpace(pos, scale);
+      const v = r.shape.getVerticesClipSpace(pos, scale, r.rot);
       const i = r.shape.getIndices((indices.length / 3) * 2);
 
       const atlasImage = this.atlas.getTexture(r.shape.texture);
@@ -142,7 +143,7 @@ export default abstract class BatchRenderer extends Renderer {
     TextureLoader.updateLastUsed(textureUnit.unit);
     gl.uniform1i(programInfo.uniformLocations.texture, textureUnit.unit - gl.TEXTURE0);
 
-    gl.drawElements(gl.TRIANGLES, geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl[this.getMode()], geometry.indices.length, gl.UNSIGNED_SHORT, 0);
   }
 
   static getRenderableRectsFromRects(rects: Rect[]) {
@@ -152,6 +153,7 @@ export default abstract class BatchRenderer extends Renderer {
       renderable.push({
         shape: r,
         pos: vec2.create(),
+        rot: 0,
       });
     }
 
@@ -168,7 +170,8 @@ export default abstract class BatchRenderer extends Renderer {
         if (p instanceof Rect) {
           rects.push({
             shape: p,
-            pos: e.getPosition(),
+            pos: e.getCenter(),
+            rot: e.getRotation(),
           });
         }
       }

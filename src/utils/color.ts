@@ -167,7 +167,7 @@ export default class Color {
 
     let alpha = rgba.a !== undefined ? rgba.a : 1;
     alpha *= 255;
-    const aHex = alpha.toString(16);
+    const aHex = Math.floor(alpha).toString(16);
 
     return `#${rHex}${bHex}${gHex}${aHex}`;
   }

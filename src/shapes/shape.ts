@@ -26,7 +26,7 @@ export default abstract class Shape extends Object2D {
    * @param zIndex The z position of the rendered shape
    * @param scale The world cell size to clip space scale value
    */
-  abstract render(position: vec2, zIndex: number, scale: vec2): void;
+  abstract render(position: vec2, rotation: number, zIndex: number, scale: vec2): void;
 
   /**
    * Calculates the shape's UV coords to be used for texture rendering.

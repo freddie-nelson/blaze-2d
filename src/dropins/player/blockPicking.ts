@@ -1,6 +1,5 @@
 import Blaze from "../../blaze";
 import { from3Dto1D } from "../../utils/arrays";
-import { VoxelLocation } from "../../voxel";
 
 export interface BuildAndBreakOptions {
   buildDelay: number;
@@ -9,8 +8,8 @@ export interface BuildAndBreakOptions {
   canBreak: () => boolean;
   canBuild: () => boolean;
 
-  onBreak?: (i?: number, chunk?: Uint8Array, loc?: VoxelLocation) => void;
-  onBuild?: (i?: number, chunk?: Uint8Array, loc?: VoxelLocation) => void;
+  // onBreak?: (i?: number, chunk?: Uint8Array, loc?: VoxelLocation) => void;
+  // onBuild?: (i?: number, chunk?: Uint8Array, loc?: VoxelLocation) => void;
 }
 
 /**

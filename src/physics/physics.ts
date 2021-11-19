@@ -1,10 +1,17 @@
+import Renderer from "../renderer/renderer";
 import { System } from "../system";
 import RigidBody from "./rigidbody";
 
+/**
+ * Handles all physics updates for bodies in the system.
+ *
+ * As a general rule the physics system should be added after the {@link World} system to avoid glitches.
+ */
 export default class Physics implements System {
   private bodies: RigidBody[] = [];
-
   gravity = 9.8;
+
+  debug = false;
 
   constructor(gravity: number = 9.8) {
     this.gravity = gravity;

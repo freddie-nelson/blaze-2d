@@ -32,7 +32,7 @@ export default class Entity extends RigidBody {
   }
 
   /**
-   * Updates the entity's physics and stick bounds.
+   * Updates the entity's physics and bounds.
    *
    * @param delta Time since last tick
    */
@@ -49,17 +49,13 @@ export default class Entity extends RigidBody {
   /**
    * Renders the entity's pieces.
    *
-   * @param camera The camera to use for rendering
    * @param worldCellToClipSpaceScale The world cell to clip space cell scale value
    */
-  render(camera: Camera, worldCellToClipSpaceScale: vec2) {
-    const position = vec2.clone(this.getPosition());
-    vec2.sub(position, position, camera.getPosition());
-
+  render(worldCellToClipSpaceScale: vec2) {
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      p.render(position, this.zIndex, worldCellToClipSpaceScale);
+      p.render(this.getCenter(), this.getRotation(), this.zIndex, worldCellToClipSpaceScale);
     }
   }
 

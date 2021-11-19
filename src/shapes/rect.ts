@@ -1,5 +1,6 @@
 import { vec2 } from "gl-matrix";
 import Renderer from "../renderer/renderer";
+import { applyRotation, applyTranslation } from "../utils/vectors";
 import Shape from "./shape";
 
 // vertices for a rect
@@ -42,8 +43,8 @@ export default class Rect extends Shape {
    * @param zIndex The z position of the rendered rectangle
    * @param scale The world cell size to clip space scale value
    */
-  render(position: vec2, zIndex: number, scale: vec2) {
-    Renderer.renderRect(this, position, zIndex, scale);
+  render(position: vec2, rotation: number, zIndex: number, scale: vec2) {
+    Renderer.renderRect(this, position, rotation, zIndex, scale);
   }
 
   /**
@@ -61,32 +62,16 @@ export default class Rect extends Shape {
   }
 
   /**
-   * Calculates the rect's vertices.
+   * Calculates the rect's vertices in local space.
    *
    * @param translate Wether or not to apply the rectangle's position to the vertex positions.
    *
    * @returns The rects vertices
    */
   getVertices(translate = false) {
-    const base = [
-      baseVertices.bl,
-      this.vertexScale(baseVertices.br, [this.width, 1]),
-      this.vertexScale(baseVertices.tr, [this.width, this.height]),
-      this.vertexScale(baseVertices.tl, [1, this.height]),
-    ];
-
-    const temp = vec2.create();
-    const rotated = base.map((v) => {
-      vec2.rotate(temp, v, this.getCenter(), this.getRotation());
-      return <vec2>[...temp];
-    });
-
-    const translated = !translate
-      ? rotated
-      : rotated.map((v) => {
-          vec2.add(temp, v, this.getPosition());
-          return <vec2>[...temp];
-        });
+    const base = this.getBaseVertices();
+    const rotated = applyRotation(base, this.getCenter(), this.getRotation());
+    const translated = !translate ? rotated : applyTranslation(rotated, this.getPosition());
 
     const final: number[] = [];
     translated.forEach((v) => final.push(...v));
@@ -98,15 +83,37 @@ export default class Rect extends Shape {
    * Calculates the rect's vertices relative to the provided origin in world space.
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position
+   * @param rotation An optional world space rotation to apply to the vertices
    * @returns The rect's vertices relative to the provided origin in world space
    */
-  getVerticesWorld(origin: vec2) {
-    const vertices = this.getVertices();
+  getVerticesWorld(origin: vec2, rotation?: number) {
+    const base = this.getBaseVertices();
 
-    return vertices.map((v, i) => {
-      if (i % 2 === 0) return v + origin[0];
-      else return v + origin[1];
-    });
+    // move origin so that rect is positioned around origin relative to its center
+    const movedOrigin = vec2.fromValues(origin[0] - this.width / 2, origin[1] - this.height / 2);
+
+    const world = applyTranslation(base, movedOrigin);
+    const worldRotated = rotation ? applyRotation(world, origin, rotation) : world;
+
+    const worldLocalTranslation = applyTranslation(worldRotated, this.getPosition());
+    // const worldLocalTranslation = worldRotated;
+
+    // vector to get from tl vertex to br vertex
+    const tlbr = vec2.create();
+    vec2.sub(tlbr, worldLocalTranslation[1], worldLocalTranslation[3]);
+
+    // center of the rectangle after translations
+    const center = vec2.create();
+    vec2.scale(center, tlbr, 0.5);
+    vec2.add(center, center, worldLocalTranslation[3]);
+
+    const worldLocalTransRot = applyRotation(worldLocalTranslation, center, this.getRotation());
+    // const worldLocalTransRot = worldLocalTranslation;
+
+    const final: number[] = [];
+    worldLocalTransRot.forEach((v) => final.push(...v));
+
+    return final;
   }
 
   /**
@@ -114,15 +121,32 @@ export default class Rect extends Shape {
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position
    * @param scale The vector to scale the world space vertices by to obtain clip space values
+   * @param rotation An optional rotation to apply to the vertices
    * @returns The rect's vertices relative to the provided origin in clip space
    */
-  getVerticesClipSpace(origin: vec2, scale: vec2) {
-    const world = this.getVerticesWorld(origin);
+  getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number) {
+    const world = this.getVerticesWorld(origin, rotation);
 
     return world.map((v, i) => {
       if (i % 2 === 0) return v * scale[0];
       else return v * scale[1];
     });
+  }
+
+  /**
+   * Calculates the base vertices of the rectangle.
+   *
+   * These vertices are the base vertices for a quad, scaled to the width and height of the rectangle.
+   *
+   * @returns The rectangles base vertices
+   */
+  private getBaseVertices() {
+    return [
+      baseVertices.bl,
+      this.vertexScale(baseVertices.br, [this.width, 1]),
+      this.vertexScale(baseVertices.tr, [this.width, this.height]),
+      this.vertexScale(baseVertices.tl, [1, this.height]),
+    ];
   }
 
   /**

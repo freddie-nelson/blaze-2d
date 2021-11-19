@@ -5,7 +5,7 @@ import Bounds from "./bounds";
 /**
  * Represents a rigidbody physics object in 2D world space.
  *
- * Rigidbodies can collide with any Z level terrain based on flags set.
+ * Rigidbodies can collide with any Z level of terrain based on flags set.
  * They can also collide with other rigidbodies.
  */
 export default class RigidBody extends Object2D {

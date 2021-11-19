@@ -50,7 +50,9 @@ export default class Player extends Entity {
     cameraViewport: vec2,
     keys: PlayerKeyMap = defaultKeys
   ) {
-    super(pos, new Box(pos, dimensions[0], dimensions[1]), [new Rect(dimensions[0], dimensions[1])]);
+    super(pos, new Box(pos, dimensions[0], dimensions[1]), [
+      new Rect(dimensions[0], dimensions[1], vec2.fromValues(-dimensions[0] / 2, -dimensions[1] / 2)),
+    ]);
 
     // right most value wins key collisions
     this.keys = mergeDeep(defaultKeys, keys);
@@ -79,7 +81,7 @@ export default class Player extends Entity {
       this.moveUp(-speed);
     }
 
-    this.camera.setPosition(this.getCenter());
+    this.camera.setPosition(this.getPosition());
   }
 
   /**

@@ -5,7 +5,10 @@ import Box from "./physics/box";
 import Physics from "./physics/physics";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
+import Rect from "./shapes/rect";
 import { System } from "./system";
+import Texture from "./texture/texture";
+import Color, { RGBAColor } from "./utils/color";
 
 /**
  * Represents the 2D world.
@@ -16,6 +19,8 @@ export default class World implements System {
 
   private camera: Camera;
   private entities: Entity[] = [];
+
+  debug = false;
 
   /**
    * Creates a {@link World} instance.
@@ -37,10 +42,13 @@ export default class World implements System {
 
     this.camera.update();
 
-    const renderQueue: { [index: number]: Entity[] } = {};
+    const renderQueue: { [index: string]: Entity[] } = {};
+    Renderer.setMode("TRIANGLES");
+    Renderer.useCamera(this.camera);
 
     for (const e of this.entities) {
       e.update();
+
       if (this.camera.viewport.containsBox(e.bounds as Box, this.getWorldToPixelSpace())) {
         if (this.useBatchRenderer) {
           const z = e.getZIndex();
@@ -48,15 +56,36 @@ export default class World implements System {
           if (renderQueue[z]) renderQueue[z].push(e);
           else renderQueue[z] = [e];
         } else {
-          e.render(this.camera, worldCellToClipSpaceScale);
+          e.render(worldCellToClipSpaceScale);
         }
       }
     }
 
     if (this.useBatchRenderer)
-      for (const queue of Object.values(renderQueue)) {
-        BatchRenderer.renderEntities(queue, this.camera, 0, worldCellToClipSpaceScale);
+      for (const zIndex of Object.keys(renderQueue).sort((a, b) => Number(b) - Number(a))) {
+        BatchRenderer.renderEntities(renderQueue[zIndex], Number(zIndex), worldCellToClipSpaceScale);
       }
+
+    if (this.debug) {
+      // Renderer.setMode("LINES");
+
+      for (const e of this.entities) {
+        const position = vec2.clone(e.getPosition());
+        vec2.sub(position, position, this.camera.getPosition());
+
+        const rect = new Rect(e.bounds.getWidth(), e.bounds.getHeight(), position, e.getRotation());
+
+        const rgba: RGBAColor = {
+          r: 255,
+          g: 0,
+          b: 0,
+          a: 0.2,
+        };
+        rect.texture = new Texture(new Color(rgba));
+
+        Renderer.renderRect(rect, undefined, undefined, undefined, worldCellToClipSpaceScale);
+      }
+    }
   }
 
   /**

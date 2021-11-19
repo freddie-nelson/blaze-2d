@@ -35,7 +35,7 @@ export default class Box extends Rect implements Bounds {
    * @returns The bounding points of the box
    */
   getPoints() {
-    const vertices = this.getVerticesWorld(this.getPosition());
+    const vertices = this.getVerticesWorld(vec2.create());
 
     const points: vec2[] = [];
     for (let i = 1; i < vertices.length; i += 2) {
