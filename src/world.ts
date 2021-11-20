@@ -47,7 +47,7 @@ export default class World implements System {
     Renderer.useCamera(this.camera);
 
     for (const e of this.entities) {
-      e.update();
+      e.update(delta);
 
       if (this.camera.viewport.containsBox(e.bounds as Box, this.getWorldToPixelSpace())) {
         if (this.useBatchRenderer) {
@@ -62,7 +62,7 @@ export default class World implements System {
     }
 
     if (this.useBatchRenderer)
-      for (const zIndex of Object.keys(renderQueue).sort((a, b) => Number(b) - Number(a))) {
+      for (const zIndex of Object.keys(renderQueue).sort((a, b) => Number(a) - Number(b))) {
         BatchRenderer.renderEntities(renderQueue[zIndex], Number(zIndex), worldCellToClipSpaceScale);
       }
 
@@ -70,10 +70,7 @@ export default class World implements System {
       // Renderer.setMode("LINES");
 
       for (const e of this.entities) {
-        const position = vec2.clone(e.getPosition());
-        vec2.sub(position, position, this.camera.getPosition());
-
-        const rect = new Rect(e.bounds.getWidth(), e.bounds.getHeight(), position, e.getRotation());
+        const rect = new Rect(e.bounds.getWidth(), e.bounds.getHeight(), e.getPosition(), e.getRotation());
 
         const rgba: RGBAColor = {
           r: 255,

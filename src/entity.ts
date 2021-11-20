@@ -54,7 +54,7 @@ export default class Entity extends RigidBody {
       this.bounds.setRotation(this.getRotation());
     }
 
-    this.fireEvent("update", delta);
+    this.fireEvent("update", delta || 0);
   }
 
   /**

@@ -38,7 +38,7 @@ export default class Object2D {
    * @param pos The object's new position
    */
   setPosition(pos: vec2) {
-    this.position = pos;
+    this.position = vec2.clone(pos);
 
     this.fireEvent("position", this.position);
   }

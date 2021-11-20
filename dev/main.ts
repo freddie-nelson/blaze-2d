@@ -16,6 +16,7 @@ import { addKeyListener } from "../lib/src/keyboard";
 import { isMouseDown, Mouse } from "../lib/src/mouse";
 import { glMatrix, vec2 } from "gl-matrix";
 import BatchRenderer from "../lib/src/renderer/batchRenderer";
+import Circle from "../lib/src/shapes/circle";
 
 BLZ.setBgColor("skyblue");
 
@@ -79,9 +80,9 @@ Debug.world = world;
 
 (async () => {
   const maxSize = 6;
-  const area = 20;
-  const rotationSpeed = 360 * 2;
-  const count = 20;
+  const area = 40;
+  const rotationSpeed = 360 * 0.1;
+  const count = 0;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -91,6 +92,7 @@ Debug.world = world;
     const test = new Entity(
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
       new Box(vec2.create(), size[0], size[1]),
+      // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
       "test"
     );
@@ -100,8 +102,9 @@ Debug.world = world;
       b: Math.floor(Math.random() * 255),
     };
     test.getPieces()[0].texture = new Texture(new Color(rgba));
+    // console.log(test.getPieces()[0]);
 
-    test.setZIndex(Math.floor(Math.random() * 10));
+    test.setZIndex(1);
 
     world.addEntity(test);
     physics.addBody(test);
@@ -110,29 +113,37 @@ Debug.world = world;
     const speed = Math.floor(Math.random() * rotationSpeed * 2) - rotationSpeed;
     test.addEventListener("update", () => {
       test.rotate(((speed * Math.PI) / 180) * BLZ.getDelta());
+      // test.getPieces()[0].rotate(((-speed * Math.PI) / 180) * BLZ.getDelta());
     });
   }
 
-  // const size = vec2.fromValues(3, 6);
-  // const test = new Entity(
-  //   vec2.fromValues(0, 0),
-  //   new Box(vec2.create(), size[0], size[1]),
-  //   [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
-  //   "test"
-  // );
-  // const rgba: RGBAColor = {
-  //   r: Math.floor(Math.random() * 255),
-  //   g: Math.floor(Math.random() * 255),
-  //   b: Math.floor(Math.random() * 255),
-  // };
-  // test.getPieces()[0].texture = new Texture(new Color(rgba));
+  const size = vec2.fromValues(3, 6);
+  const test = new Entity(
+    vec2.fromValues(0, 0),
+    new Box(vec2.create(), size[0] * 2, size[0] * 2),
+    [new Circle(size[0])],
+    "test"
+  );
+  const rgba: RGBAColor = {
+    r: Math.floor(Math.random() * 255),
+    g: Math.floor(Math.random() * 255),
+    b: Math.floor(Math.random() * 255),
+    // a: 0.2,
+  };
+  test.getPieces()[0].texture = new Texture(new Color(rgba));
 
-  // test.setZIndex(0);
-  // test.setRotation((45 * Math.PI) / 180);
+  test.setZIndex(0);
+  player.setZIndex(0);
 
-  // world.addEntity(test);
-  // physics.addBody(test);
-  // atlas.addTexture(test.getPieces()[0].texture);
+  world.addEntity(test);
+  physics.addBody(test);
+  atlas.addTexture(test.getPieces()[0].texture);
+
+  test.addEventListener("update", (delta: number, e) => {
+    e.rotate(((90 * Math.PI) / 180) * delta);
+  });
+
+  console.log(test.getCenter());
 
   const body = player.getPieces()[0];
   body.texture = new Texture();
@@ -141,7 +152,7 @@ Debug.world = world;
 
   BatchRenderer.atlas = atlas;
   await atlas.refreshAtlas();
-  world.useBatchRenderer = true;
+  // world.useBatchRenderer = true;
 
   addKeyListener("KeyR", (pressed) => {
     if (pressed) {

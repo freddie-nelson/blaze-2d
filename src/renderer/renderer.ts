@@ -6,9 +6,13 @@ import TextureLoader from "../texture/loader";
 
 import vsRect from "../shaders/rect/vertex.glsl";
 import fsRect from "../shaders/rect/fragment.glsl";
+import vsCircle from "../shaders/circle/vertex.glsl";
+import fsCircle from "../shaders/circle/fragment.glsl";
+
 import Color from "../utils/color";
 import Blaze from "../blaze";
 import Camera from "../camera/camera";
+import Circle from "../shapes/circle";
 
 /**
  * Renders single instances of shapes at a time.
@@ -39,7 +43,7 @@ export default abstract class Renderer {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.enable(gl.DEPTH_TEST);
+    // gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     gl.depthFunc(gl.LEQUAL);
     gl.depthMask(true);
@@ -54,7 +58,14 @@ export default abstract class Renderer {
   static rectUvBuffer: WebGLBuffer;
   static rectIndexBuffer: WebGLBuffer;
 
+  static circleProgram: WebGLProgram;
+  static circleProgramInfo: ShaderProgramInfo;
+  static circlePositionBuffer: WebGLBuffer;
+  static circleUvBuffer: WebGLBuffer;
+  static circleIndexBuffer: WebGLBuffer;
+
   private static initShaders(gl: WebGL2RenderingContext) {
+    // Rectangle shader
     this.rectPositionBuffer = gl.createBuffer();
     this.rectIndexBuffer = gl.createBuffer();
     this.rectUvBuffer = gl.createBuffer();
@@ -69,6 +80,24 @@ export default abstract class Renderer {
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.rectProgram, "u_ZIndex"),
         texture: gl.getUniformLocation(this.rectProgram, "u_Texture"),
+      },
+    };
+
+    // Circle shader
+    this.circlePositionBuffer = gl.createBuffer();
+    this.circleIndexBuffer = gl.createBuffer();
+    this.circleUvBuffer = gl.createBuffer();
+
+    this.circleProgram = createShaderProgram(gl, vsCircle, fsCircle);
+    this.circleProgramInfo = {
+      program: this.circleProgram,
+      attribLocations: {
+        vertex: gl.getAttribLocation(this.circleProgram, "a_Vertex"),
+        texCoord: gl.getAttribLocation(this.circleProgram, "a_TexCoord"),
+      },
+      uniformLocations: {
+        zIndex: gl.getUniformLocation(this.circleProgram, "u_ZIndex"),
+        texture: gl.getUniformLocation(this.circleProgram, "u_Texture"),
       },
     };
   }
@@ -106,9 +135,9 @@ export default abstract class Renderer {
     const rectProgramInfo = this.rectProgramInfo;
 
     // vertex positions
-    const renderPos = vec2.clone(rect.getCenter());
-    vec2.sub(renderPos, position, this.camera.getPosition());
-    const vertices = rect.getVerticesClipSpace(position, scale, rotation);
+    const renderPos = vec2.clone(position);
+    vec2.sub(renderPos, renderPos, this.camera.getPosition());
+    const vertices = rect.getVerticesClipSpace(renderPos, scale, rotation);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -167,6 +196,91 @@ export default abstract class Renderer {
       const unit = rect.texture.getTextureUnit();
       TextureLoader.updateLastUsed(unit);
       gl.uniform1i(rectProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
+    }
+
+    gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);
+  }
+
+  /**
+   * Renders a circle.
+   *
+   * @param circle The circle to render
+   * @param position The x and y position to render the circle at
+   * @param zIndex The z position of the rendered circle
+   * @param scale The world cell size to clip space scale value
+   */
+  static renderCircle(
+    circle: Circle,
+    position = vec2.create(),
+    rotation = 0,
+    zIndex = 0,
+    scale = vec2.fromValues(1, 1)
+  ) {
+    const gl = this.gl;
+    const circleProgramInfo = this.circleProgramInfo;
+
+    // vertex positions
+    const renderPos = vec2.clone(position);
+    vec2.sub(renderPos, renderPos, this.camera.getPosition());
+    const vertices = circle.getVerticesClipSpace(renderPos, scale, rotation);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+    {
+      const numComponents = 2;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+
+      gl.vertexAttribPointer(
+        circleProgramInfo.attribLocations.vertex,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+      gl.enableVertexAttribArray(circleProgramInfo.attribLocations.vertex);
+    }
+
+    // uv coords
+    const uvs = circle.getUVCoords();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+
+    {
+      const numComponents = 2;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+
+      gl.vertexAttribPointer(
+        circleProgramInfo.attribLocations.texCoord,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+      gl.enableVertexAttribArray(circleProgramInfo.attribLocations.texCoord);
+    }
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, circle.getIndices(), gl.STATIC_DRAW);
+
+    gl.useProgram(circleProgramInfo.program);
+    gl.uniform1f(circleProgramInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
+
+    // set active texture
+    if (circle.texture) {
+      TextureLoader.loadTexture(circle.texture);
+
+      const unit = circle.texture.getTextureUnit();
+      TextureLoader.updateLastUsed(unit);
+      gl.uniform1i(circleProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
     }
 
     gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);

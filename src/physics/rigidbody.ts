@@ -11,15 +11,18 @@ import Bounds from "./bounds";
 export default class RigidBody extends Object2D {
   private terrainCollisionFlags: { [index: number]: boolean } = {};
   bounds: Bounds;
+
+  mass = 1;
   gravity = 9.8;
 
   /**
    * Creates a {@link RigidBody}
    */
-  constructor(bounds: Bounds, gravity = 9.8) {
+  constructor(bounds: Bounds, mass = 1, gravity = 9.8) {
     super();
 
     this.bounds = bounds;
+    this.mass = mass;
     this.gravity = gravity;
   }
 

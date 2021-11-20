@@ -13,6 +13,7 @@ import Shape from "../shapes/shape";
 import TextureAtlas from "../texture/atlas";
 import Camera from "../camera/camera";
 import Blaze from "../blaze";
+import Circle from "../shapes/circle";
 
 /**
  * Stores the data needed to render a shape in the world.
@@ -52,13 +53,14 @@ export default abstract class BatchRenderer extends Renderer {
     const shapes = this.getRenderableShapesFromEntites(entities);
 
     this.renderRects(shapes.rects, zIndex, scale);
+    this.renderCircles(shapes.circles, zIndex, scale);
   }
 
   /**
    * Batch render an array of rectangles.
    *
    * @param rects The rects to render
-   * @param zIndex The z position of the rendered rectangle
+   * @param zIndex The z index of the rendered rectangles
    * @param scale The world cell size to clip space scale value
    */
   static renderRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
@@ -67,42 +69,27 @@ export default abstract class BatchRenderer extends Renderer {
         ? this.getRenderableRectsFromRects(<Rect[]>rects)
         : (rects as Renderable<Rect>[]);
 
-    const vertices: number[] = [];
-    const indices: number[] = [];
-    const uvs: number[] = [];
-
-    for (const r of renderable) {
-      const pos = vec2.clone(r.pos);
-      vec2.sub(pos, pos, this.getCamera().getPosition());
-
-      const v = r.shape.getVerticesClipSpace(pos, scale, r.rot);
-      const i = r.shape.getIndices((indices.length / 3) * 2);
-
-      const atlasImage = this.atlas.getTexture(r.shape.texture);
-      if (!atlasImage) continue;
-
-      const uv = r.shape.getUVCoords().map((uv, i) => {
-        if (i % 2 === 0) {
-          if (uv === 1) return atlasImage.br[0] / this.atlas.getSize();
-          else return atlasImage.tl[0] / this.atlas.getSize();
-        } else {
-          if (uv === 1) return atlasImage.br[1] / this.atlas.getSize();
-          else return atlasImage.tl[1] / this.atlas.getSize();
-        }
-      });
-
-      vertices.push(...v);
-      indices.push(...i);
-      uvs.push(...uv);
-    }
-
-    const geometry: Geometry = {
-      vertices: new Float32Array(vertices),
-      indices: new Uint16Array(indices),
-      uvs: new Float32Array(uvs),
-    };
+    const geometry = this.getGeometryFromRenderables(renderable, scale);
 
     this.renderGeometry(geometry, "rect", zIndex);
+  }
+
+  /**
+   * Batch render an array of circles.
+   *
+   * @param circles The circles to render
+   * @param zIndex The z index of the rendered circles
+   * @param scale The world cell size to clip space scale value
+   */
+  static renderCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
+    const renderable =
+      circles[0] instanceof Circle
+        ? this.getRenderableCirclesFromCircles(<Circle[]>circles)
+        : (circles as Renderable<Circle>[]);
+
+    const geometry = this.getGeometryFromRenderables(renderable, scale);
+
+    this.renderGeometry(geometry, "circle", zIndex);
   }
 
   /**
@@ -112,9 +99,21 @@ export default abstract class BatchRenderer extends Renderer {
    * @param type The type of shape shader to use
    * @param zIndex The z position of the rendered rectangle
    */
-  static renderGeometry(geometry: Geometry, type: "rect", zIndex = 0) {
+  static renderGeometry(geometry: Geometry, type: "rect" | "circle", zIndex = 0) {
     const gl = this.getGL();
-    const programInfo = type === "rect" ? this.rectProgramInfo : undefined;
+
+    // select shader program
+    let programInfo: ShaderProgramInfo;
+    switch (type) {
+      case "rect":
+        programInfo = this.rectProgramInfo;
+        break;
+      case "circle":
+        programInfo = this.circleProgramInfo;
+        break;
+      default:
+        break;
+    }
 
     // vertex positions
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
@@ -146,6 +145,49 @@ export default abstract class BatchRenderer extends Renderer {
     gl.drawElements(gl[this.getMode()], geometry.indices.length, gl.UNSIGNED_SHORT, 0);
   }
 
+  /**
+   * Generates geometry data for an array of {@link Renderable} shapes.
+   */
+  static getGeometryFromRenderables(
+    renderable: Renderable<Shape>[],
+    scale = vec2.fromValues(1, 1)
+  ): Geometry {
+    const vertices: number[] = [];
+    const indices: number[] = [];
+    const uvs: number[] = [];
+
+    for (const r of renderable) {
+      const pos = vec2.clone(r.pos);
+      vec2.sub(pos, pos, this.getCamera().getPosition());
+
+      const v = r.shape.getVerticesClipSpace(pos, scale, r.rot);
+      const i = r.shape.getIndices((indices.length / 3) * 2);
+
+      const atlasImage = this.atlas.getTexture(r.shape.texture);
+      if (!atlasImage) continue;
+
+      const uv = r.shape.getUVCoords().map((uv, i) => {
+        if (i % 2 === 0) {
+          if (uv === 1) return atlasImage.br[0] / this.atlas.getSize();
+          else return atlasImage.tl[0] / this.atlas.getSize();
+        } else {
+          if (uv === 1) return atlasImage.br[1] / this.atlas.getSize();
+          else return atlasImage.tl[1] / this.atlas.getSize();
+        }
+      });
+
+      vertices.push(...v);
+      indices.push(...i);
+      uvs.push(...uv);
+    }
+
+    return <Geometry>{
+      vertices: new Float32Array(vertices),
+      indices: new Uint16Array(indices),
+      uvs: new Float32Array(uvs),
+    };
+  }
+
   static getRenderableRectsFromRects(rects: Rect[]) {
     const renderable: Renderable<Rect>[] = [];
 
@@ -160,8 +202,23 @@ export default abstract class BatchRenderer extends Renderer {
     return renderable;
   }
 
+  static getRenderableCirclesFromCircles(circles: Circle[]) {
+    const renderable: Renderable<Circle>[] = [];
+
+    for (const c of circles) {
+      renderable.push({
+        shape: c,
+        pos: vec2.create(),
+        rot: 0,
+      });
+    }
+
+    return renderable;
+  }
+
   static getRenderableShapesFromEntites(entities: Entity[]) {
     const rects: Renderable<Rect>[] = [];
+    const circles: Renderable<Circle>[] = [];
 
     for (const e of entities) {
       const pieces = e.getPieces();
@@ -173,12 +230,19 @@ export default abstract class BatchRenderer extends Renderer {
             pos: e.getCenter(),
             rot: e.getRotation(),
           });
+        } else if (p instanceof Circle) {
+          circles.push({
+            shape: p,
+            pos: e.getCenter(),
+            rot: e.getRotation(),
+          });
         }
       }
     }
 
     return {
       rects,
+      circles,
     };
   }
 }

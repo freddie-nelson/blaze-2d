@@ -67,6 +67,8 @@ export default class Player extends Entity {
    * @param delta The time since the last tick in ms
    */
   update(delta: number) {
+    super.update(delta);
+
     const speed = 0.5;
     if (isKeyPressed("KeyD")) {
       this.moveRight(speed);

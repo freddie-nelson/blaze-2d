@@ -68,7 +68,7 @@ export default class Rect extends Shape {
    *
    * @returns The rects vertices
    */
-  getVertices(translate = false) {
+  getVertices(translate = true) {
     const base = this.getBaseVertices();
     const rotated = applyRotation(base, this.getCenter(), this.getRotation());
     const translated = !translate ? rotated : applyTranslation(rotated, this.getPosition());
@@ -93,25 +93,25 @@ export default class Rect extends Shape {
     const movedOrigin = vec2.fromValues(origin[0] - this.width / 2, origin[1] - this.height / 2);
 
     const world = applyTranslation(base, movedOrigin);
-    const worldRotated = rotation ? applyRotation(world, origin, rotation) : world;
+    const worldLocal = applyTranslation(world, this.getPosition());
+    const worldLocalRotated = rotation ? applyRotation(worldLocal, movedOrigin, rotation) : worldLocal;
 
-    const worldLocalTranslation = applyTranslation(worldRotated, this.getPosition());
     // const worldLocalTranslation = worldRotated;
 
     // vector to get from tl vertex to br vertex
     const tlbr = vec2.create();
-    vec2.sub(tlbr, worldLocalTranslation[1], worldLocalTranslation[3]);
+    vec2.sub(tlbr, worldLocalRotated[1], worldLocalRotated[3]);
 
     // center of the rectangle after translations
     const center = vec2.create();
     vec2.scale(center, tlbr, 0.5);
-    vec2.add(center, center, worldLocalTranslation[3]);
+    vec2.add(center, center, worldLocalRotated[3]);
 
-    const worldLocalTransRot = applyRotation(worldLocalTranslation, center, this.getRotation());
+    const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, center, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
 
     const final: number[] = [];
-    worldLocalTransRot.forEach((v) => final.push(...v));
+    worldLocalRotatedLocalRot.forEach((v) => final.push(...v));
 
     return final;
   }

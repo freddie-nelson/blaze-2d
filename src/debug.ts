@@ -24,6 +24,7 @@ export default abstract class Debug {
   static threads: HTMLSpanElement;
 
   static lineMode: HTMLInputElement;
+  static rendererToggle: HTMLInputElement;
 
   static reloadChunks: HTMLButtonElement;
   static fullscreenBtn: HTMLButtonElement;
@@ -57,6 +58,15 @@ export default abstract class Debug {
       //   ? blz.getChunkController().setDrawMode(WebGL2RenderingContext.LINES)
       //   : blz.getChunkController().setDrawMode(WebGL2RenderingContext.TRIANGLES);
     });
+
+    this.rendererToggle = this.createToggle("Batch Render: ", (val) => {
+      if (val) {
+        this.world.useBatchRenderer = true;
+      } else {
+        this.world.useBatchRenderer = false;
+      }
+    });
+
     this.reloadChunks = this.createButton("Reload Chunks", () => {
       // blz.getChunkController().refreshAllChunks();
     });
