@@ -32,6 +32,15 @@ export default class Entity extends RigidBody {
   }
 
   /**
+   * Sets the events that can be attached to in `listeners`.
+   */
+  protected setupEvents() {
+    super.setupEvents();
+
+    this.listeners.update = [];
+  }
+
+  /**
    * Updates the entity's physics and bounds.
    *
    * @param delta Time since last tick
@@ -44,6 +53,8 @@ export default class Entity extends RigidBody {
 
       this.bounds.setRotation(this.getRotation());
     }
+
+    this.fireEvent("update", delta);
   }
 
   /**

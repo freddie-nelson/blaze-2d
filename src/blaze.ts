@@ -36,6 +36,11 @@ export default abstract class Blaze {
   private static lastUpdateTime = performance.now();
 
   /**
+   * The time since `lastUpdateTime`
+   */
+  private static delta = 0;
+
+  /**
    * Initializes the engine and creates the renderer.
    *
    * @param canvas The canvas to use to create the renderer
@@ -67,7 +72,7 @@ export default abstract class Blaze {
   static update() {
     requestAnimationFrame(() => this.update());
     const delta = (performance.now() - this.lastUpdateTime) / 1000;
-    this.lastUpdateTime = performance.now();
+    this.delta = delta;
 
     Renderer.clear(this.bgColor);
 
@@ -76,6 +81,7 @@ export default abstract class Blaze {
     }
 
     if (Debug.show) Debug.update(delta);
+    this.lastUpdateTime = performance.now();
   }
 
   /**
@@ -242,6 +248,15 @@ export default abstract class Blaze {
    */
   static getLastUpdateTime() {
     return this.lastUpdateTime;
+  }
+
+  /**
+   * Gets the time since the last update, measured in ms.
+   *
+   * @returns The time since the last update
+   */
+  static getDelta() {
+    return this.delta;
   }
 
   /**

@@ -15,14 +15,22 @@ export interface Neighbours<T> {
   bottomRight?: T;
 }
 
+export type Listener = (e?: any, obj?: Object2D) => void;
+
 /**
- * Represents an object in 2D space with a position and rotation
+ * Represents an object in 2D space with a position and rotation.
+ *
+ * Also contains an events system which can be used to execute arbitrary functions on certain events.
  */
 export default class Object2D {
   private position = vec2.create();
   private rotation = 0;
 
-  constructor() {}
+  protected listeners: { [index: string]: Listener[] } = {};
+
+  constructor() {
+    this.setupEvents();
+  }
 
   /**
    * Sets the object's position.
@@ -31,6 +39,8 @@ export default class Object2D {
    */
   setPosition(pos: vec2) {
     this.position = pos;
+
+    this.fireEvent("position", this.position);
   }
 
   /**
@@ -40,6 +50,8 @@ export default class Object2D {
    */
   setPositionX(pos: number) {
     this.position[0] = pos;
+
+    this.fireEvent("position", this.position);
   }
 
   /**
@@ -49,6 +61,8 @@ export default class Object2D {
    */
   setPositionY(pos: number) {
     this.position[1] = pos;
+
+    this.fireEvent("position", this.position);
   }
 
   /**
@@ -69,6 +83,8 @@ export default class Object2D {
     const forwardVec = vec2.fromValues(1, 0);
     vec2.rotate(forwardVec, forwardVec, vec2.fromValues(0, 0), this.rotation);
     vec2.scaleAndAdd(this.position, this.position, forwardVec, dist);
+
+    this.fireEvent("position", this.position);
   }
 
   /**
@@ -80,6 +96,8 @@ export default class Object2D {
     const upVec = vec2.fromValues(0, 1);
     vec2.rotate(upVec, upVec, vec2.fromValues(0, 0), this.rotation);
     vec2.scaleAndAdd(this.position, this.position, upVec, dist);
+
+    this.fireEvent("position", this.position);
   }
 
   /**
@@ -89,6 +107,8 @@ export default class Object2D {
    */
   setRotation(rot: number) {
     this.rotation = rot;
+
+    this.fireEvent("rotate", this.rotation);
   }
 
   /**
@@ -107,5 +127,78 @@ export default class Object2D {
    */
   rotate(angle: number) {
     this.rotation += angle;
+
+    this.fireEvent("rotate", this.rotation);
+  }
+
+  /**
+   * Sets all the events that can be used in `listeners`.
+   */
+  protected setupEvents() {
+    this.listeners.position = [];
+    this.listeners.rotate = [];
+  }
+
+  /**
+   * Gets the events that can be listened to on the object.
+   *
+   * @returns The events the object supports
+   */
+  getEvents() {
+    return Object.keys(this.listeners);
+  }
+
+  /**
+   * Executes all listeners attached to a given event.
+   *
+   * @param event The event to fire
+   * @param e The data to pass to each event listener
+   */
+  fireEvent(event: string, e: any) {
+    if (!this.listeners[event]) throw new Error(`Object2D: '${event}' is not a supported event.`);
+
+    for (const l of this.listeners[event]) {
+      l(e, this);
+    }
+  }
+
+  /**
+   * Gets the listeners attached to an event.
+   *
+   * @returns An array of listeners attached to the given event
+   */
+  getEventListeners(event: string) {
+    return this.listeners[event];
+  }
+
+  /**
+   * Executes a function when an event is fired.
+   *
+   * @param event The event to listen for
+   * @param listener The function to execute when the event fired
+   * @returns Wether or not the listener was added
+   */
+  addEventListener(event: string, listener: Listener) {
+    if (!this.listeners[event]) return false;
+
+    this.listeners[event].push(listener);
+    return true;
+  }
+
+  /**
+   * Removes a listener from an event.
+   *
+   * @param event The event the listener is attached to
+   * @param listener The listener to remove
+   * @returns Wether or not the listener was removed
+   */
+  removeEventListener(event: string, listener: Listener) {
+    if (!this.listeners[event]) return false;
+
+    const i = this.listeners[event].findIndex((l) => l === listener);
+    if (i === -1) return false;
+
+    this.listeners[event].splice(i, 1);
+    return true;
   }
 }

@@ -24,6 +24,13 @@ export default class RigidBody extends Object2D {
   }
 
   /**
+   * Sets all the events that can be used in `listeners`.
+   */
+  protected setupEvents() {
+    super.setupEvents();
+  }
+
+  /**
    * Sets wether or not the rigidbody should collide with the given terrain level.
    *
    * @throws When {@link validateZIndex} returns a string.

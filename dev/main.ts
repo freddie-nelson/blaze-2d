@@ -75,52 +75,64 @@ window.addEventListener("resize", () => {
 BLZ.toggleDebug();
 // Debug.player = player;
 Debug.world = world;
-world.debug = true;
+// world.debug = true;
 
 (async () => {
-  // for (let i = 0; i < 10; i++) {
-  //   const size = vec2.fromValues(Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 5) + 1);
-  //   const test = new Entity(
-  //     vec2.fromValues(Math.random() * 12 - 6, Math.random() * 12 - 6),
-  //     new Box(vec2.create(), size[0], size[1]),
-  //     [new Rect(size[0], size[1])],
-  //     "test"
-  //   );
-  //   const rgba: RGBAColor = {
-  //     r: Math.floor(Math.random() * 255),
-  //     g: Math.floor(Math.random() * 255),
-  //     b: Math.floor(Math.random() * 255),
-  //   };
-  //   test.getPieces()[0].texture = new Texture(new Color(rgba));
+  const maxSize = 6;
+  const area = 20;
+  const rotationSpeed = 360 * 2;
+  const count = 20;
 
-  //   test.setZIndex(Math.floor(Math.random() * 10));
-  //   test.setRotation((Math.floor(Math.random() * 360) * Math.PI) / 180);
+  for (let i = 0; i < count; i++) {
+    const size = vec2.fromValues(
+      Math.floor(Math.random() * maxSize) + 1,
+      Math.floor(Math.random() * maxSize) + 1
+    );
+    const test = new Entity(
+      vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
+      new Box(vec2.create(), size[0], size[1]),
+      [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
+      "test"
+    );
+    const rgba: RGBAColor = {
+      r: Math.floor(Math.random() * 255),
+      g: Math.floor(Math.random() * 255),
+      b: Math.floor(Math.random() * 255),
+    };
+    test.getPieces()[0].texture = new Texture(new Color(rgba));
 
-  //   world.addEntity(test);
-  //   physics.addBody(test);
-  //   atlas.addTexture(test.getPieces()[0].texture);
-  // }
+    test.setZIndex(Math.floor(Math.random() * 10));
 
-  const size = vec2.fromValues(3, 6);
-  const test = new Entity(
-    vec2.fromValues(0, 0),
-    new Box(vec2.create(), size[0], size[1]),
-    [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
-    "test"
-  );
-  const rgba: RGBAColor = {
-    r: Math.floor(Math.random() * 255),
-    g: Math.floor(Math.random() * 255),
-    b: Math.floor(Math.random() * 255),
-  };
-  test.getPieces()[0].texture = new Texture(new Color(rgba));
+    world.addEntity(test);
+    physics.addBody(test);
+    atlas.addTexture(test.getPieces()[0].texture);
 
-  test.setZIndex(0);
+    const speed = Math.floor(Math.random() * rotationSpeed * 2) - rotationSpeed;
+    test.addEventListener("update", () => {
+      test.rotate(((speed * Math.PI) / 180) * BLZ.getDelta());
+    });
+  }
+
+  // const size = vec2.fromValues(3, 6);
+  // const test = new Entity(
+  //   vec2.fromValues(0, 0),
+  //   new Box(vec2.create(), size[0], size[1]),
+  //   [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
+  //   "test"
+  // );
+  // const rgba: RGBAColor = {
+  //   r: Math.floor(Math.random() * 255),
+  //   g: Math.floor(Math.random() * 255),
+  //   b: Math.floor(Math.random() * 255),
+  // };
+  // test.getPieces()[0].texture = new Texture(new Color(rgba));
+
+  // test.setZIndex(0);
   // test.setRotation((45 * Math.PI) / 180);
 
-  world.addEntity(test);
-  physics.addBody(test);
-  atlas.addTexture(test.getPieces()[0].texture);
+  // world.addEntity(test);
+  // physics.addBody(test);
+  // atlas.addTexture(test.getPieces()[0].texture);
 
   const body = player.getPieces()[0];
   body.texture = new Texture();
@@ -141,7 +153,6 @@ world.debug = true;
 
   BLZ.addSystem({
     update(delta: number) {
-      test.rotate(((90 * Math.PI) / 180) * delta);
       // test.getPieces()[0].rotate(((-90 * Math.PI) / 180) * delta);
     },
   });
