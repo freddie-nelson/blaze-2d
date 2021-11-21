@@ -161,13 +161,13 @@ export default class Color {
   rgbaToHex(rgba: RGBAColor): string {
     if (!this.validateRGBA(rgba)) throw new Error("Color: Invalid rgba color provided to rgbaToHex.");
 
-    const rHex = rgba.r.toString(16);
-    const bHex = rgba.g.toString(16);
-    const gHex = rgba.b.toString(16);
+    const rHex = rgba.r.toString(16).padStart(2, "0");
+    const bHex = rgba.g.toString(16).padStart(2, "0");
+    const gHex = rgba.b.toString(16).padStart(2, "0");
 
     let alpha = rgba.a !== undefined ? rgba.a : 1;
     alpha *= 255;
-    const aHex = Math.floor(alpha).toString(16);
+    const aHex = Math.floor(alpha).toString(16).padStart(2, "0");
 
     return `#${rHex}${bHex}${gHex}${aHex}`;
   }

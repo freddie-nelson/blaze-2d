@@ -76,7 +76,7 @@ window.addEventListener("resize", () => {
 BLZ.toggleDebug();
 // Debug.player = player;
 Debug.world = world;
-// world.debug = true;
+world.debug = true;
 
 (async () => {
   const maxSize = 6;
@@ -117,7 +117,7 @@ Debug.world = world;
     });
   }
 
-  const size = vec2.fromValues(3, 6);
+  const size = vec2.fromValues(6, 6);
   const test = new Entity(
     vec2.fromValues(0, 0),
     new Box(vec2.create(), size[0] * 2, size[0] * 2),
@@ -130,7 +130,10 @@ Debug.world = world;
     b: Math.floor(Math.random() * 255),
     // a: 0.2,
   };
-  test.getPieces()[0].texture = new Texture(new Color(rgba));
+
+  const circle = test.getPieces()[0];
+  circle.texture = new Texture(new Color(rgba));
+  console.log(circle.texture);
 
   test.setZIndex(0);
   player.setZIndex(0);
@@ -139,8 +142,23 @@ Debug.world = world;
   physics.addBody(test);
   atlas.addTexture(test.getPieces()[0].texture);
 
-  test.addEventListener("update", (delta: number, e) => {
-    e.rotate(((90 * Math.PI) / 180) * delta);
+  const minRadius = 2;
+  const maxRadius = 6;
+  let step = 1;
+  test.addEventListener("update", (delta: number, e: Entity) => {
+    // e.rotate(((90 * Math.PI) / 180) * delta);
+
+    const circle = <Circle>e.getPieces()[0];
+
+    const radius = circle.getRadius();
+    if (radius <= minRadius || radius >= maxRadius) {
+      step *= -1;
+    }
+
+    // circle.setRadius(radius + step * BLZ.getDelta());
+
+    e.bounds.setWidth(circle.getWidth());
+    e.bounds.setHeight(circle.getWidth());
   });
 
   const body = player.getPieces()[0];
@@ -169,6 +187,7 @@ Debug.world = world;
 
   // console.log(atlas.getAllTextures());
   // document.body.appendChild(atlas.image);
+  // console.log(atlas.imagePath);
 
   BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
   BLZ.start();

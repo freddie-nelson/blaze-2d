@@ -14,7 +14,7 @@ export interface TextureAtlasImage {
   texture: Texture;
 }
 
-const colorBlockSize = 2;
+const colorBlockSize = 5;
 const padding = 1;
 
 /**

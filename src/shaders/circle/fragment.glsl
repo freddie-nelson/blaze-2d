@@ -14,10 +14,10 @@ void main() {
   vec2 UV = uv * 2.0 - 1.0;
 
   // no sqrt needed cause -1 to 1
-  float dist = 1.0 - (UV.x * UV.x + UV.y * UV.y);
+  float dist = UV.x * UV.x + UV.y * UV.y;
 
   // discard pixels outside circle
-  if (dist < 0.0) {
+  if (dist > 1.0) {
     discard;
   }
 
@@ -25,5 +25,5 @@ void main() {
   outColor = texture(u_Texture, texCoord);
 
   // anti-aliasing
-  outColor.a = smoothstep(0.0, 0.005, dist);
+  // outColor.a = smoothstep(0.0, 0.008, dist);
 }
