@@ -76,7 +76,7 @@ window.addEventListener("resize", () => {
 BLZ.toggleDebug();
 // Debug.player = player;
 Debug.world = world;
-world.debug = true;
+// world.debug = true;
 
 (async () => {
   const maxSize = 6;
@@ -93,7 +93,7 @@ world.debug = true;
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
       new Box(vec2.create(), size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
-      [new Rect(size[0], size[1], vec2.fromValues(1, 1))],
+      [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       "test"
     );
     const rgba: RGBAColor = {
@@ -113,15 +113,15 @@ world.debug = true;
     const speed = Math.floor(Math.random() * rotationSpeed * 2) - rotationSpeed;
     test.addEventListener("update", () => {
       test.rotate(((speed * Math.PI) / 180) * BLZ.getDelta());
-      test.getPieces()[0].rotate(((-speed * Math.PI) / 180) * BLZ.getDelta());
+      // test.getPieces()[0].rotate(((-speed * Math.PI) / 180) * BLZ.getDelta());
     });
   }
 
   const size = vec2.fromValues(6, 6);
   const test = new Entity(
     vec2.fromValues(0, 0),
-    new Box(vec2.create(), size[0] * 2, size[0] * 2),
-    [new Circle(size[0])],
+    new Box(vec2.create(), size[0] * 2.5, size[0] * 2.5),
+    [new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)), new Rect(2, 6)],
     "test"
   );
   const rgba: RGBAColor = {
@@ -133,7 +133,11 @@ world.debug = true;
 
   const circle = test.getPieces()[0];
   circle.texture = new Texture(new Color(rgba));
-  console.log(circle.texture);
+
+  const rect = test.getPieces()[1];
+  rect.texture = circle.texture;
+  rect.setRotation((-45 * Math.PI) / 180);
+  rect.setPosition(vec2.fromValues(2, 2));
 
   test.setZIndex(0);
   player.setZIndex(0);
@@ -146,7 +150,7 @@ world.debug = true;
   const maxRadius = 6;
   let step = 1;
   test.addEventListener("update", (delta: number, e: Entity) => {
-    // e.rotate(((90 * Math.PI) / 180) * delta);
+    e.rotate(((120 * Math.PI) / 180) * delta);
 
     const circle = <Circle>e.getPieces()[0];
 
@@ -155,10 +159,13 @@ world.debug = true;
       step *= -1;
     }
 
-    // circle.setRadius(radius + step * BLZ.getDelta());
+    circle.setRadius(radius + step * BLZ.getDelta());
 
-    e.bounds.setWidth(circle.getWidth());
-    e.bounds.setHeight(circle.getWidth());
+    const pos = circle.getPosition();
+    vec2.scaleAndAdd(pos, pos, vec2.fromValues(step, step), BLZ.getDelta());
+
+    e.bounds.setWidth(circle.getWidth() * 1.8);
+    e.bounds.setHeight(circle.getWidth() * 1.8);
   });
 
   const body = player.getPieces()[0];

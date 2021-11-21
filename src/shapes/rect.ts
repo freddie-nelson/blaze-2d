@@ -175,12 +175,12 @@ export default class Rect extends Shape {
   /**
    * Sets the rectangle's width.
    *
-   * @throws When the the provided width is <= 0
+   * @throws When the the provided width is < 0
    *
    * @param width The rectangle's new width
    */
   setWidth(width: number) {
-    if (width <= 0) throw new Error("Rect: Width cannot be <= 0.");
+    if (width < 0) throw new Error("Rect: Width cannot be < 0.");
 
     this.width = width;
   }
@@ -197,12 +197,12 @@ export default class Rect extends Shape {
   /**
    * Sets the rectangle's height.
    *
-   * @throws When the the provided height is <= 0
+   * @throws When the the provided height is < 0
    *
    * @param height The rectangle's new height
    */
   setHeight(height: number) {
-    if (height <= 0) throw new Error("Rect: Width cannot be <= 0.");
+    if (height < 0) throw new Error("Rect: Width cannot be < 0.");
 
     this.height = height;
   }

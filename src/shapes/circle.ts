@@ -174,12 +174,12 @@ export default class Circle extends Shape {
   /**
    * Sets the circle's radius by setting the `width` and `height` to `radius`.
    *
-   * @throws When the provided radius is <= 0
+   * @throws When the provided radius is < 0
    *
    * @param radius The circle's new radius
    */
   setRadius(radius: number) {
-    if (radius <= 0) throw new Error("Circle: Radius cannot be <= 0.");
+    if (radius < 0) throw new Error("Circle: Radius cannot be < 0.");
 
     this.radius = radius;
     this.width = radius * 2;
@@ -202,12 +202,12 @@ export default class Circle extends Shape {
    *
    * The circle's radius will be set to half of the given diameter.
    *
-   * @throws When the provided diameter is <= 0
+   * @throws When the provided diameter is < 0
    *
    * @param diameter The circle's new diameter
    */
   setWidth(diameter: number) {
-    if (diameter <= 0) throw new Error("Circle: Diameter cannot be <= 0.");
+    if (diameter < 0) throw new Error("Circle: Diameter cannot be < 0.");
 
     this.width = diameter;
     this.height = diameter;
@@ -230,12 +230,12 @@ export default class Circle extends Shape {
    *
    * The circle's radius will be set to half of the given diameter.
    *
-   * @throws When the provided diameter is <= 0
+   * @throws When the provided diameter is < 0
    *
    * @param diameter The circle's new diameter
    */
   setHeight(diameter: number) {
-    if (diameter <= 0) throw new Error("Circle: Diameter cannot be <= 0.");
+    if (diameter < 0) throw new Error("Circle: Diameter cannot be < 0.");
 
     this.width = diameter;
     this.height = diameter;
