@@ -50,7 +50,7 @@ export default class Player extends Entity {
     cameraViewport: vec2,
     keys: PlayerKeyMap = defaultKeys
   ) {
-    super(pos, new Box(pos, dimensions[0], dimensions[1]), [
+    super(pos, new Box(dimensions[0], dimensions[1], pos), [
       new Rect(dimensions[0], dimensions[1], vec2.fromValues(0, 0)),
     ]);
 

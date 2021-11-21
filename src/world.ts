@@ -97,9 +97,45 @@ export default class World implements System {
     return vec2.fromValues(2 / width, 2 / height);
   }
 
+  /**
+   * Calculates the world space to pixel space scale.
+   *
+   * @returns The number that multiplying a world space coordinate by provides the equivalent pixel space coordinate.
+   */
   getWorldToPixelSpace() {
     const v = vec2.clone(this.cellSize);
     return v;
+  }
+
+  /**
+   * Calculates the pixel space to world space scale.
+   *
+   * @returns The number that multiplying a pixel space coordinate by provides the equivalent world space coordinate.
+   */
+  getPixelToWorldSpace() {
+    const v = vec2.fromValues(1 / this.cellSize[0], 1 / this.cellSize[1]);
+    return v;
+  }
+
+  /**
+   * Gets the world cell location of a pixel on the screen.
+   *
+   * This is calculated using the viewport of the world camera.
+   *
+   * @param pixel A pixel position on the screen
+   */
+  getCellFromPixel(pixel: vec2) {
+    const view = this.camera.viewport;
+    const p = vec2.fromValues(pixel[0] - view.getWidth() / 2, view.getHeight() / 2 - pixel[1]);
+
+    const pixelToWorld = this.getPixelToWorldSpace();
+    const world = vec2.fromValues(p[0] * pixelToWorld[0], p[1] * pixelToWorld[1]);
+
+    // get world position inside current view
+    const center = this.camera.getPosition();
+    vec2.add(world, world, center);
+
+    return world;
   }
 
   /**

@@ -9,11 +9,11 @@ export default class Box extends Rect implements Bounds {
   /**
    * Creates a new {@link Box} instance with a position and dimensions.
    *
-   * @param position The box's position in world space
    * @param width The width of the box
    * @param height The height of the box
+   * @param position The box's position in world space
    */
-  constructor(position: vec2, width: number, height: number) {
+  constructor(width: number, height: number, position?: vec2) {
     super(width, height, position);
   }
 

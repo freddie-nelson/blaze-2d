@@ -1,3 +1,5 @@
+import { vec2 } from "gl-matrix";
+
 /**
  * Enum for {@link MouseEvent.button} numbers
  */
@@ -10,19 +12,23 @@ export enum Mouse {
 /**
  * A callback to be executed on mouse button events.
  */
-export type MouseCallback = (pressed: boolean) => void;
+export type MouseCallback = (pressed: boolean, pos: vec2) => void;
 
 const buttons: { [index: number]: boolean } = {};
 const listeners: { [index: number]: MouseCallback[] } = {};
 
 document.body.addEventListener("mousedown", (e) => {
   buttons[e.button] = true;
-  listeners[e.button]?.forEach((cb) => cb(true));
+
+  const pos = vec2.fromValues(e.clientX, e.clientY);
+  listeners[e.button]?.forEach((cb) => cb(true, pos));
 });
 
 document.body.addEventListener("mouseup", (e) => {
   buttons[e.button] = false;
-  listeners[e.button]?.forEach((cb) => cb(false));
+
+  const pos = vec2.fromValues(e.clientX, e.clientY);
+  listeners[e.button]?.forEach((cb) => cb(false, pos));
 });
 
 /**

@@ -1,6 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Camera from "./camera/camera";
-import Box from "./physics/box";
+import Bounds from "./physics/bounds";
 import RigidBody from "./physics/rigidbody";
 import Shape from "./shapes/shape";
 import validateZIndex from "./utils/validators";
@@ -23,7 +22,7 @@ export default class Entity extends RigidBody {
    * @param bounds The entity's bounding box
    * @param pieces The entity's body pieces for rendering
    */
-  constructor(position: vec2, bounds: Box, pieces: Shape[] = [], name = "", gravity = 9.8) {
+  constructor(position: vec2, bounds: Bounds, pieces: Shape[] = [], name = "", gravity = 9.8) {
     super(bounds);
     this.setPosition(position);
 
