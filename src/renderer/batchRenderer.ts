@@ -31,6 +31,7 @@ interface Renderable<T> {
 interface Geometry {
   vertices: Float32Array;
   indices: Uint16Array;
+  texCoords: Float32Array;
   uvs: Float32Array;
 }
 
@@ -122,12 +123,19 @@ export default abstract class BatchRenderer extends Renderer {
     gl.vertexAttribPointer(programInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertex);
 
+    // tex coords
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectTexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, geometry.texCoords, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(programInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
+
     // uv coords
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.uvs, gl.STATIC_DRAW);
 
-    gl.vertexAttribPointer(programInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
+    gl.vertexAttribPointer(programInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
     // index buffer
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
@@ -154,6 +162,7 @@ export default abstract class BatchRenderer extends Renderer {
   ): Geometry {
     const vertices: number[] = [];
     const indices: number[] = [];
+    const texCoords: number[] = [];
     const uvs: number[] = [];
 
     for (const r of renderable) {
@@ -166,7 +175,8 @@ export default abstract class BatchRenderer extends Renderer {
       const atlasImage = this.atlas.getTexture(r.shape.texture);
       if (!atlasImage) continue;
 
-      const uv = r.shape.getUVCoords().map((uv, i) => {
+      const uv = r.shape.getUVCoords();
+      const texCoord = uv.map((uv, i) => {
         if (i % 2 === 0) {
           if (uv === 1) return atlasImage.br[0] / this.atlas.getSize();
           else return atlasImage.tl[0] / this.atlas.getSize();
@@ -178,12 +188,14 @@ export default abstract class BatchRenderer extends Renderer {
 
       vertices.push(...v);
       indices.push(...i);
+      texCoords.push(...texCoord);
       uvs.push(...uv);
     }
 
     return <Geometry>{
       vertices: new Float32Array(vertices),
       indices: new Uint16Array(indices),
+      texCoords: new Float32Array(texCoords),
       uvs: new Float32Array(uvs),
     };
   }

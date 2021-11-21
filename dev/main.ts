@@ -143,8 +143,6 @@ Debug.world = world;
     e.rotate(((90 * Math.PI) / 180) * delta);
   });
 
-  console.log(test.getCenter());
-
   const body = player.getPieces()[0];
   body.texture = new Texture();
   await body.texture.loadImage("./player.png");
@@ -152,7 +150,8 @@ Debug.world = world;
 
   BatchRenderer.atlas = atlas;
   await atlas.refreshAtlas();
-  // world.useBatchRenderer = true;
+  world.useBatchRenderer = true;
+  Debug.rendererToggle.checked = true;
 
   addKeyListener("KeyR", (pressed) => {
     if (pressed) {

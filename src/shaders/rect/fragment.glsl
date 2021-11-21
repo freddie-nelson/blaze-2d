@@ -3,6 +3,7 @@
 precision mediump float;
 
 in vec2 texCoord;
+in vec2 uv;
 
 uniform sampler2D u_Texture;
 

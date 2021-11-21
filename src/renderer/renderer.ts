@@ -42,6 +42,7 @@ export default abstract class Renderer {
     // transparency
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendEquation(gl.FUNC_ADD);
 
     // gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -55,12 +56,14 @@ export default abstract class Renderer {
   static rectProgram: WebGLProgram;
   static rectProgramInfo: ShaderProgramInfo;
   static rectPositionBuffer: WebGLBuffer;
+  static rectTexBuffer: WebGLBuffer;
   static rectUvBuffer: WebGLBuffer;
   static rectIndexBuffer: WebGLBuffer;
 
   static circleProgram: WebGLProgram;
   static circleProgramInfo: ShaderProgramInfo;
   static circlePositionBuffer: WebGLBuffer;
+  static circleTexBuffer: WebGLBuffer;
   static circleUvBuffer: WebGLBuffer;
   static circleIndexBuffer: WebGLBuffer;
 
@@ -68,6 +71,7 @@ export default abstract class Renderer {
     // Rectangle shader
     this.rectPositionBuffer = gl.createBuffer();
     this.rectIndexBuffer = gl.createBuffer();
+    this.rectTexBuffer = gl.createBuffer();
     this.rectUvBuffer = gl.createBuffer();
 
     this.rectProgram = createShaderProgram(gl, vsRect, fsRect);
@@ -76,6 +80,7 @@ export default abstract class Renderer {
       attribLocations: {
         vertex: gl.getAttribLocation(this.rectProgram, "a_Vertex"),
         texCoord: gl.getAttribLocation(this.rectProgram, "a_TexCoord"),
+        uv: gl.getAttribLocation(this.rectProgram, "a_Uv"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.rectProgram, "u_ZIndex"),
@@ -86,6 +91,7 @@ export default abstract class Renderer {
     // Circle shader
     this.circlePositionBuffer = gl.createBuffer();
     this.circleIndexBuffer = gl.createBuffer();
+    this.circleTexBuffer = gl.createBuffer();
     this.circleUvBuffer = gl.createBuffer();
 
     this.circleProgram = createShaderProgram(gl, vsCircle, fsCircle);
@@ -94,6 +100,7 @@ export default abstract class Renderer {
       attribLocations: {
         vertex: gl.getAttribLocation(this.circleProgram, "a_Vertex"),
         texCoord: gl.getAttribLocation(this.circleProgram, "a_TexCoord"),
+        uv: gl.getAttribLocation(this.circleProgram, "a_Uv"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.circleProgram, "u_ZIndex"),
@@ -142,47 +149,26 @@ export default abstract class Renderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
+    gl.vertexAttribPointer(rectProgramInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.vertex);
 
-      gl.vertexAttribPointer(
-        rectProgramInfo.attribLocations.vertex,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      gl.enableVertexAttribArray(rectProgramInfo.attribLocations.vertex);
-    }
+    // tex coords
+    const texCoords = rect.getUVCoords();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectTexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(rectProgramInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.texCoord);
 
     // uv coords
     const uvs = rect.getUVCoords();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
 
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
+    gl.vertexAttribPointer(rectProgramInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.uv);
 
-      gl.vertexAttribPointer(
-        rectProgramInfo.attribLocations.texCoord,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      gl.enableVertexAttribArray(rectProgramInfo.attribLocations.texCoord);
-    }
-
+    // indices
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
 
@@ -224,51 +210,30 @@ export default abstract class Renderer {
     vec2.sub(renderPos, renderPos, this.camera.getPosition());
     const vertices = circle.getVerticesClipSpace(renderPos, scale, rotation);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.circlePositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
+    gl.vertexAttribPointer(circleProgramInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.vertex);
 
-      gl.vertexAttribPointer(
-        circleProgramInfo.attribLocations.vertex,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      gl.enableVertexAttribArray(circleProgramInfo.attribLocations.vertex);
-    }
+    // tex coords
+    const texCoords = circle.getUVCoords();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.circleTexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(circleProgramInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.texCoord);
 
     // uv coords
     const uvs = circle.getUVCoords();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.circleUvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
 
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
+    gl.vertexAttribPointer(circleProgramInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.uv);
 
-      gl.vertexAttribPointer(
-        circleProgramInfo.attribLocations.texCoord,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      gl.enableVertexAttribArray(circleProgramInfo.attribLocations.texCoord);
-    }
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
+    // indices
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.circleIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, circle.getIndices(), gl.STATIC_DRAW);
 
     gl.useProgram(circleProgramInfo.program);
