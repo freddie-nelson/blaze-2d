@@ -73,6 +73,7 @@ export default abstract class Blaze {
     requestAnimationFrame(() => this.update());
     const delta = (performance.now() - this.lastUpdateTime) / 1000;
     this.delta = delta;
+    this.lastUpdateTime = performance.now();
 
     Renderer.clear(this.bgColor);
 
@@ -81,7 +82,6 @@ export default abstract class Blaze {
     }
 
     if (Debug.show) Debug.update(delta);
-    this.lastUpdateTime = performance.now();
   }
 
   /**

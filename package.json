@@ -42,7 +42,9 @@
     "dev:kill": "kill %1",
     "docs:deps": "cd ./docs && yarn",
     "docs:build": "yarn docs:deps && mkdir -p docs/docs && cd ./docs && yarn build",
-    "docs:serve": "yarn docs:deps && mkdir -p docs/docs && cd ./docs && yarn start"
+    "docs:serve": "yarn docs:deps && mkdir -p docs/docs && cd ./docs && yarn start",
+    "example::build": "node buildExample.js",
+    "example::serve": "node runExample.js"
   },
   "dependencies": {},
   "devDependencies": {

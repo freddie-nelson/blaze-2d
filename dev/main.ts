@@ -80,9 +80,9 @@ Debug.world = world;
 
 (async () => {
   const maxSize = 6;
-  const area = 40;
+  const area = 50;
   const rotationSpeed = 360 * 1;
-  const count = 10;
+  const count = 40;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -139,8 +139,8 @@ Debug.world = world;
   rect.setRotation((-45 * Math.PI) / 180);
   rect.setPosition(vec2.fromValues(2, 2));
 
-  test.setZIndex(0);
-  player.setZIndex(0);
+  test.setZIndex(3);
+  player.setZIndex(2);
 
   world.addEntity(test);
   physics.addBody(test);
