@@ -239,13 +239,13 @@ export default abstract class BatchRenderer extends Renderer {
         if (p instanceof Rect) {
           rects.push({
             shape: p,
-            pos: e.getCenter(),
+            pos: e.getPosition(),
             rot: e.getRotation(),
           });
         } else if (p instanceof Circle) {
           circles.push({
             shape: p,
-            pos: e.getCenter(),
+            pos: e.getPosition(),
             rot: e.getRotation(),
           });
         }

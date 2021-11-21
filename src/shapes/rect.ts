@@ -48,20 +48,6 @@ export default class Rect extends Shape {
   }
 
   /**
-   * Calculates the center point of the rectangle, with an origin point added to it.
-   *
-   * Rectangle rotations are not taken into account.
-   *
-   * @param origin The origin in world space to get the center relative to.
-   */
-  getCenter(origin = baseVertices.bl) {
-    const center = vec2.fromValues(this.width / 2, this.height / 2);
-    vec2.add(center, center, this.getPosition());
-    vec2.add(center, center, origin);
-    return center;
-  }
-
-  /**
    * Calculates the rect's vertices in local space.
    *
    * @param translate Wether or not to apply the rectangle's position to the vertex positions.
@@ -70,7 +56,7 @@ export default class Rect extends Shape {
    */
   getVertices(translate = true) {
     const base = this.getBaseVertices();
-    const rotated = applyRotation(base, this.getCenter(), this.getRotation());
+    const rotated = applyRotation(base, this.getPosition(), this.getRotation());
     const translated = !translate ? rotated : applyTranslation(rotated, this.getPosition());
 
     const final: number[] = [];
@@ -89,12 +75,9 @@ export default class Rect extends Shape {
   getVerticesWorld(origin: vec2, rotation?: number) {
     const base = this.getBaseVertices();
 
-    // move origin so that rect is positioned around origin relative to its center
-    const movedOrigin = vec2.fromValues(origin[0] - this.width / 2, origin[1] - this.height / 2);
-
-    const world = applyTranslation(base, movedOrigin);
+    const world = applyTranslation(base, origin);
     const worldLocal = applyTranslation(world, this.getPosition());
-    const worldLocalRotated = rotation ? applyRotation(worldLocal, movedOrigin, rotation) : worldLocal;
+    const worldLocalRotated = rotation ? applyRotation(worldLocal, origin, rotation) : worldLocal;
 
     // const worldLocalTranslation = worldRotated;
 
@@ -141,12 +124,22 @@ export default class Rect extends Shape {
    * @returns The rectangles base vertices
    */
   private getBaseVertices() {
-    return [
+    const base = [
       baseVertices.bl,
       this.vertexScale(baseVertices.br, [this.width, 1]),
       this.vertexScale(baseVertices.tr, [this.width, this.height]),
       this.vertexScale(baseVertices.tl, [1, this.height]),
     ];
+
+    const temp = vec2.create();
+    const offset = vec2.fromValues(this.width / 2, this.height / 2);
+
+    const centered = base.map((v) => {
+      vec2.sub(temp, v, offset);
+      return vec2.clone(temp);
+    });
+
+    return centered;
   }
 
   /**

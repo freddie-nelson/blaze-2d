@@ -54,6 +54,8 @@ export default class Entity extends RigidBody {
       this.bounds.setRotation(this.getRotation());
     }
 
+    // console.log(this.bounds.getPosition());
+
     this.fireEvent("update", delta || 0);
   }
 
@@ -66,7 +68,7 @@ export default class Entity extends RigidBody {
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      p.render(this.getCenter(), this.getRotation(), this.zIndex, worldCellToClipSpaceScale);
+      p.render(this.getPosition(), this.getRotation(), this.zIndex, worldCellToClipSpaceScale);
     }
   }
 
@@ -95,20 +97,6 @@ export default class Entity extends RigidBody {
    */
   addPiece(piece: Shape) {
     this.pieces.push(piece);
-  }
-
-  /**
-   * Calculates the center point of the entities bounding box in world space, with an origin point added to it.
-   *
-   * Rotations are not taken into account.
-   *
-   * @param origin The origin in world space to get the center relative to.
-   */
-  getCenter(origin = vec2.fromValues(0, 0)) {
-    const center = vec2.fromValues(this.bounds.getWidth() / 2, this.bounds.getHeight() / 2);
-    vec2.add(center, center, this.getPosition());
-    vec2.add(center, center, origin);
-    return center;
   }
 
   /**

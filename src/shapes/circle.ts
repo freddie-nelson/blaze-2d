@@ -49,39 +49,13 @@ export default class Circle extends Shape {
   }
 
   /**
-   * Calculates the center point of the circle, with an origin point added to it.
-   *
-   * Rotations are not taken into account.
-   *
-   * @param origin The origin in world space to get the center relative to.
-   */
-  getCenter(origin = vec2.create()) {
-    const pos = this.getPosition();
-    return vec2.fromValues(pos[0] + origin[0], pos[1] + origin[1]);
-  }
-
-  /**
-   * Gets the bottom left corner outside of the circle.
-   *
-   * This is `center - radius`
-   *
-   * Useful for rendering the circle.
-   *
-   * @param origin The origin in world space to get the bottom left relative to
-   */
-  getBL(origin = vec2.create()) {
-    const center = this.getCenter(origin);
-    return vec2.fromValues(center[0] - this.radius, center[1] - this.radius);
-  }
-
-  /**
    * Calculates the circles's vertices in local space.
    *
    * @returns The circle's vertices
    */
   getVertices() {
     const base = this.getBaseVertices();
-    const rotated = applyRotation(base, this.getCenter(), this.getRotation());
+    const rotated = applyRotation(base, this.getPosition(), this.getRotation());
     const translated = applyTranslation(rotated, this.getPosition());
 
     const final: number[] = [];
@@ -100,12 +74,9 @@ export default class Circle extends Shape {
   getVerticesWorld(origin: vec2, rotation?: number) {
     const base = this.getBaseVertices();
 
-    // move origin so that rect is positioned around origin relative to its center
-    const movedOrigin = vec2.fromValues(origin[0] - this.radius, origin[1] - this.radius);
-
-    const world = applyTranslation(base, movedOrigin);
-    const worldLocal = applyTranslation(world, this.getBL());
-    const worldLocalRotated = rotation ? applyRotation(worldLocal, movedOrigin, rotation) : worldLocal;
+    const world = applyTranslation(base, origin);
+    const worldLocal = applyTranslation(world, this.getPosition());
+    const worldLocalRotated = rotation ? applyRotation(worldLocal, origin, rotation) : worldLocal;
 
     // const worldLocalTranslation = worldRotated;
 
@@ -152,12 +123,22 @@ export default class Circle extends Shape {
    * @returns The circle's base vertices
    */
   private getBaseVertices() {
-    return [
+    const base = [
       baseVertices.bl,
       this.vertexScale(baseVertices.br, [this.width, 1]),
       this.vertexScale(baseVertices.tr, [this.width, this.height]),
       this.vertexScale(baseVertices.tl, [1, this.height]),
     ];
+
+    const temp = vec2.create();
+    const offset = vec2.fromValues(this.radius, this.radius);
+
+    const centered = base.map((v) => {
+      vec2.sub(temp, v, offset);
+      return vec2.clone(temp);
+    });
+
+    return centered;
   }
 
   /**

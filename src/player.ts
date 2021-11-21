@@ -51,7 +51,7 @@ export default class Player extends Entity {
     keys: PlayerKeyMap = defaultKeys
   ) {
     super(pos, new Box(pos, dimensions[0], dimensions[1]), [
-      new Rect(dimensions[0], dimensions[1], vec2.fromValues(-dimensions[0] / 2, -dimensions[1] / 2)),
+      new Rect(dimensions[0], dimensions[1], vec2.fromValues(0, 0)),
     ]);
 
     // right most value wins key collisions

@@ -20,6 +20,8 @@ export type Listener = (e?: any, obj?: Object2D) => void;
 /**
  * Represents an object in 2D space with a position and rotation.
  *
+ * The position should be in world space and represent the center of the object, if the object is given a width and/or height.
+ *
  * Also contains an events system which can be used to execute arbitrary functions on certain events.
  */
 export default class Object2D {

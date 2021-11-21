@@ -68,13 +68,6 @@ export default abstract class Shape extends Object2D {
   abstract getHeight(): number;
 
   /**
-   * Calculates the center point of the shape, with an origin point added to it.
-   *
-   * @param origin The origin in world space to get the center relative to.
-   */
-  abstract getCenter(origin?: vec2): vec2;
-
-  /**
    * Calculates the shape's vertices in local space.
    *
    * @returns The shapes vertices

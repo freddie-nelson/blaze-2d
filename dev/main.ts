@@ -81,8 +81,8 @@ world.debug = true;
 (async () => {
   const maxSize = 6;
   const area = 40;
-  const rotationSpeed = 360 * 0.1;
-  const count = 0;
+  const rotationSpeed = 360 * 1;
+  const count = 10;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -93,7 +93,7 @@ world.debug = true;
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
       new Box(vec2.create(), size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
-      [new Rect(size[0], size[1], vec2.fromValues(-size[0] / 2, -size[1] / 2))],
+      [new Rect(size[0], size[1], vec2.fromValues(1, 1))],
       "test"
     );
     const rgba: RGBAColor = {
@@ -113,7 +113,7 @@ world.debug = true;
     const speed = Math.floor(Math.random() * rotationSpeed * 2) - rotationSpeed;
     test.addEventListener("update", () => {
       test.rotate(((speed * Math.PI) / 180) * BLZ.getDelta());
-      // test.getPieces()[0].rotate(((-speed * Math.PI) / 180) * BLZ.getDelta());
+      test.getPieces()[0].rotate(((-speed * Math.PI) / 180) * BLZ.getDelta());
     });
   }
 
