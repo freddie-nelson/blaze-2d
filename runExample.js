@@ -6,7 +6,7 @@ const path = require("path");
 
 const example = process.argv[2];
 if (!example) {
-  console.log("Usage: npm run example::serve [name]");
+  console.log("Usage: npm run example:serve [name]");
   process.exit(1);
 }
 

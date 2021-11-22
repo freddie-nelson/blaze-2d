@@ -4,7 +4,7 @@ const path = require("path");
 
 const example = process.argv[2];
 if (!example) {
-  console.log("Usage: npm run example::build [name]");
+  console.log("Usage: npm run example:build [name]");
   process.exit(1);
 }
 
