@@ -82,7 +82,7 @@ Debug.world = world;
   const maxSize = 6;
   const area = 50;
   const rotationSpeed = 360 * 1;
-  const count = 40;
+  const count = 100;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -91,7 +91,7 @@ Debug.world = world;
     );
     const test = new Entity(
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
-      new Box(vec2.create(), size[0], size[1]),
+      new Box(size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       "test"
@@ -120,7 +120,7 @@ Debug.world = world;
   const size = vec2.fromValues(6, 6);
   const test = new Entity(
     vec2.fromValues(0, 0),
-    new Box(vec2.create(), size[0] * 2.5, size[0] * 2.5),
+    new Box(size[0] * 2.5, size[0] * 2.5),
     [new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)), new Rect(2, 6)],
     "test"
   );
@@ -149,7 +149,9 @@ Debug.world = world;
   const minRadius = 2;
   const maxRadius = 6;
   let step = 1;
-  test.addEventListener("update", (delta: number, e: Entity) => {
+  test.addEventListener("update", (delta: number, obj) => {
+    const e = <Entity>obj;
+
     e.rotate(((120 * Math.PI) / 180) * delta);
 
     const circle = <Circle>e.getPieces()[0];
