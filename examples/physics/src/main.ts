@@ -4,8 +4,8 @@ import BatchRenderer from "@blz/renderer/batchRenderer";
 import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
-import Box from "@blz/physics/box";
-import Bounds from "@blz/physics/bounds";
+import Box from "@blz/physics/collider/box";
+import Collider from "@blz/physics/collider/collider";
 import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
 import Shape from "@blz/shapes/shape";
@@ -110,7 +110,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   const tex = shapeTexs[randInt(0, shapeTexs.length - 1)];
 
   let shape: Shape;
-  let collider: Bounds;
+  let collider: Collider;
 
   if (type === "rect") {
     shape = new Rect(size[0], size[1]);

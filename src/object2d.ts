@@ -135,6 +135,16 @@ export default class Object2D {
 
   /**
    * Sets all the events that can be used in `listeners`.
+   *
+   * Listeners can be added for an event using:
+   *
+   * ```js
+   *    this.listeners.eventName = [];
+   * ```
+   *
+   * @example <caption>Setup listeners for "position" and "rotate" events.</caption>
+   *    this.listeners.position = [];
+   *    this.listeners.rotate = [];
    */
   protected setupEvents() {
     this.listeners.position = [];

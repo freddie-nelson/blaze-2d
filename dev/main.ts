@@ -8,7 +8,7 @@ import Color, { RGBAColor } from "../lib/src/utils/color";
 import World from "../lib/src/world";
 import Physics from "../lib/src/physics/physics";
 import Entity from "../lib/src/entity";
-import Box from "../lib/src/physics/box";
+import Box from "../lib/src/physics/collider/box";
 import Rect from "../lib/src/shapes/rect";
 import Player from "../lib/src/player";
 import { createVirtualJoystick } from "../lib/src/dropins/player/controls";
@@ -166,8 +166,8 @@ Debug.world = world;
     const pos = circle.getPosition();
     vec2.scaleAndAdd(pos, pos, vec2.fromValues(step, step), BLZ.getDelta());
 
-    e.bounds.setWidth(circle.getWidth() * 1.8);
-    e.bounds.setHeight(circle.getWidth() * 1.8);
+    e.collider.setWidth(circle.getWidth() * 1.8);
+    e.collider.setHeight(circle.getWidth() * 1.8);
   });
 
   const body = player.getPieces()[0];

@@ -35,46 +35,12 @@ build.stderr.on("data", (data) => {
 
 // serve html
 const public = path.resolve(dir, "build");
+const liveServer = require("live-server");
 
-const port = 5050;
-const server = createServer((req, res) => {
-  let file = `.${req.url}`;
-  if (file === "./") {
-    file = "./index.html";
-  }
-
-  file = resolve(public, file);
-
-  const ext = extname(file);
-  let type = "text/html";
-
-  switch (ext) {
-    case ".js":
-      type = "text/javascript";
-      break;
-    case ".css":
-      type = "text/css";
-      break;
-    case ".json":
-      type = "application/json";
-      break;
-    case ".png":
-      type = "image/png";
-      break;
-    case ".jpg":
-      type = "image/jpg";
-      break;
-  }
-
-  res.writeHead(200, { "content-type": type });
-
-  if (existsSync(file)) {
-    createReadStream(file).pipe(res);
-  }
-});
-
-server.listen(port);
-
-const url = `http://localhost:${port}`;
-const start = process.platform == "darwin" ? "open" : process.platform == "win32" ? "start" : "xdg-open";
-exec(start + " " + url);
+const params = {
+  port: 5050,
+  root: public,
+  file: "index.html",
+  wait: 1000,
+};
+liveServer.start(params);

@@ -1,6 +1,6 @@
-import Object2D from "../object2d";
-import validateZIndex from "../utils/validators";
-import Bounds from "./bounds";
+import { vec2 } from "gl-matrix";
+import Collider from "./collider/collider";
+import CollisionObject from "./collisionObject";
 
 /**
  * Represents a rigidbody physics object in 2D world space.
@@ -8,22 +8,16 @@ import Bounds from "./bounds";
  * Rigidbodies can collide with any Z level of terrain based on flags set.
  * They can also collide with other rigidbodies.
  */
-export default class RigidBody extends Object2D {
-  private terrainCollisionFlags: { [index: number]: boolean } = {};
-  bounds: Bounds;
-
-  mass = 1;
-  gravity = 9.8;
-
+export default class RigidBody extends CollisionObject {
   /**
-   * Creates a {@link RigidBody}
+   * Creates a {@link RigidBody} with a collider, mass and restitution (bounciness).
+   *
+   * @param collider The collider of the object
+   * @param mass The mass of the object
+   * @param restitution The restitution of the object (bounciness)
    */
-  constructor(bounds: Bounds, mass = 1, gravity = 9.8) {
-    super();
-
-    this.bounds = bounds;
-    this.mass = mass;
-    this.gravity = gravity;
+  constructor(collider: Collider, mass?: number, restitution?: number) {
+    super(collider, mass, restitution);
   }
 
   /**
@@ -31,20 +25,5 @@ export default class RigidBody extends Object2D {
    */
   protected setupEvents() {
     super.setupEvents();
-  }
-
-  /**
-   * Sets wether or not the rigidbody should collide with the given terrain level.
-   *
-   * @throws When {@link validateZIndex} returns a string.
-   *
-   * @param zIndex The Z level of terrain
-   * @param collides Wether or not to collide with the given terrain level
-   */
-  collidesWithTerrain(zIndex: number, collides: boolean) {
-    const valid = validateZIndex(zIndex);
-    if (valid !== true) throw new Error(valid);
-
-    this.terrainCollisionFlags[zIndex] = collides;
   }
 }

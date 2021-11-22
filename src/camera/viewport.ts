@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Box from "../physics/box";
+import Box from "../physics/collider/box";
 
 /**
  * Represents a {@link Camera}'s viewable area and can be used to perform culling.

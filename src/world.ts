@@ -1,8 +1,7 @@
 import { vec2 } from "gl-matrix";
 import Camera from "./camera/camera";
 import Entity from "./entity";
-import Box from "./physics/box";
-import Physics from "./physics/physics";
+import Box from "./physics/collider/box";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
 import Rect from "./shapes/rect";
@@ -49,7 +48,7 @@ export default class World implements System {
     for (const e of this.entities) {
       e.update(delta);
 
-      if (this.camera.viewport.containsBox(e.bounds as Box, this.getWorldToPixelSpace())) {
+      if (this.camera.viewport.containsBox(e.collider as Box, this.getWorldToPixelSpace())) {
         if (this.useBatchRenderer) {
           const z = e.getZIndex();
 
@@ -70,7 +69,12 @@ export default class World implements System {
       // Renderer.setMode("LINES");
 
       for (const e of this.entities) {
-        const rect = new Rect(e.bounds.getWidth(), e.bounds.getHeight(), e.getPosition(), e.getRotation());
+        const rect = new Rect(
+          e.collider.getWidth(),
+          e.collider.getHeight(),
+          e.getPosition(),
+          e.getRotation()
+        );
 
         const rgba: RGBAColor = {
           r: 255,

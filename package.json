@@ -50,6 +50,7 @@
   "dependencies": {},
   "devDependencies": {
     "gl-matrix": "^3.4.3",
+    "live-server": "^1.2.1",
     "nodemon": "^2.0.13",
     "raw-loader": "^4.0.2",
     "shx": "^0.3.3",

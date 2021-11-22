@@ -6,7 +6,7 @@ import Entity from "./entity";
 import Camera from "./camera/camera";
 import Viewport from "./camera/viewport";
 import { vec2 } from "gl-matrix";
-import Box from "./physics/box";
+import Box from "./physics/collider/box";
 import Rect from "./shapes/rect";
 import { isKeyPressed } from "./keyboard";
 

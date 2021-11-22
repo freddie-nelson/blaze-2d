@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Bounds from "./physics/bounds";
+import Collider from "./physics/collider/collider";
 import RigidBody from "./physics/rigidbody";
 import Shape from "./shapes/shape";
 import validateZIndex from "./utils/validators";
@@ -19,11 +19,11 @@ export default class Entity extends RigidBody {
    * Creates a new {@link Entity} instance with a position, bounding box and body pieces.
    *
    * @param position The entity's position in world space
-   * @param bounds The entity's bounding box
+   * @param collider The entity's bounding box
    * @param pieces The entity's body pieces for rendering
    */
-  constructor(position: vec2, bounds: Bounds, pieces: Shape[] = [], name = "", gravity = 9.8) {
-    super(bounds);
+  constructor(position: vec2, collider: Collider, pieces: Shape[] = [], name = "", gravity = 9.8) {
+    super(collider);
     this.setPosition(position);
 
     this.pieces = pieces;
@@ -46,11 +46,11 @@ export default class Entity extends RigidBody {
    */
   update(delta?: number) {
     if (this.stickyBounds) {
-      if (!vec2.exactEquals(this.getPosition(), this.bounds.getPosition())) {
-        this.bounds.setPosition(vec2.clone(this.getPosition()));
+      if (!vec2.exactEquals(this.getPosition(), this.collider.getPosition())) {
+        this.collider.setPosition(vec2.clone(this.getPosition()));
       }
 
-      this.bounds.setRotation(this.getRotation());
+      this.collider.setRotation(this.getRotation());
     }
 
     // console.log(this.bounds.getPosition());
