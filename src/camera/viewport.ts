@@ -7,28 +7,28 @@ import Box from "../physics/collider/box";
 export default class Viewport {
   private width: number;
   private height: number;
-  private center: vec2;
+  private centre: vec2;
 
   /**
    * Creates a {@link Viewport} instance.
    *
-   * @param center The center of the viewport in world space
+   * @param centre The centre of the viewport in world space
    * @param width The width of the viewport in world space
    * @param height The height of the viewport in world space
    */
-  constructor(center: vec2, width: number, height: number) {
+  constructor(centre: vec2, width: number, height: number) {
     this.width = width;
     this.height = height;
-    this.update(center);
+    this.update(centre);
   }
 
   /**
-   * Calculates the viewports bounds around a given center.
+   * Calculates the viewports bounds around a given centre.
    *
-   * @param center The center of the viewport
+   * @param centre The centre of the viewport
    */
-  update(center: vec2) {
-    this.center = center;
+  update(centre: vec2) {
+    this.centre = centre;
   }
 
   /**
@@ -45,8 +45,8 @@ export default class Viewport {
     const maxDistY = this.height / 2;
 
     for (const p of points) {
-      const distX = Math.abs(p[0] - this.center[0]) * worldToPixelScale[0];
-      const distY = Math.abs(p[1] - this.center[1]) * worldToPixelScale[1];
+      const distX = Math.abs(p[0] - this.centre[0]) * worldToPixelScale[0];
+      const distY = Math.abs(p[1] - this.centre[1]) * worldToPixelScale[1];
 
       if (distX < maxDistX && distY < maxDistY) return true;
     }
@@ -105,10 +105,10 @@ export default class Viewport {
    */
   getBoundaries() {
     return {
-      right: this.center[0] + this.width / 2,
-      left: this.center[0] - this.width / 2,
-      top: this.center[1] + this.height / 2,
-      bottom: this.center[1] - this.height / 2,
+      right: this.centre[0] + this.width / 2,
+      left: this.centre[0] - this.width / 2,
+      top: this.centre[1] + this.height / 2,
+      bottom: this.centre[1] - this.height / 2,
     };
   }
 }

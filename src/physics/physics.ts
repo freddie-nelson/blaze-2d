@@ -1,60 +1,31 @@
-import Renderer from "../renderer/renderer";
+import { vec2 } from "gl-matrix";
 import { System } from "../system";
-import RigidBody from "./rigidbody";
+import CollisionsSpace from "./spaces/collisions";
+import DynamicsSpace from "./spaces/dynamics";
 
 /**
  * Handles all physics updates for bodies in the system.
  *
- * As a general rule the physics system should be added after the {@link World} system to avoid glitches.
+ * As a general rule the physics system should be added before the {@link World} system.
  */
 export default class Physics implements System {
-  private bodies: RigidBody[] = [];
-  gravity = 9.8;
-
   debug = false;
+  gravity = vec2.fromValues(0, -9.8);
 
-  constructor(gravity: number = 9.8) {
-    this.gravity = gravity;
-  }
-
-  update(delta: number) {}
+  // spaces
+  collisionsSpace = new CollisionsSpace();
+  dynamicsSpace = new DynamicsSpace();
 
   /**
-   * Gets all bodies being tracked by the physics system.
    *
-   * @returns All bodies in the physics system
+   * @param gravity The gravitional force applied to objects in the system
    */
-  getBodies() {
-    return this.bodies;
+  constructor(gravity?: vec2) {
+    if (this.gravity) this.gravity = gravity;
   }
 
-  /**
-   *Removes all bodies from the physics system.
-   */
-  clearBodies() {
-    this.bodies.length = 0;
-  }
-
-  /**
-   * Adds a body to the physics system.
-   *
-   * @param body The body to add
-   */
-  addBody(body: RigidBody) {
-    this.bodies.push(body);
-  }
-
-  /**
-   * Removes a body from the physics system.
-   *
-   * @param body The body to remove
-   * @returns Wether or not the body was removed
-   */
-  removeBody(body: RigidBody) {
-    const i = this.bodies.findIndex((b) => b === body);
-    if (i === -1) return false;
-
-    this.bodies.splice(i, 1);
-    return true;
+  update(delta: number) {
+    this.collisionsSpace.step(delta);
+    this.dynamicsSpace.step(delta);
   }
 }

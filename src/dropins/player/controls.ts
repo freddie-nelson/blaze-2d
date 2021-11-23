@@ -21,8 +21,8 @@ export function createVirtualJoystick(element: HTMLElement, player: Player) {
       height: 8rem;
       background-color: rgba(0,0,0,0.5);
       border: .5rem solid rgba(255,255,255, 0.1);
-      justify-content: center;
-      align-items: center;
+      justify-content: centre;
+      align-items: centre;
     }
 
     .blz-joystick .blz-stick {
@@ -30,7 +30,7 @@ export function createVirtualJoystick(element: HTMLElement, player: Player) {
       width: 70%;
       height: 70%;
       background: radial-gradient(black, #1f1f1f, #444444);
-      transform-origin: center;
+      transform-origin: centre;
     }
   `;
   document.head.appendChild(styles);
@@ -104,17 +104,17 @@ export function createVirtualJoystick(element: HTMLElement, player: Player) {
 
     const joyRect = joystick.getBoundingClientRect();
     const radius = joyRect.width / 2;
-    const centerX = joyRect.left + joyRect.width / 2;
-    const centerY = joyRect.top + joyRect.height / 2;
+    const centreX = joyRect.left + joyRect.width / 2;
+    const centreY = joyRect.top + joyRect.height / 2;
 
     const touchX = touch.pageX;
     const touchY = touch.pageY;
 
-    const distX = Math.abs(centerX - touchX);
-    const distY = Math.abs(centerY - touchY);
+    const distX = Math.abs(centreX - touchX);
+    const distY = Math.abs(centreY - touchY);
     const dist = Math.sqrt(distX * distX + distY * distY);
 
-    const touchVec = vec2.fromValues(touchX - centerX, touchY - centerY);
+    const touchVec = vec2.fromValues(touchX - centreX, touchY - centreY);
     vec2.normalize(touchVec, touchVec);
     vec2.scale(touchVec, touchVec, Math.min(radius * 0.75, dist));
 

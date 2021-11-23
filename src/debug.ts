@@ -129,7 +129,7 @@ export default abstract class Debug {
     const camera = world?.getCamera();
 
     if (camera)
-      this.camera.textContent = `Camera { center: { x: ${camera.getPosition()[0]}, y: ${
+      this.camera.textContent = `Camera { centre: { x: ${camera.getPosition()[0]}, y: ${
         camera.getPosition()[1]
       } }`;
 
@@ -201,7 +201,7 @@ export default abstract class Debug {
     const p = this.createText();
     p.textContent = text;
     p.style.display = "flex";
-    p.style.alignItems = "center";
+    p.style.alignItems = "centre";
     p.style.marginTop = "-4px";
     box.style.marginLeft = "4px";
     p.appendChild(box);

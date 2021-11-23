@@ -72,8 +72,8 @@ export default class World implements System {
         const rect = new Rect(
           e.collider.getWidth(),
           e.collider.getHeight(),
-          e.getPosition(),
-          e.getRotation()
+          e.collider.getPosition(),
+          e.collider.getRotation()
         );
 
         const rgba: RGBAColor = {
@@ -136,8 +136,8 @@ export default class World implements System {
     const world = vec2.fromValues(p[0] * pixelToWorld[0], p[1] * pixelToWorld[1]);
 
     // get world position inside current view
-    const center = this.camera.getPosition();
-    vec2.add(world, world, center);
+    const centre = this.camera.getPosition();
+    vec2.add(world, world, centre);
 
     return world;
   }

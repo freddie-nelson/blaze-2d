@@ -36,8 +36,8 @@ const VIEWPORT = CAMERA.viewport;
 
 const PHYSICS = new Physics();
 
-Blaze.addSystem(WORLD);
 Blaze.addSystem(PHYSICS);
+Blaze.addSystem(WORLD);
 
 // setup renderer
 Renderer.useCamera(CAMERA);
@@ -45,6 +45,7 @@ Renderer.useCamera(CAMERA);
 // setup debug menu
 Debug.world = WORLD;
 Blaze.toggleDebug();
+// WORLD.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -85,16 +86,49 @@ for (let i = 0; i < 100; i++) {
 
 ATLAS.refreshAtlas();
 
+// menu
+const menu = document.createElement("div");
+menu.style.cssText = `
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 1rem;
+  display: flex;
+  border-radius: .5rem;
+  background: white;
+`;
+
+const textCSS = `
+  font-family: Arial;
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: gray;
+  margin: .2rem 0;
+`;
+
+const rotatePara = document.createElement("p");
+rotatePara.style.cssText = textCSS;
+rotatePara.textContent = "Press 'R' to randomize rotations.";
+
+menu.appendChild(rotatePara);
+document.body.appendChild(menu);
+
+// toggles
+let ROTATE = false;
+addKeyListener("KeyR", (pressed) => {
+  ROTATE = pressed;
+});
+
 // floor
 const FLOOR_WIDTH = 28;
 const FLOOR_HEIGHT = 3;
-const floorCollider = new Box(FLOOR_WIDTH, FLOOR_HEIGHT);
+const floorCollider = new Box(FLOOR_WIDTH, FLOOR_HEIGHT, vec2.fromValues(0, -9));
 const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
 const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect]);
 WORLD.addEntity(floor);
-PHYSICS.addBody(floor);
+PHYSICS.collisionsSpace.addObject(floor);
 
 // generate random shapes on click
 const type = "rect";
@@ -114,17 +148,25 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   if (type === "rect") {
     shape = new Rect(size[0], size[1]);
-    collider = new Box(size[0], size[1]);
+    collider = new Box(size[0], size[1], pos);
   } else if (type === "circle") {
     shape = new Circle(size[0]);
-    collider = new Box(size[0], size[0]);
+    collider = new Box(size[0], size[0], pos);
   }
 
   shape.texture = tex;
 
   const entity = new Entity(pos, collider, [shape]);
+
+  // rotations
+  if (ROTATE) {
+    const angle = (randInt(0, 360) * Math.PI) / 180;
+    collider.setRotation(angle);
+    entity.setRotation(angle);
+  }
+
   WORLD.addEntity(entity);
-  PHYSICS.addBody(entity);
+  PHYSICS.collisionsSpace.addObject(entity);
 });
 
 // pan camera with arrow keys

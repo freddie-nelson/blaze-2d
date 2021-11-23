@@ -13,8 +13,6 @@ export default class Entity extends RigidBody {
   private pieces: Shape[];
   private zIndex = 0;
 
-  stickyBounds = true;
-
   /**
    * Creates a new {@link Entity} instance with a position, bounding box and body pieces.
    *
@@ -45,16 +43,6 @@ export default class Entity extends RigidBody {
    * @param delta Time since last tick
    */
   update(delta?: number) {
-    if (this.stickyBounds) {
-      if (!vec2.exactEquals(this.getPosition(), this.collider.getPosition())) {
-        this.collider.setPosition(vec2.clone(this.getPosition()));
-      }
-
-      this.collider.setRotation(this.getRotation());
-    }
-
-    // console.log(this.bounds.getPosition());
-
     this.fireEvent("update", delta || 0);
   }
 

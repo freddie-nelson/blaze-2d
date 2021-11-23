@@ -16,7 +16,7 @@ const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
 const uvs = new Float32Array([0, 1, 1, 1, 1, 0, 0, 0]);
 
 /**
- * Represents a circle in 2D space with a radius and center.
+ * Represents a circle in 2D space with a radius and centre.
  */
 export default class Circle extends Shape {
   private radius: number;
@@ -25,12 +25,12 @@ export default class Circle extends Shape {
    * Creates a new {@link Circle} instance with a radius, position and rotation.
    *
    * @param radius The radius of the circle
-   * @param center The circle's center in world space, default is [0, 0]
+   * @param centre The circle's centre in world space, default is [0, 0]
    * @param rotation The circle's rotation, default is 0.
    */
-  constructor(radius: number, center?: vec2, rotation?: number) {
+  constructor(radius: number, centre?: vec2, rotation?: number) {
     super();
-    if (center) this.setPosition(center);
+    if (centre) this.setPosition(centre);
     if (rotation) this.setRotation(rotation);
 
     this.setRadius(radius);
@@ -84,12 +84,12 @@ export default class Circle extends Shape {
     const tlbr = vec2.create();
     vec2.sub(tlbr, worldLocalRotated[1], worldLocalRotated[3]);
 
-    // center of the rectangle after translations
-    const center = vec2.create();
-    vec2.scale(center, tlbr, 0.5);
-    vec2.add(center, center, worldLocalRotated[3]);
+    // centre of the rectangle after translations
+    const centre = vec2.create();
+    vec2.scale(centre, tlbr, 0.5);
+    vec2.add(centre, centre, worldLocalRotated[3]);
 
-    const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, center, this.getRotation());
+    const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, centre, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
 
     const final: number[] = [];
@@ -133,12 +133,12 @@ export default class Circle extends Shape {
     const temp = vec2.create();
     const offset = vec2.fromValues(this.radius, this.radius);
 
-    const centered = base.map((v) => {
+    const centred = base.map((v) => {
       vec2.sub(temp, v, offset);
       return vec2.clone(temp);
     });
 
-    return centered;
+    return centred;
   }
 
   /**

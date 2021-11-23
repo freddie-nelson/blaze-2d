@@ -85,12 +85,12 @@ export default class Rect extends Shape {
     const tlbr = vec2.create();
     vec2.sub(tlbr, worldLocalRotated[1], worldLocalRotated[3]);
 
-    // center of the rectangle after translations
-    const center = vec2.create();
-    vec2.scale(center, tlbr, 0.5);
-    vec2.add(center, center, worldLocalRotated[3]);
+    // centre of the rectangle after translations
+    const centre = vec2.create();
+    vec2.scale(centre, tlbr, 0.5);
+    vec2.add(centre, centre, worldLocalRotated[3]);
 
-    const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, center, this.getRotation());
+    const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, centre, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
 
     const final: number[] = [];
@@ -134,12 +134,12 @@ export default class Rect extends Shape {
     const temp = vec2.create();
     const offset = vec2.fromValues(this.width / 2, this.height / 2);
 
-    const centered = base.map((v) => {
+    const centred = base.map((v) => {
       vec2.sub(temp, v, offset);
       return vec2.clone(temp);
     });
 
-    return centered;
+    return centred;
   }
 
   /**

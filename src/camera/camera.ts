@@ -5,38 +5,38 @@ import Viewport from "./viewport";
 /**
  * Represents the camera in 2D world space.
  *
- * The camera's position is the center of the viewport.
+ * The camera's position is the centre of the viewport.
  */
 export default class Camera extends Object2D {
   viewport: Viewport;
   lastPos = vec2.create();
 
   /**
-   * Creates a {@link Camera} instance and instantiates its {@link Viewport} with a width and height at the camera's center.
+   * Creates a {@link Camera} instance and instantiates its {@link Viewport} with a width and height at the camera's centre.
    *
-   * @param center The center of the camera's viewport
+   * @param centre The centre of the camera's viewport
    * @param vw The camera's viewport width
    * @param vh The camera's viewport height
    */
-  constructor(center: vec2, vw: number, vh: number);
+  constructor(centre: vec2, vw: number, vh: number);
 
   /**
    * Creates a {@link Camera} instance and sets its viewport.
    *
-   * @param center The center of the camera's viewport
+   * @param centre The centre of the camera's viewport
    * @param viewport The viewport to use with the camera
    */
-  constructor(center: vec2, viewport: Viewport);
+  constructor(centre: vec2, viewport: Viewport);
 
   /**
    * Creates a {@link Camera} instance.
    */
-  constructor(center: vec2, vw: number | Viewport, vh?: number) {
+  constructor(centre: vec2, vw: number | Viewport, vh?: number) {
     super();
-    this.setPosition(center);
+    this.setPosition(centre);
 
     if (typeof vw === "number") {
-      this.viewport = new Viewport(center, vw, vh);
+      this.viewport = new Viewport(centre, vw, vh);
     } else {
       this.viewport = vw;
     }
