@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Box from "./collider/box";
+import BoxCollider from "./collider/box";
 
 /**
  * Raycaster which can efficiently calculate intersections with chunks in a {@link ChunkController} and Entities.
@@ -144,5 +144,5 @@ export default class Raycaster {
     return ((value % modulus) + modulus) % modulus;
   }
 
-  intersectBox(box: Box) {}
+  intersectBoxCollider(box: BoxCollider) {}
 }

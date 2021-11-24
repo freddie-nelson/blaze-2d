@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import Box from "../physics/collider/box";
+import BoxCollider from "../physics/collider/box";
 
 /**
  * Represents a {@link Camera}'s viewable area and can be used to perform culling.
@@ -34,24 +34,25 @@ export default class Viewport {
   /**
    * Checks wether the provided box is contained within the viewport.
    *
-   * TODO: Change this to use physics collision system so it works with more than just Box
+   * TODO: Change this to use physics collision system so it works with more than just BoxCollider
    *
    * @param box The box to check
    * @returns Wether or not the box is withing the viewport
    */
-  containsBox(box: Box, worldToPixelScale: vec2) {
-    const points = box.getPoints();
-    const maxDistX = this.width / 2;
-    const maxDistY = this.height / 2;
+  containsBoxCollider(box: BoxCollider, worldToPixelScale: vec2) {
+    return true;
+    // const points = box.getPoints();
+    // const maxDistX = this.width / 2;
+    // const maxDistY = this.height / 2;
 
-    for (const p of points) {
-      const distX = Math.abs(p[0] - this.centre[0]) * worldToPixelScale[0];
-      const distY = Math.abs(p[1] - this.centre[1]) * worldToPixelScale[1];
+    // for (const p of points) {
+    //   const distX = Math.abs(p[0] - this.centre[0]) * worldToPixelScale[0];
+    //   const distY = Math.abs(p[1] - this.centre[1]) * worldToPixelScale[1];
 
-      if (distX < maxDistX && distY < maxDistY) return true;
-    }
+    //   if (distX < maxDistX && distY < maxDistY) return true;
+    // }
 
-    return false;
+    // return false;
   }
 
   /**

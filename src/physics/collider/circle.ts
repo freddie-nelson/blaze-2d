@@ -1,21 +1,20 @@
 import { vec2 } from "gl-matrix";
 import GJK from "../gjk";
-import Rect from "../../shapes/rect";
 import Collider, { CollisionResult } from "./collider";
+import Circle from "../../shapes/circle";
 
 /**
  * Represents a box in 2D space with a position and dimensions.
  */
-export default class BoxCollider extends Rect implements Collider {
+export default class CircleCollider extends Circle implements Collider {
   /**
-   * Creates a new {@link BoxCollider} instance with a position and dimensions.
+   * Creates a new {@link CircleCollider} instance with a centre and radius.
    *
-   * @param width The width of the box
-   * @param height The height of the box
-   * @param position The box's position in world space
+   * @param radius The radius of the circle
+   * @param centre The circle's position in world space
    */
-  constructor(width: number, height: number, position?: vec2) {
-    super(width, height, position);
+  constructor(radius: number, centre?: vec2) {
+    super(radius, centre);
   }
 
   /**
@@ -72,36 +71,14 @@ export default class BoxCollider extends Rect implements Collider {
    * @returns The furthest point on the collider in the given direction
    */
   findFurthestPoint(direction: vec2) {
-    const points = this.getPoints();
-    let max: vec2;
-    let maxDist = -Infinity;
+    // get point on circumference of unit circle at origin in the given direction
+    const p = vec2.clone(direction);
+    vec2.normalize(p, p);
 
-    for (const p of points) {
-      const dist = vec2.dot(p, direction);
-      if (dist > maxDist) {
-        maxDist = dist;
-        max = p;
-      }
-    }
+    // scale unit circle to size of this circle and move to circle's position
+    vec2.scale(p, p, this.getRadius());
+    vec2.add(p, p, this.getPosition());
 
-    return max;
-  }
-
-  /**
-   * Calculates the bounding points of the {@link BoxCollider} instance.
-   *
-   * **NOTE: The box's vertices are recalculated everytime this function is called.**
-   *
-   * @returns The bounding points of the box
-   */
-  getPoints() {
-    const vertices = this.getVerticesWorld(vec2.create());
-
-    const points: vec2[] = [];
-    for (let i = 1; i < vertices.length; i += 2) {
-      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
-    }
-
-    return points;
+    return p;
   }
 }

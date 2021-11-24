@@ -4,7 +4,8 @@ import BatchRenderer from "@blz/renderer/batchRenderer";
 import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
-import Box from "@blz/physics/collider/box";
+import BoxCollider from "@blz/physics/collider/box";
+import CircleCollider from "@blz/physics/collider/circle";
 import Collider from "@blz/physics/collider/collider";
 import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
@@ -45,7 +46,7 @@ Renderer.useCamera(CAMERA);
 // setup debug menu
 Debug.world = WORLD;
 Blaze.toggleDebug();
-// WORLD.debug = true;
+WORLD.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -92,8 +93,9 @@ menu.style.cssText = `
   position: absolute;
   top: 1rem;
   left: 1rem;
-  padding: 1rem;
   display: flex;
+  flex-direction: column;
+  padding: 1rem;
   border-radius: .5rem;
   background: white;
 `;
@@ -110,7 +112,12 @@ const rotatePara = document.createElement("p");
 rotatePara.style.cssText = textCSS;
 rotatePara.textContent = "Press 'R' to randomize rotations.";
 
+const typePara = document.createElement("p");
+typePara.style.cssText = textCSS;
+typePara.textContent = "Press 'C' to create circles.";
+
 menu.appendChild(rotatePara);
+menu.appendChild(typePara);
 document.body.appendChild(menu);
 
 // toggles
@@ -119,10 +126,19 @@ addKeyListener("KeyR", (pressed) => {
   ROTATE = pressed;
 });
 
+let TYPE = "rect";
+addKeyListener("KeyC", (pressed) => {
+  if (pressed) {
+    TYPE = "circle";
+  } else {
+    TYPE = "rect";
+  }
+});
+
 // floor
 const FLOOR_WIDTH = 28;
 const FLOOR_HEIGHT = 3;
-const floorCollider = new Box(FLOOR_WIDTH, FLOOR_HEIGHT, vec2.fromValues(0, -9));
+const floorCollider = new BoxCollider(FLOOR_WIDTH, FLOOR_HEIGHT, vec2.fromValues(0, -9));
 const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
@@ -131,7 +147,6 @@ WORLD.addEntity(floor);
 PHYSICS.collisionsSpace.addObject(floor);
 
 // generate random shapes on click
-const type = "rect";
 
 addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (!pressed) return;
@@ -146,12 +161,12 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   let shape: Shape;
   let collider: Collider;
 
-  if (type === "rect") {
+  if (TYPE === "rect") {
     shape = new Rect(size[0], size[1]);
-    collider = new Box(size[0], size[1], pos);
-  } else if (type === "circle") {
-    shape = new Circle(size[0]);
-    collider = new Box(size[0], size[0], pos);
+    collider = new BoxCollider(size[0], size[1], pos);
+  } else if (TYPE === "circle") {
+    shape = new Circle(size[0] / 2);
+    collider = new CircleCollider(size[0] / 2, pos);
   }
 
   shape.texture = tex;

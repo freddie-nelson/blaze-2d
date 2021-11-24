@@ -8,7 +8,7 @@ import Color, { RGBAColor } from "../lib/src/utils/color";
 import World from "../lib/src/world";
 import Physics from "../lib/src/physics/physics";
 import Entity from "../lib/src/entity";
-import Box from "../lib/src/physics/collider/box";
+import BoxCollider from "../lib/src/physics/collider/box";
 import Rect from "../lib/src/shapes/rect";
 import Player from "../lib/src/player";
 import { createVirtualJoystick } from "../lib/src/dropins/player/controls";
@@ -33,7 +33,6 @@ const player = new Player(vec2.fromValues(0, 0), vec2.fromValues(2, 3), cameraVi
 player.setZIndex(5);
 world.addEntity(player);
 world.useCamera(player.getCamera());
-physics.addBody(player);
 
 if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
   // player.useTouchControls();
@@ -82,7 +81,7 @@ Debug.world = world;
   const maxSize = 6;
   const area = 50;
   const rotationSpeed = 360 * 1;
-  const count = 100;
+  const count = 1000;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -91,7 +90,7 @@ Debug.world = world;
     );
     const test = new Entity(
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
-      new Box(size[0], size[1]),
+      new BoxCollider(size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       "test"
@@ -107,7 +106,6 @@ Debug.world = world;
     test.setZIndex(1);
 
     world.addEntity(test);
-    physics.addBody(test);
     atlas.addTexture(test.getPieces()[0].texture);
 
     const speed = Math.floor(Math.random() * rotationSpeed * 2) - rotationSpeed;
@@ -120,7 +118,7 @@ Debug.world = world;
   const size = vec2.fromValues(6, 6);
   const test = new Entity(
     vec2.fromValues(0, 0),
-    new Box(size[0] * 2.5, size[0] * 2.5),
+    new BoxCollider(size[0] * 2.5, size[0] * 2.5),
     [new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)), new Rect(2, 6)],
     "test"
   );
@@ -143,7 +141,6 @@ Debug.world = world;
   player.setZIndex(2);
 
   world.addEntity(test);
-  physics.addBody(test);
   atlas.addTexture(test.getPieces()[0].texture);
 
   const minRadius = 2;

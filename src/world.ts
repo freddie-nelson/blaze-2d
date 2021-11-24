@@ -1,9 +1,11 @@
 import { vec2 } from "gl-matrix";
 import Camera from "./camera/camera";
 import Entity from "./entity";
-import Box from "./physics/collider/box";
+import BoxCollider from "./physics/collider/box";
+import CircleCollider from "./physics/collider/circle";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
+import Circle from "./shapes/circle";
 import Rect from "./shapes/rect";
 import { System } from "./system";
 import Texture from "./texture/texture";
@@ -48,7 +50,7 @@ export default class World implements System {
     for (const e of this.entities) {
       e.update(delta);
 
-      if (this.camera.viewport.containsBox(e.collider as Box, this.getWorldToPixelSpace())) {
+      if (this.camera.viewport.containsBoxCollider(e.collider as BoxCollider, this.getWorldToPixelSpace())) {
         if (this.useBatchRenderer) {
           const z = e.getZIndex();
 
@@ -69,22 +71,34 @@ export default class World implements System {
       // Renderer.setMode("LINES");
 
       for (const e of this.entities) {
-        const rect = new Rect(
-          e.collider.getWidth(),
-          e.collider.getHeight(),
-          e.collider.getPosition(),
-          e.collider.getRotation()
-        );
-
         const rgba: RGBAColor = {
           r: 255,
           g: 0,
           b: 0,
           a: 0.2,
         };
-        rect.texture = new Texture(new Color(rgba));
+        const texture = new Texture(new Color(rgba));
 
-        Renderer.renderRect(rect, undefined, undefined, undefined, worldCellToClipSpaceScale);
+        if (e.collider instanceof BoxCollider) {
+          const rect = new Rect(
+            e.collider.getWidth(),
+            e.collider.getHeight(),
+            e.collider.getPosition(),
+            e.collider.getRotation()
+          );
+          rect.texture = texture;
+
+          Renderer.renderRect(rect, undefined, undefined, undefined, worldCellToClipSpaceScale);
+        } else if (e.collider instanceof CircleCollider) {
+          const circle = new Circle(
+            e.collider.getRadius(),
+            e.collider.getPosition(),
+            e.collider.getRotation()
+          );
+          circle.texture = texture;
+
+          Renderer.renderCircle(circle, undefined, undefined, undefined, worldCellToClipSpaceScale);
+        }
       }
     }
   }

@@ -6,7 +6,7 @@ import Entity from "./entity";
 import Camera from "./camera/camera";
 import Viewport from "./camera/viewport";
 import { vec2 } from "gl-matrix";
-import Box from "./physics/collider/box";
+import BoxCollider from "./physics/collider/box";
 import Rect from "./shapes/rect";
 import { isKeyPressed } from "./keyboard";
 
@@ -50,7 +50,7 @@ export default class Player extends Entity {
     cameraViewport: vec2,
     keys: PlayerKeyMap = defaultKeys
   ) {
-    super(pos, new Box(dimensions[0], dimensions[1], pos), [
+    super(pos, new BoxCollider(dimensions[0], dimensions[1], pos), [
       new Rect(dimensions[0], dimensions[1], vec2.fromValues(0, 0)),
     ]);
 

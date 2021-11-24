@@ -1,5 +1,6 @@
 import { vec2, vec3 } from "gl-matrix";
-import MeshCollider from "../physics/collider/meshCollider";
+import { tripleProduct } from "../utils/vectors";
+import Collider from "./collider/collider";
 
 /**
  * Performs GJK collision detection between two colliders.
@@ -8,10 +9,16 @@ import MeshCollider from "../physics/collider/meshCollider";
  * @param c The collider to test for collisions against
  * @returns Wether or not collider a and b are colliding
  */
-export default function GJK(a: MeshCollider, b: MeshCollider): boolean {
+export default function GJK(a: Collider, b: Collider): boolean {
   // find inital support point using b.position - a.position as direction
   const direction = vec2.create();
   vec2.sub(direction, b.getPosition(), a.getPosition());
+
+  // prevent direction of (0, 0) when positions are identical
+  // when this is true use unit x vector instead
+  if (direction[0] === 0 && direction[1] === 0) {
+    direction[0] = 1;
+  }
 
   let support = a.supportPoint(b, direction);
 
@@ -25,7 +32,7 @@ export default function GJK(a: MeshCollider, b: MeshCollider): boolean {
   // let iterations = 0;
   while (true) {
     support = a.supportPoint(b, direction);
-    if (vec2.dot(support, direction) <= 0) {
+    if (vec2.dot(support, direction) < 0) {
       return false; // no collision
     }
 
@@ -35,7 +42,7 @@ export default function GJK(a: MeshCollider, b: MeshCollider): boolean {
     }
 
     // iterations++;
-    // if (iterations > 100) {
+    // if (iterations > 50) {
     // console.log("stuck", simplex, support, a, b);
     // return false;
     // }
@@ -50,7 +57,7 @@ export default function GJK(a: MeshCollider, b: MeshCollider): boolean {
  * @returns Wether or not there is a collision
  */
 function nextSimplex(simplex: vec2[], direction: vec2): boolean {
-  switch (simplexSize(simplex)) {
+  switch (simplex.length) {
     case 2:
       return line(simplex, direction);
     case 3:
@@ -110,6 +117,10 @@ function triangle(simplex: vec2[], direction: vec2): boolean {
 
   if (sameDirection(abPerp, ao)) {
     // the origin is outside line ab
+
+    // remove c
+    simplex.shift();
+
     vec2.copy(direction, abPerp);
     return false;
   } else if (sameDirection(acPerp, ao)) {
@@ -134,39 +145,4 @@ function triangle(simplex: vec2[], direction: vec2): boolean {
  */
 function sameDirection(direction: vec2, a: vec2) {
   return vec2.dot(direction, a) > 0;
-}
-
-/**
- * Calculates the triple product of three 2D vectors.
- *
- * **NOTE: not a real triple product**
- *
- * @see [This post for an explanation](https://stackoverflow.com/questions/44797996/triple-product-in-2d-to-construct-perpendicular-line)
- *
- * @param a First vector
- * @param b Second vector
- * @param c Thrid vector
- */
-function tripleProduct(a: vec2, b: vec2, c: vec2): vec2 {
-  const A = vec3.fromValues(a[0], a[1], 0);
-  const B = vec3.fromValues(b[0], b[1], 0);
-  const C = vec3.fromValues(c[0], c[1], 0);
-
-  const first = vec3.create();
-  vec3.cross(first, A, B);
-
-  const second = vec3.create();
-  vec3.cross(second, first, C);
-
-  return vec2.fromValues(second[0], second[1]);
-}
-
-/**
- * Gets the number of vertices in the simplex.
- *
- * @param simplex The simplex to measure
- * @returns The number of vertices in the simplex
- */
-function simplexSize(simplex: vec2[]) {
-  return Math.min(simplex.length, 3);
 }

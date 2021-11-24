@@ -21,8 +21,6 @@ export interface CollisionResult {
 }
 
 export default abstract class Collider extends Shape {
-  abstract isMeshCollider: boolean;
-
   /**
    * Checks if this collider is colliding with another collider.
    *
@@ -32,10 +30,27 @@ export default abstract class Collider extends Shape {
   abstract testCollision(c: Collider): CollisionResult;
 
   /**
-   * Checks if this collider is colliding with another mesh collider.
+   * Calculates a support point on the minkowski difference in a given direction.
    *
-   * @param c {@link MeshCollider} to test collisions against
-   * @returns {@link CollisionResult} with the results of the test
+   * @param c The collider to test against
+   * @param direction The direction to use when calculating furthest points
+   * @returns The support point in the given direction for the [Minkowski difference](https://en.wikipedia.org/wiki/Minkowski_addition)
    */
-  abstract testMeshCollision(c: MeshCollider): CollisionResult;
+  abstract supportPoint(c: Collider, direction: vec2): vec2;
+
+  /**
+   * Calculates the furthest point on the collider in a direction.
+   *
+   * @param direction The direction in which to calculate the furthest point
+   * @returns The furthest point on the collider in the given direction
+   */
+  abstract findFurthestPoint(direction: vec2): vec2;
+
+  /**
+   * Performs GJK collision between this collider and another.
+   *
+   * @param c The collider to check for collisions against
+   * @returns Wether or not there is a collision
+   */
+  abstract GJK(c: Collider): boolean;
 }

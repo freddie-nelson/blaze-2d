@@ -36,7 +36,9 @@ export default class CollisionsSpace extends Space<CollisionObject> {
 
         // test collision
         const res = colliderA.testCollision(colliderB);
-        // if (res.hasCollision) console.log("collision");
+        if (res.hasCollision) {
+          // console.log(colliderA, colliderB);
+        }
       }
     }
   }
