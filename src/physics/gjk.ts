@@ -5,6 +5,8 @@ import Collider from "./collider/collider";
 /**
  * Performs GJK collision detection between two colliders.
  *
+ * @see [GJK Explanation](https://www.youtube.com/watch?v=ajv46BSqcK4)
+ *
  * @param a The first collider
  * @param c The collider to test for collisions against
  * @returns Wether or not collider a and b are colliding
@@ -25,8 +27,8 @@ export default function GJK(a: Collider, b: Collider): boolean {
   // create simplex
   const simplex = [support];
 
-  // new direction is opposite of initial direction so as to maximise simplex area
-  vec2.scale(direction, direction, -1);
+  // new direction is support - origin (-support) as we are trying to see if simplex contains origin
+  vec2.scale(direction, support, -1);
 
   // check simplex for collisions
   // let iterations = 0;

@@ -93,6 +93,7 @@ export default class World implements System {
     // render entities
     this.renderEntities(entityZMap);
 
+    // debug tooling
     if (this.debug) {
       // Renderer.setMode("LINES");
 

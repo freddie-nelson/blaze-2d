@@ -36,13 +36,18 @@ export function applyTranslation(base: vec2[], translation: vec2) {
 /**
  * Calculates the triple product of three 2D vectors.
  *
- * **NOTE: not a real triple product**
+ * This is done by:
+ *    - extending each 2D vector into 3D by giving them a Z value of 0.
+ *    - Calculating the cross product of **A** and **B**, storing the result as vector **R₁**.
+ *      **R₁** will be a vector purely in the z axis as the x and y components after the cross product are 0.
+ *    - The cross product of **R₁** and **C** is then calculated, we'll call this **R₂**.
+ *      **R₂** will be a vector that is perpendicular to **C** and pointing in the direction of **B**.
  *
  * @see [This post for an explanation](https://stackoverflow.com/questions/44797996/triple-product-in-2d-to-construct-perpendicular-line)
  *
- * @param a First vector
- * @param b Second vector
- * @param c Thrid vector
+ * @param a Initial vector
+ * @param b Vector that the result will be in direction of
+ * @param c Vector that the result will be perpendicular to
  */
 export function tripleProduct(a: vec2, b: vec2, c: vec2): vec2 {
   const A = vec3.fromValues(a[0], a[1], 0);

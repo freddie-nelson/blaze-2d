@@ -53,8 +53,8 @@ export default abstract class BatchRenderer extends Renderer {
   static renderEntities(entities: Entity[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
     const shapes = this.getRenderableShapesFromEntites(entities);
 
-    this.renderCircles(shapes.circles, zIndex, scale);
     this.renderRects(shapes.rects, zIndex, scale);
+    this.renderCircles(shapes.circles, zIndex, scale);
   }
 
   /**
