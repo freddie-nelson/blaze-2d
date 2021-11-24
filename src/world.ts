@@ -11,6 +11,14 @@ import { System } from "./system";
 import Texture from "./texture/texture";
 import Color, { RGBAColor } from "./utils/color";
 
+const debugRGBA: RGBAColor = {
+  r: 255,
+  g: 0,
+  b: 0,
+  a: 0.2,
+};
+const debugTexture = new Texture(new Color(debugRGBA));
+
 /**
  * Represents the 2D world.
  */
@@ -22,6 +30,7 @@ export default class World implements System {
   private entities: Entity[] = [];
 
   debug = false;
+  debugTexture = debugTexture;
 
   /**
    * Creates a {@link World} instance.
@@ -71,14 +80,6 @@ export default class World implements System {
       // Renderer.setMode("LINES");
 
       for (const e of this.entities) {
-        const rgba: RGBAColor = {
-          r: 255,
-          g: 0,
-          b: 0,
-          a: 0.2,
-        };
-        const texture = new Texture(new Color(rgba));
-
         if (e.collider instanceof BoxCollider) {
           const rect = new Rect(
             e.collider.getWidth(),
@@ -86,7 +87,7 @@ export default class World implements System {
             e.collider.getPosition(),
             e.collider.getRotation()
           );
-          rect.texture = texture;
+          rect.texture = this.debugTexture;
 
           Renderer.renderRect(rect, undefined, undefined, undefined, worldCellToClipSpaceScale);
         } else if (e.collider instanceof CircleCollider) {
@@ -95,7 +96,7 @@ export default class World implements System {
             e.collider.getPosition(),
             e.collider.getRotation()
           );
-          circle.texture = texture;
+          circle.texture = debugTexture;
 
           Renderer.renderCircle(circle, undefined, undefined, undefined, worldCellToClipSpaceScale);
         }

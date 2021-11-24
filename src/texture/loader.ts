@@ -143,6 +143,8 @@ export default abstract class TextureLoader {
    *
    * First looks for free texture units and if none are available then it will return the texture unit with the oldest last used time.
    *
+   * Texture units that have a {@link TextureAtlas} in them will be ignored.
+   *
    * @returns The most replaceable texture unit
    */
   static findReplaceableTextureUnit(): TextureUnit {
@@ -152,7 +154,7 @@ export default abstract class TextureLoader {
 
     let minLastUsed = Number.MAX_SAFE_INTEGER;
     for (const u of this.textureUnits) {
-      if (u.lastUsed < minLastUsed) {
+      if (u.lastUsed < minLastUsed && !(u.texture instanceof TextureAtlas)) {
         minLastUsed = u.lastUsed;
         unit = u;
       }
