@@ -24,7 +24,7 @@ export default abstract class Shape extends Object2D {
    *
    * @param position The x and y position to render the shape at
    * @param zIndex The z position of the rendered shape
-   * @param scale The world cell size to clip space scale value
+   * @param scale The world to clip space scale value
    */
   abstract render(position: vec2, rotation: number, zIndex: number, scale: vec2): void;
 

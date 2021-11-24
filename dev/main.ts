@@ -24,8 +24,8 @@ const cameraViewport = vec2.fromValues(window.innerWidth, window.innerHeight);
 const world = new World(vec2.fromValues(40, 40), cameraViewport);
 const physics = new Physics();
 
-BLZ.addSystem(world);
 BLZ.addSystem(physics);
+BLZ.addSystem(world);
 
 const atlas = new TextureAtlas(8000);
 
@@ -81,7 +81,7 @@ Debug.world = world;
   const maxSize = 6;
   const area = 50;
   const rotationSpeed = 360 * 1;
-  const count = 1000;
+  const count = 100;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -138,7 +138,7 @@ Debug.world = world;
   rect.setPosition(vec2.fromValues(2, 2));
 
   test.setZIndex(3);
-  player.setZIndex(2);
+  // player.setZIndex(2);
 
   world.addEntity(test);
   atlas.addTexture(test.getPieces()[0].texture);

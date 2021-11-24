@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Blaze from "./blaze";
 import Camera from "./camera/camera";
 import Entity from "./entity";
 import BoxCollider from "./physics/collider/box";
@@ -18,6 +19,15 @@ const debugRGBA: RGBAColor = {
   a: 0.2,
 };
 const debugTexture = new Texture(new Color(debugRGBA));
+
+/**
+ * Map to store data which belongs to certain z indexes of the world.
+ */
+interface ZMap<T> {
+  [index: number]: T;
+  max?: number;
+  min?: number;
+}
 
 /**
  * Represents the 2D world.
@@ -43,43 +53,51 @@ export default class World implements System {
     this.camera = new Camera(vec2.fromValues(0, 0), cameraViewport[0], cameraViewport[1]);
   }
 
+  /**
+   * Updates the world's camera, terrain and entities.
+   *
+   * Also calls the render function.
+   *
+   * @param delta Time since last frame
+   */
   update(delta: number) {
-    const worldToClipSpaceScale = this.getWorldtoClipSpaceScale();
-    const worldCellToClipSpaceScale = vec2.fromValues(
-      this.cellSize[0] * worldToClipSpaceScale[0],
-      this.cellSize[1] * worldToClipSpaceScale[1]
-    );
+    const worldToClipSpace = this.getWorldtoClipSpace();
 
     this.camera.update();
 
-    const renderQueue: { [index: string]: Entity[] } = {};
-    Renderer.setMode("TRIANGLES");
-    Renderer.useCamera(this.camera);
+    // z map of visible entities
+    const entityZMap: ZMap<Entity[]> = {
+      max: 0,
+      min: Blaze.getZLevels(),
+    };
 
+    // update entities and construct z map
     for (const e of this.entities) {
       e.update(delta);
 
       if (this.camera.viewport.containsBoxCollider(e.collider as BoxCollider, this.getWorldToPixelSpace())) {
-        if (this.useBatchRenderer) {
-          const z = e.getZIndex();
+        // add entity to z map
+        const z = e.getZIndex();
+        if (entityZMap[z]) entityZMap[z].push(e);
+        else entityZMap[z] = [e];
 
-          if (renderQueue[z]) renderQueue[z].push(e);
-          else renderQueue[z] = [e];
-        } else {
-          e.render(worldCellToClipSpaceScale);
+        // update z map min and max
+        if (z > entityZMap.max) {
+          entityZMap.max = z;
+        } else if (z < entityZMap.min) {
+          entityZMap.min = z;
         }
       }
     }
 
-    if (this.useBatchRenderer)
-      for (const zIndex of Object.keys(renderQueue).sort((a, b) => Number(a) - Number(b))) {
-        BatchRenderer.renderEntities(renderQueue[zIndex], Number(zIndex), worldCellToClipSpaceScale);
-      }
+    // render entities
+    this.renderEntities(entityZMap);
 
     if (this.debug) {
       // Renderer.setMode("LINES");
 
       for (const e of this.entities) {
+        // draw entity bounding boxes (colliders)
         if (e.collider instanceof BoxCollider) {
           const rect = new Rect(
             e.collider.getWidth(),
@@ -89,7 +107,7 @@ export default class World implements System {
           );
           rect.texture = this.debugTexture;
 
-          Renderer.renderRect(rect, undefined, undefined, undefined, worldCellToClipSpaceScale);
+          Renderer.renderRect(rect, undefined, undefined, undefined, worldToClipSpace);
         } else if (e.collider instanceof CircleCollider) {
           const circle = new Circle(
             e.collider.getRadius(),
@@ -98,7 +116,39 @@ export default class World implements System {
           );
           circle.texture = debugTexture;
 
-          Renderer.renderCircle(circle, undefined, undefined, undefined, worldCellToClipSpaceScale);
+          Renderer.renderCircle(circle, undefined, undefined, undefined, worldToClipSpace);
+        }
+      }
+    }
+  }
+
+  /**
+   * Renders a {@link ZMap} of entities in the world using the world's current camera.
+   *
+   * If `this.useBatchRenderer` is true then the batch renderer will be used, otherwise the
+   * entities will be sorted by zIndex and rendered normally.
+   *
+   * Draw calls are sent before this function terminates.
+   *
+   * @param delta Time since last frame
+   */
+  renderEntities(queue: ZMap<Entity[]>) {
+    const worldToClipSpace = this.getWorldtoClipSpace();
+
+    Renderer.setMode("TRIANGLES");
+    Renderer.useCamera(this.camera);
+
+    const min = queue.min || 0;
+    const max = queue.max || Blaze.getZLevels();
+
+    for (let z = min; z <= max; z++) {
+      if (!queue[z]) continue;
+
+      if (this.useBatchRenderer) {
+        BatchRenderer.renderEntities(queue[z], z, worldToClipSpace);
+      } else {
+        for (const e of queue[z]) {
+          e.render(worldToClipSpace);
         }
       }
     }
@@ -109,11 +159,11 @@ export default class World implements System {
    *
    * @returns The number that multiplying a world space coordinate by provides the equivalent clip space coordinate.
    */
-  getWorldtoClipSpaceScale() {
+  getWorldtoClipSpace() {
     const width = this.camera.viewport.getWidth();
     const height = this.camera.viewport.getHeight();
 
-    return vec2.fromValues(2 / width, 2 / height);
+    return vec2.fromValues((this.cellSize[0] * 2) / width, (this.cellSize[1] * 2) / height);
   }
 
   /**

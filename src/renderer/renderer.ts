@@ -45,9 +45,9 @@ export default abstract class Renderer {
     gl.blendEquation(gl.FUNC_ADD);
 
     // gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.depthFunc(gl.LEQUAL);
-    gl.depthMask(true);
+    // gl.enable(gl.CULL_FACE);
+    // gl.depthFunc(gl.LEQUAL);
+    // gl.depthMask(true);
     clear(gl);
 
     this.initShaders(gl);

@@ -49,13 +49,13 @@ export default class Entity extends RigidBody {
   /**
    * Renders the entity's pieces.
    *
-   * @param worldCellToClipSpaceScale The world cell to clip space cell scale value
+   * @param worldToClipSpace The world to clip space scale value
    */
-  render(worldCellToClipSpaceScale: vec2) {
+  render(worldToClipSpace: vec2) {
     // if (this.name) console.log(this.name);
 
     for (const p of this.pieces) {
-      p.render(this.getPosition(), this.getRotation(), this.zIndex, worldCellToClipSpaceScale);
+      p.render(this.getPosition(), this.getRotation(), this.zIndex, worldToClipSpace);
     }
   }
 
