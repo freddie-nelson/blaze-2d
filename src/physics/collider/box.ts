@@ -2,6 +2,7 @@ import { vec2 } from "gl-matrix";
 import GJK from "../gjk";
 import Rect from "../../shapes/rect";
 import Collider, { CollisionResult } from "./collider";
+import EPA from "../epa";
 
 /**
  * Represents a box in 2D space with a position and dimensions.
@@ -33,20 +34,16 @@ export default class BoxCollider extends Rect implements Collider {
       hasCollision: false,
     };
 
-    res.hasCollision = this.GJK(c);
-    if (!res.hasCollision) return res;
+    const gjkRes = GJK(this, c);
+    if (!gjkRes.collision) return res;
+
+    res.hasCollision = true;
+    const epaRes = EPA(gjkRes.simplex, this, c);
+
+    res.normal = epaRes.normal;
+    res.depth = epaRes.depth;
 
     return res;
-  }
-
-  /**
-   * Performs GJK collision detection between this collider and another.
-   *
-   * @param c The collider to check for collisions against
-   * @returns Wether or not there is a collision
-   */
-  GJK(c: Collider): boolean {
-    return GJK(this, c);
   }
 
   /**

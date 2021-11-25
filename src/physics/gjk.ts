@@ -2,6 +2,13 @@ import { vec2, vec3 } from "gl-matrix";
 import { tripleProduct } from "../utils/vectors";
 import Collider from "./collider/collider";
 
+const MAX_ITERATIONS = 16;
+
+interface GJKResult {
+  collision: boolean;
+  simplex?: vec2[];
+}
+
 /**
  * Performs GJK collision detection between two colliders.
  *
@@ -9,17 +16,18 @@ import Collider from "./collider/collider";
  *
  * @param a The first collider
  * @param c The collider to test for collisions against
- * @returns Wether or not collider a and b are colliding
+ * @returns A {@link GJKResult} struct containing the results of the GJK algorithm
  */
-export default function GJK(a: Collider, b: Collider): boolean {
+export default function GJK(a: Collider, b: Collider): GJKResult {
   // find inital support point using b.position - a.position as direction
   const direction = vec2.create();
   vec2.sub(direction, b.getPosition(), a.getPosition());
 
   // prevent direction of (0, 0) when positions are identical
-  // when this is true use unit x vector instead
+  // when this is true use unit vector instead
   if (direction[0] === 0 && direction[1] === 0) {
     direction[0] = 1;
+    direction[1] = 1;
   }
 
   let support = a.supportPoint(b, direction);
@@ -32,21 +40,28 @@ export default function GJK(a: Collider, b: Collider): boolean {
 
   // check simplex for collisions
   // let iterations = 0;
-  while (true) {
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
     support = a.supportPoint(b, direction);
-    if (vec2.dot(support, direction) < 0) {
-      return false; // no collision
+    if (!sameDirection(support, direction)) {
+      return {
+        collision: false,
+      }; // no collision
     }
 
     simplex.push(support);
     if (nextSimplex(simplex, direction)) {
-      return true;
+      return {
+        collision: true,
+        simplex,
+      };
     }
 
     // iterations++;
     // if (iterations > 50) {
-    // console.log("stuck", simplex, support, a, b);
-    // return false;
+    // console.log("GJK: Algorithm stuck.", simplex, support, a, b);
+    // return {
+    // collision: false,
+    // };
     // }
   }
 }
@@ -82,13 +97,18 @@ function line(simplex: vec2[], direction: vec2): boolean {
   const ab = vec2.create();
   vec2.sub(ab, b, a);
 
-  // vector ao (a0) is the line from the first vertex to the origin
+  // vector ao is the line from the first vertex to the origin
   const ao = vec2.create();
   vec2.scale(ao, a, -1);
 
   // use the triple cross product to calculate a direction perpendicular to line ab
   // in the direction of the origin
   vec2.copy(direction, tripleProduct(ab, ao, ab));
+
+  // correct direction for ab which cuts the origin?
+  if (vec2.sqrLen(direction) === 0) {
+    vec2.copy(direction, vec2.fromValues(ab[1], -ab[0]));
+  }
 
   return false;
 }

@@ -46,7 +46,7 @@ Renderer.useCamera(CAMERA);
 // setup debug menu
 Debug.world = WORLD;
 Blaze.toggleDebug();
-// WORLD.debug = true;
+WORLD.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -74,7 +74,7 @@ const floorTex = new Texture(new Color("brown"));
 ATLAS.addTexture(floorTex);
 
 const shapeTexs: Texture[] = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 200; i++) {
   const color: RGBAColor = {
     r: randInt(0, 255),
     g: randInt(0, 255),
@@ -147,7 +147,6 @@ WORLD.addEntity(floor);
 PHYSICS.collisionsSpace.addObject(floor);
 
 // generate random shapes on click
-
 addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (!pressed) return;
 

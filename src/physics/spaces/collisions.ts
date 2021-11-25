@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import CollisionObject from "../collisionObject";
 import Space from "./space";
 
@@ -38,6 +39,9 @@ export default class CollisionsSpace extends Space<CollisionObject> {
         const res = colliderA.testCollision(colliderB);
         if (res.hasCollision) {
           // console.log(colliderA, colliderB);
+          // test move A
+          vec2.scaleAndAdd(A.getPosition(), A.getPosition(), res.normal, -res.depth);
+          vec2.copy(colliderA.getPosition(), A.getPosition());
         }
       }
     }

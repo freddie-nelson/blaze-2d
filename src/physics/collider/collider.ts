@@ -45,12 +45,4 @@ export default abstract class Collider extends Shape {
    * @returns The furthest point on the collider in the given direction
    */
   abstract findFurthestPoint(direction: vec2): vec2;
-
-  /**
-   * Performs GJK collision between this collider and another.
-   *
-   * @param c The collider to check for collisions against
-   * @returns Wether or not there is a collision
-   */
-  abstract GJK(c: Collider): boolean;
 }
