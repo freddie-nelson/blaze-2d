@@ -1,12 +1,14 @@
+import PhysicsObject from "../object";
 import RigidBody from "../rigidbody";
+import { DynamicsSolver } from "../solvers/solver";
 import Space from "./space";
 
 /**
- * Represents an infinite space containing {@link RigidBody}s.
+ * Represents an infinite space containing {@link PhysicsObject}s.
  *
  * Can be used to update objects dynamics.
  */
-export default class DynamicsSpace extends Space<RigidBody> {
+export default class DynamicsSpace extends Space<PhysicsObject, DynamicsSolver> {
   /**
    * Creates a {@link DynamicsSpace} instance.
    */
