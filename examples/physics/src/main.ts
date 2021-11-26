@@ -37,8 +37,8 @@ const VIEWPORT = CAMERA.viewport;
 
 const PHYSICS = new Physics();
 
-Blaze.addSystem(PHYSICS);
 Blaze.addSystem(WORLD);
+Blaze.addSystem(PHYSICS);
 
 // setup renderer
 Renderer.useCamera(CAMERA);
@@ -148,9 +148,9 @@ const floorCollider = new BoxCollider(FLOOR_WIDTH, FLOOR_HEIGHT, vec2.fromValues
 const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
-const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect]);
+const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect], 0);
 WORLD.addEntity(floor);
-PHYSICS.collisionsSpace.addObject(floor);
+PHYSICS.addBody(floor);
 
 // generate random shapes on click
 addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
@@ -161,6 +161,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   const maxSize = 4;
   const minSize = 1;
   const size = vec2.fromValues(randInt(minSize, maxSize), randInt(minSize, maxSize));
+  const mass = randInt(1, 5) * size[0];
   const tex = shapeTexs[randInt(0, shapeTexs.length - 1)];
 
   let shape: Shape;
@@ -176,7 +177,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   shape.texture = tex;
 
-  const entity = new Entity(pos, collider, [shape]);
+  const entity = new Entity(pos, collider, [shape], mass);
 
   // rotations
   if (ROTATE) {

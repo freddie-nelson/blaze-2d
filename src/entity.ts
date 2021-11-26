@@ -19,9 +19,11 @@ export default class Entity extends RigidBody {
    * @param position The entity's position in world space
    * @param collider The entity's bounding box
    * @param pieces The entity's body pieces for rendering
+   * @param mass The entity's mass in kg (0 for infinite mass)
+   * @param name A name which can be used to identify the entity
    */
-  constructor(position: vec2, collider: Collider, pieces: Shape[] = [], name = "", gravity = 9.8) {
-    super(collider);
+  constructor(position: vec2, collider: Collider, pieces: Shape[] = [], mass?: number, name = "") {
+    super(collider, mass);
     this.setPosition(position);
 
     this.pieces = pieces;
