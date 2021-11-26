@@ -116,8 +116,14 @@ const typePara = document.createElement("p");
 typePara.style.cssText = textCSS;
 typePara.textContent = "Press 'C' to create circles.";
 
+let bodyCount = 1;
+const bodyCountPara = document.createElement("p");
+bodyCountPara.style.cssText = textCSS;
+bodyCountPara.textContent = `Bodies: ${bodyCount}`;
+
 menu.appendChild(rotatePara);
 menu.appendChild(typePara);
+menu.appendChild(bodyCountPara);
 document.body.appendChild(menu);
 
 // toggles
@@ -181,6 +187,9 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   WORLD.addEntity(entity);
   PHYSICS.collisionsSpace.addObject(entity);
+
+  bodyCount++;
+  bodyCountPara.textContent = `Bodies: ${bodyCount}`;
 });
 
 // pan camera with arrow keys
