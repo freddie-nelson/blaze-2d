@@ -62,3 +62,17 @@ export function tripleProduct(a: vec2, b: vec2, c: vec2): vec2 {
 
   return vec2.fromValues(second[0], second[1]);
 }
+
+/**
+ * Calculates the cross product of **a** with a scalar and stores the value in **out**
+ *
+ * @param out The vector to output to
+ * @param a The vector to cross
+ * @param scalar The scalar to cross a with
+ * @returns out
+ */
+export function cross2DWithScalar(out: vec2, a: vec2, scalar: number) {
+  out[0] = a[1] * scalar;
+  out[1] = a[0] * -scalar;
+  return out;
+}

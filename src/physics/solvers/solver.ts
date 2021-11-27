@@ -1,7 +1,6 @@
-import { CollisionResult } from "../collider/collider";
-import CollisionObject from "../collisionObject";
-import PhysicsObject from "../object";
-import { Manifold } from "../spaces/collisions";
+import { vec2 } from "gl-matrix";
+import Manifold from "../manifold";
+import RigidBody from "../rigidbody";
 
 /**
  * Solves an aspect of a collision described by a {@link Manifold}.
@@ -9,6 +8,6 @@ import { Manifold } from "../spaces/collisions";
 export type CollisionSolver = (m: Manifold) => void;
 
 /**
- * Solves a property of the dynamics of a {@link PhysicsObject}.
+ * Solves a property of the dynamics of a {@link RigidBody}.
  */
-export type DynamicsSolver = (obj: PhysicsObject) => void;
+export type DynamicsSolver = (obj: RigidBody, delta?: number, gravity?: vec2) => void;

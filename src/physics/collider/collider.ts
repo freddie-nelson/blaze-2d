@@ -45,4 +45,12 @@ export default abstract class Collider extends Shape {
    * @returns The furthest point on the collider in the given direction
    */
   abstract findFurthestPoint(direction: vec2): vec2;
+
+  /**
+   * Calculates the furthest point on the collider in a direction and it's neighbouring vertices on the collider.
+   *
+   * @param direction The direction in which to calculate the furthest point
+   * @returns The furthest point on the collider in the given direction and its left and right neighbours
+   */
+  abstract findFurthestNeighbours(direction: vec2): { left: vec2; furthest: vec2; right: vec2 };
 }

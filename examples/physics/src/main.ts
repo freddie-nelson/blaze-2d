@@ -149,6 +149,7 @@ const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
 const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect], 0);
+floor.isStatic = true;
 WORLD.addEntity(floor);
 PHYSICS.addBody(floor);
 
@@ -187,7 +188,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   }
 
   WORLD.addEntity(entity);
-  PHYSICS.collisionsSpace.addObject(entity);
+  PHYSICS.addBody(entity);
 
   bodyCount++;
   bodyCountPara.textContent = `Bodies: ${bodyCount}`;

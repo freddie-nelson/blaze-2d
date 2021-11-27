@@ -1,10 +1,15 @@
 import { vec2 } from "gl-matrix";
 import { System } from "../system";
 import CollisionObject from "./collisionObject";
-import PhysicsObject from "./object";
 import RigidBody from "./rigidbody";
+import solveImpulse from "./solvers/collision/impulse";
+import solvePositionCollisions from "./solvers/collision/position";
+import solveGravity from "./solvers/dynamics/gravity";
+import solveVelocity from "./solvers/dynamics/velocity";
+import solvePositionDynamics from "./solvers/dynamics/position";
 import CollisionsSpace from "./spaces/collisions";
 import DynamicsSpace from "./spaces/dynamics";
+import resetForce from "./solvers/dynamics/resetForce";
 
 /**
  * Handles all physics updates for bodies in the system.
@@ -13,18 +18,27 @@ import DynamicsSpace from "./spaces/dynamics";
  */
 export default class Physics implements System {
   debug = false;
-  gravity = vec2.fromValues(0, -9.8);
+  private gravity = vec2.fromValues(0, -9.8);
 
   // spaces
   collisionsSpace = new CollisionsSpace();
-  dynamicsSpace = new DynamicsSpace();
+  dynamicsSpace = new DynamicsSpace(this.gravity);
 
   /**
    *
    * @param gravity The gravitional force applied to objects in the system
    */
   constructor(gravity?: vec2) {
-    if (this.gravity) this.gravity = gravity;
+    if (gravity) this.setGravity(gravity);
+
+    // add default solvers
+    this.collisionsSpace.addSolver(solvePositionCollisions);
+    this.collisionsSpace.addSolver(solveImpulse);
+
+    this.dynamicsSpace.addSolver(solveGravity);
+    this.dynamicsSpace.addSolver(solveVelocity);
+    this.dynamicsSpace.addSolver(solvePositionDynamics);
+    this.dynamicsSpace.addSolver(resetForce);
   }
 
   update(delta: number) {
@@ -42,11 +56,11 @@ export default class Physics implements System {
   }
 
   /**
-   * Adds a {@link PhysicsObject} to the world's dynamics space.
+   * Adds a {@link RigidBody} to the world's dynamics space.
    *
    * @param obj The object to add
    */
-  addDynamicsObj(obj: PhysicsObject) {
+  addDynamicsObj(obj: RigidBody) {
     this.dynamicsSpace.addObject(obj);
   }
 
@@ -58,5 +72,24 @@ export default class Physics implements System {
   addBody(body: RigidBody) {
     this.addCollisionObj(body);
     this.addDynamicsObj(body);
+  }
+
+  /**
+   * Sets the gravity to use in the physics world.
+   *
+   * @param gravity The new gravity to use
+   */
+  setGravity(gravity: vec2) {
+    this.gravity = vec2.clone(gravity);
+    this.dynamicsSpace.gravity = vec2.clone(gravity);
+  }
+
+  /**
+   * Gets the gravity vector the physics world is using.
+   *
+   * @returns The gravity in use
+   */
+  getGravity() {
+    return this.gravity;
   }
 }

@@ -9,9 +9,9 @@ export default class CollisionObject extends PhysicsObject {
   collider: Collider;
 
   /**
-   * Wether or not the collision object should have dynamics (movement).
+   * Wether or not the object is static, static objects cannot move.
    */
-  isDynamic = true;
+  isStatic = false;
 
   /**
    * Wether or not the collision object should be a trigger.
@@ -37,6 +37,9 @@ export default class CollisionObject extends PhysicsObject {
 
   protected setupEvents() {
     super.setupEvents();
+
+    this.listeners.collision = [];
+    this.listeners.trigger = [];
   }
 
   /**
@@ -52,5 +55,29 @@ export default class CollisionObject extends PhysicsObject {
     if (valid !== true) throw new Error(valid);
 
     this.terrainCollisionFlags[zIndex] = collides;
+  }
+
+  /**
+   * Sets the object's position.
+   *
+   * Also sets `this.collider`'s position.
+   *
+   * @param pos The object's new position
+   */
+  setPosition(pos: vec2) {
+    super.setPosition(pos);
+    this.collider.setPosition(pos);
+  }
+
+  /**
+   * Sets the object's rotation, in radians.
+   *
+   * Also sets `this.collider`'s rotation.
+   *
+   * @param angle The object's new rotation angle (in radians)
+   */
+  setRotation(angle: number) {
+    super.setRotation(angle);
+    this.collider.setRotation(angle);
   }
 }

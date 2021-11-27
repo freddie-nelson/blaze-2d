@@ -48,23 +48,20 @@ export default class Object2D {
   /**
    * Sets the x component of the object's position.
    *
-   * @param pos The object's new x coordinate
+   * @param x The object's new x coordinate
    */
-  setPositionX(pos: number) {
-    this.position[0] = pos;
-
-    this.fireEvent("position", this.position);
+  setPositionX(x: number) {
+    // weird implementation so custom position setting is easier to setup in child classes, see CollisionObject
+    this.setPosition(vec2.fromValues(x, this.getPosition()[1]));
   }
 
   /**
    * Sets the y component of the object's position.
    *
-   * @param pos The object's new y coordinate
+   * @param y The object's new y coordinate
    */
-  setPositionY(pos: number) {
-    this.position[1] = pos;
-
-    this.fireEvent("position", this.position);
+  setPositionY(y: number) {
+    this.setPosition(vec2.fromValues(this.getPosition()[0], y));
   }
 
   /**
@@ -77,16 +74,26 @@ export default class Object2D {
   }
 
   /**
+   * Translates the object by the provided vector.
+   *
+   * @param v The vector to translate by
+   */
+  translate(v: vec2) {
+    this.setPosition(vec2.add(vec2.create(), this.getPosition(), v));
+  }
+
+  /**
    * Moves the object's position right (x+) relative to it's rotation.
    *
    * @param dist The distance to move right, can be + or -
    */
   moveRight(dist: number) {
+    const pos = this.getPosition();
     const forwardVec = vec2.fromValues(1, 0);
-    vec2.rotate(forwardVec, forwardVec, vec2.fromValues(0, 0), this.rotation);
-    vec2.scaleAndAdd(this.position, this.position, forwardVec, dist);
+    vec2.rotate(forwardVec, forwardVec, vec2.fromValues(0, 0), this.getRotation());
+    vec2.scaleAndAdd(pos, pos, forwardVec, dist);
 
-    this.fireEvent("position", this.position);
+    this.fireEvent("position", pos);
   }
 
   /**
@@ -95,20 +102,21 @@ export default class Object2D {
    * @param dist The distance to move up, can be + or -
    */
   moveUp(dist: number) {
+    const pos = this.getPosition();
     const upVec = vec2.fromValues(0, 1);
-    vec2.rotate(upVec, upVec, vec2.fromValues(0, 0), this.rotation);
-    vec2.scaleAndAdd(this.position, this.position, upVec, dist);
+    vec2.rotate(upVec, upVec, vec2.fromValues(0, 0), this.getRotation());
+    vec2.scaleAndAdd(pos, pos, upVec, dist);
 
-    this.fireEvent("position", this.position);
+    this.fireEvent("position", pos);
   }
 
   /**
    * Sets the object's rotation.
    *
-   * @param rot The object's new rotation
+   * @param angle The object's new rotation
    */
-  setRotation(rot: number) {
-    this.rotation = rot;
+  setRotation(angle: number) {
+    this.rotation = angle;
 
     this.fireEvent("rotate", this.rotation);
   }
@@ -128,9 +136,7 @@ export default class Object2D {
    * @param angle The angle to rotate by in radians
    */
   rotate(angle: number) {
-    this.rotation += angle;
-
-    this.fireEvent("rotate", this.rotation);
+    this.setRotation(this.getRotation() + angle);
   }
 
   /**

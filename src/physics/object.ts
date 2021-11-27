@@ -1,4 +1,4 @@
-import { vec2 } from "gl-matrix";
+import { vec2, vec3 } from "gl-matrix";
 import Object2D from "../object2d";
 
 /**
@@ -13,7 +13,9 @@ export default class PhysicsObject extends Object2D {
   // PROPERTIES
 
   /**
-   * Mass of object in kg
+   * Mass of object in kg.
+   *
+   * When set to 0 the object's mass is effectively infinite.
    */
   private mass = 1;
 
@@ -25,7 +27,7 @@ export default class PhysicsObject extends Object2D {
   /**
    * Elasticity/bounciness
    */
-  restitution = 0;
+  restitution = 10;
 
   // POSITIONAL MOMENTUM
 
@@ -67,8 +69,15 @@ export default class PhysicsObject extends Object2D {
 
   /**
    * The object's moment of inertia (resistance to rotation).
+   *
+   * When set to 0 the object's inertia is effectively infinite.
    */
-  inertia = 1;
+  private inertia = 1;
+
+  /**
+   * The inverse of the object's inertia (1 / inertia).
+   */
+  private inverseInertia = 1;
 
   // OPTIONS
 
@@ -83,10 +92,10 @@ export default class PhysicsObject extends Object2D {
    * @param mass The mass of the object
    * @param restitution The restituion (bounciness) of the object
    */
-  constructor(mass = 1, restitution = 0) {
+  constructor(mass = 1, restitution = 0.3) {
     super();
 
-    this.mass = mass;
+    this.setMass(mass);
     this.restitution = restitution;
 
     this.setupEvents();
@@ -126,9 +135,11 @@ export default class PhysicsObject extends Object2D {
    * This will apply an instantaneous change to the object's angular and linear velocity.
    *
    * @param impulse The impulse to apply
+   * @param contactVector A vector from the object's center to the contact point
    */
-  applyImpulse(impulse: vec2) {
+  applyImpulse(impulse: vec2, contactVector: vec2) {
     vec2.scaleAndAdd(this.velocity, this.velocity, impulse, this.inverseMass);
+    this.angularVelocity += this.inverseInertia * vec2.cross(vec3.create(), contactVector, impulse)[2];
   }
 
   /**
@@ -161,5 +172,37 @@ export default class PhysicsObject extends Object2D {
    */
   getInverseMass() {
     return this.inverseMass;
+  }
+
+  /**
+   * Sets the moment of inertia of the object.
+   *
+   * Also computes the inverse inertia.
+   *
+   * **NOTE: Setting the inertia to 0 will act as infinite inertia.**
+   *
+   * @param inertia The objects new inertia
+   */
+  setInertia(inertia: number) {
+    this.inertia = inertia;
+    this.inverseInertia = inertia === 0 ? 0 : 1 / inertia;
+  }
+
+  /**
+   * Gets the moment of inertia of the object.
+   *
+   * @returns The inertia of the object
+   */
+  getInertia() {
+    return this.inertia;
+  }
+
+  /**
+   * Gets the inverse moment of inertia of the object (1 / inertia).
+   *
+   * @returns The inverse inertia of the object
+   */
+  getInverseInertia() {
+    return this.inverseInertia;
   }
 }

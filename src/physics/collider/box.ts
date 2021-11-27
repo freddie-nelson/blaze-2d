@@ -85,6 +85,34 @@ export default class BoxCollider extends Rect implements Collider {
   }
 
   /**
+   * Calculates the furthest point on the collider in a direction and it's neighbouring vertices on the collider.
+   *
+   * @param direction The direction in which to calculate the furthest point
+   * @returns The furthest point on the collider in the given direction and its left and right neighbours
+   */
+  findFurthestNeighbours(direction: vec2) {
+    const points = this.getPoints();
+    let max = 0;
+    let maxDist = -Infinity;
+
+    for (let i = max + 1; i < points.length; i++) {
+      const p = points[i];
+      const dist = vec2.dot(p, direction);
+
+      if (dist > maxDist) {
+        maxDist = dist;
+        max = i;
+      }
+    }
+
+    return {
+      furthest: points[max],
+      left: points[max + 1 >= points.length ? 0 : max + 1],
+      right: points[max - 1 < 0 ? points.length - 1 : max - 1],
+    };
+  }
+
+  /**
    * Calculates the bounding points of the {@link BoxCollider} instance.
    *
    * **NOTE: The box's vertices are recalculated everytime this function is called.**

@@ -78,4 +78,20 @@ export default class CircleCollider extends Circle implements Collider {
 
     return p;
   }
+
+  /**
+   * Calculates the furthest point on the collider in a direction and it's neighbouring vertices on the collider.
+   *
+   * @param direction The direction in which to calculate the furthest point
+   * @returns The furthest point on the collider in the given direction and its left and right neighbours
+   */
+  findFurthestNeighbours(direction: vec2) {
+    const p = this.findFurthestPoint(direction);
+
+    return {
+      furthest: p,
+      left: vec2.rotate(vec2.create(), p, this.getPosition(), -Math.PI / 45),
+      right: vec2.rotate(vec2.create(), p, this.getPosition(), Math.PI / 45),
+    };
+  }
 }

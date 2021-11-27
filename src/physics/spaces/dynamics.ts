@@ -1,19 +1,23 @@
-import PhysicsObject from "../object";
+import { vec2 } from "gl-matrix";
 import RigidBody from "../rigidbody";
 import { DynamicsSolver } from "../solvers/solver";
 import Space from "./space";
 
 /**
- * Represents an infinite space containing {@link PhysicsObject}s.
+ * Represents an infinite space containing {@link RigidBody}s.
  *
  * Can be used to update objects dynamics.
  */
-export default class DynamicsSpace extends Space<PhysicsObject, DynamicsSolver> {
+export default class DynamicsSpace extends Space<RigidBody, DynamicsSolver> {
+  gravity: vec2;
+
   /**
    * Creates a {@link DynamicsSpace} instance.
    */
-  constructor() {
+  constructor(gravity: vec2) {
     super();
+
+    this.gravity = vec2.clone(gravity);
   }
 
   /**
@@ -21,5 +25,11 @@ export default class DynamicsSpace extends Space<PhysicsObject, DynamicsSolver> 
    *
    * @param delta The time since the last frame
    */
-  step(delta: number) {}
+  step(delta: number) {
+    for (const obj of this.objects) {
+      for (const s of this.solvers) {
+        s(obj, delta, this.gravity);
+      }
+    }
+  }
 }
