@@ -1,5 +1,6 @@
 import { vec2, vec3 } from "gl-matrix";
 import Object2D from "../object2d";
+import { cross2D } from "../utils/vectors";
 
 /**
  * Represents an object in 2D world space that can experience physics.
@@ -27,7 +28,7 @@ export default class PhysicsObject extends Object2D {
   /**
    * Elasticity/bounciness
    */
-  restitution = 10;
+  restitution = 0.3;
 
   // POSITIONAL MOMENTUM
 
@@ -46,14 +47,14 @@ export default class PhysicsObject extends Object2D {
    *
    * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
    */
-  staticFriction = 1;
+  staticFriction = 0.2;
 
   /**
    * Coefficient of dynamic/kinetic friction.
    *
    * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
    */
-  dynamicFriction = 1;
+  dynamicFriction = 0.2;
 
   // ROTATIONAL MOMENTUM
 
@@ -72,12 +73,12 @@ export default class PhysicsObject extends Object2D {
    *
    * When set to 0 the object's inertia is effectively infinite.
    */
-  private inertia = 1;
+  private inertia = 5;
 
   /**
    * The inverse of the object's inertia (1 / inertia).
    */
-  private inverseInertia = 1;
+  private inverseInertia = 0.2;
 
   // OPTIONS
 
@@ -139,7 +140,7 @@ export default class PhysicsObject extends Object2D {
    */
   applyImpulse(impulse: vec2, contactVector: vec2) {
     vec2.scaleAndAdd(this.velocity, this.velocity, impulse, this.inverseMass);
-    this.angularVelocity += this.inverseInertia * vec2.cross(vec3.create(), contactVector, impulse)[2];
+    this.angularVelocity += this.inverseInertia * cross2D(contactVector, impulse);
   }
 
   /**

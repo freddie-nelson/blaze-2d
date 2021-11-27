@@ -6,7 +6,7 @@
  */
 export default abstract class Space<O, S> {
   objects: O[] = [];
-  solvers: S[] = [];
+  solvers: { cb: S; iterations: number }[] = [];
 
   /**
    * Creates a {@link Space} instance.
@@ -60,6 +60,29 @@ export default abstract class Space<O, S> {
   }
 
   /**
+   * Gets a clone of the solvers in the space with a count variable which can be used
+   * to track how many times the solver has to run.
+   *
+   * @returns The max solver iterations and the solvers to be executed
+   */
+  // getSolverCounters() {
+  //   let count = 0;
+  //   const solvers = this.solvers.map((s) => {
+  //     if (s.iterations > count) count = s.iterations;
+
+  //     return {
+  //       cb: s.cb,
+  //       count: s.iterations,
+  //     };
+  //   });
+
+  //   return {
+  //     count,
+  //     solvers,
+  //   };
+  // }
+
+  /**
    * Gets all solvers in the space.
    *
    * @returns All solvers in the space
@@ -78,20 +101,21 @@ export default abstract class Space<O, S> {
   /**
    * Adds a solver to the space.
    *
-   * @param solver The solvers to add
+   * @param cb The solver to add
+   * @param iterations The number of times to run the solver, per time step
    */
-  addSolver(solver: S) {
-    this.solvers.push(solver);
+  addSolver(cb: S, iterations: number) {
+    this.solvers.push({ cb, iterations });
   }
 
   /**
    * Removes a solver from the space.
    *
-   * @param solver The solver to remove
+   * @param cb The callback of the solver to remove
    * @returns Wether or not the solver was removed
    */
-  removeSolver(solver: S) {
-    const i = this.solvers.findIndex((s) => s === solver);
+  removeSolver(cb: S) {
+    const i = this.solvers.findIndex((s) => s.cb === cb);
     if (i === -1) return false;
 
     this.solvers.splice(i, 1);

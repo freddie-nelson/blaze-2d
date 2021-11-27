@@ -76,3 +76,14 @@ export function cross2DWithScalar(out: vec2, a: vec2, scalar: number) {
   out[1] = a[0] * -scalar;
   return out;
 }
+
+/**
+ * Calculates the cross product of 2 2D vectors and returns the Z value of the resulting 3D vector.
+ *
+ * @param a The vector to cross
+ * @param b The vector to cross with **a**
+ * @returns The Z coordinate of the resultant 3D vector
+ */
+export function cross2D(a: vec2, b: vec2) {
+  return a[0] * b[1] - a[1] * b[0];
+}

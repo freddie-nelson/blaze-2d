@@ -12,6 +12,7 @@ import Circle from "@blz/shapes/circle";
 import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
 import TextureAtlas from "@blz/texture/atlas";
+import TextureLoader from "@blz/texture/loader";
 import Debug from "@blz/debug";
 import { addMouseListener, Mouse } from "@blz/mouse";
 import { addKeyListener } from "@blz/keyboard";
@@ -64,7 +65,7 @@ const randInt = (min = 0, max = 1) => {
 };
 
 // setup atlas
-const ATLAS = new TextureAtlas(8000);
+const ATLAS = new TextureAtlas(2000);
 BatchRenderer.atlas = ATLAS;
 WORLD.useBatchRenderer = true;
 Debug.rendererToggle.checked = true;
@@ -84,6 +85,15 @@ for (let i = 0; i < 200; i++) {
   shapeTexs.push(tex);
   ATLAS.addTexture(tex);
 }
+
+const debugTex = new Texture();
+debugTex
+  .loadImage("debug.png")
+  .then(() => {
+    ATLAS.addTexture(debugTex);
+    ATLAS.refreshAtlas();
+  })
+  .catch((err) => console.log(err));
 
 ATLAS.refreshAtlas();
 
@@ -149,6 +159,7 @@ const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
 const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect], 0);
+floor.setInertia(0);
 floor.isStatic = true;
 WORLD.addEntity(floor);
 PHYSICS.addBody(floor);
@@ -176,7 +187,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
     collider = new CircleCollider(size[0] / 2, pos);
   }
 
-  shape.texture = tex;
+  shape.texture = debugTex;
 
   const entity = new Entity(pos, collider, [shape], mass);
 

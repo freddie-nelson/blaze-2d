@@ -26,9 +26,11 @@ export default class DynamicsSpace extends Space<RigidBody, DynamicsSolver> {
    * @param delta The time since the last frame
    */
   step(delta: number) {
-    for (const obj of this.objects) {
-      for (const s of this.solvers) {
-        s(obj, delta, this.gravity);
+    for (const solver of this.solvers) {
+      for (let i = 0; i < solver.iterations; i++) {
+        for (const obj of this.objects) {
+          solver.cb(obj, delta, this.gravity);
+        }
       }
     }
   }

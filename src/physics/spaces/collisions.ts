@@ -11,6 +11,8 @@ import Space from "./space";
  * Can be used to test for and solve collisions between objects in the space.
  */
 export default class CollisionsSpace extends Space<CollisionObject, CollisionSolver> {
+  gravity: vec2;
+
   /**
    * Map used to store pairs objects which have had collisisions checked.
    */
@@ -18,9 +20,13 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
 
   /**
    * Creates a {@link CollisionSpace} instance.
+   *
+   * @param gravity The gravity vector to use in the collision space
    */
-  constructor() {
+  constructor(gravity: vec2) {
     super();
+
+    this.gravity = gravity;
   }
 
   /**
@@ -29,18 +35,22 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * @param delta The time since the last frame
    */
   step(delta: number) {
-    const manifolds = this.obtainManifolds();
+    const manifolds = this.obtainManifolds(delta);
     this.solveManifolds(manifolds.collisions);
 
     this.fireTriggerEvents(manifolds.triggers);
   }
 
   private solveManifolds(manifolds: Manifold[]) {
-    for (const m of manifolds) {
-      for (const s of this.solvers) {
-        s(m);
+    for (const solver of this.solvers) {
+      for (let i = 0; i < solver.iterations; i++) {
+        for (const m of manifolds) {
+          solver.cb(m);
+        }
       }
+    }
 
+    for (const m of manifolds) {
       m.a.fireEvent("collision", m);
       m.b.fireEvent("collision", m);
     }
@@ -63,7 +73,7 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
     }
   }
 
-  private obtainManifolds(): { collisions: Manifold[]; triggers: Manifold[] } {
+  private obtainManifolds(delta: number): { collisions: Manifold[]; triggers: Manifold[] } {
     const collisions: Manifold[] = [];
     const triggers: Manifold[] = [];
 
@@ -90,7 +100,12 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
         // test collision
         const res = colliderA.testCollision(colliderB);
         if (res.hasCollision) {
-          const manifold = new Manifold(A, B, res);
+          const manifold = new Manifold(A, B, res, this.gravity, delta);
+
+          // console.log(
+          //   vec2.dot(manifold.normal, vec2.sub(vec2.create(), B.getPosition(), A.getPosition())) > 0,
+          //   manifold.normal
+          // );
 
           if (A.isTrigger || B.isTrigger) {
             triggers.push(manifold);

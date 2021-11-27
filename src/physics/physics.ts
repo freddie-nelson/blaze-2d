@@ -10,40 +10,60 @@ import solvePositionDynamics from "./solvers/dynamics/position";
 import CollisionsSpace from "./spaces/collisions";
 import DynamicsSpace from "./spaces/dynamics";
 import resetForce from "./solvers/dynamics/resetForce";
+import positionalCorrection from "./solvers/collision/positionalCorrection";
+import Space from "./spaces/space";
+import { DynamicsSolver } from "./solvers/solver";
 
 /**
  * Handles all physics updates for bodies in the system.
  *
  * As a general rule the physics system should be added after the {@link World} system.
+ *
+ * Solvers added to the physics system are executed after all other spaces in the system have been updated.
  */
-export default class Physics implements System {
+export default class Physics extends Space<undefined, DynamicsSolver> implements System {
   debug = false;
   private gravity = vec2.fromValues(0, -9.8);
 
   // spaces
-  collisionsSpace = new CollisionsSpace();
   dynamicsSpace = new DynamicsSpace(this.gravity);
+  collisionsSpace = new CollisionsSpace(this.gravity);
 
   /**
    *
    * @param gravity The gravitional force applied to objects in the system
    */
   constructor(gravity?: vec2) {
+    super();
+
     if (gravity) this.setGravity(gravity);
 
     // add default solvers
-    this.collisionsSpace.addSolver(solvePositionCollisions);
-    this.collisionsSpace.addSolver(solveImpulse);
+    this.dynamicsSpace.addSolver(solveGravity, 1);
+    this.dynamicsSpace.addSolver(solveVelocity, 1);
+    this.dynamicsSpace.addSolver(solvePositionDynamics, 1);
 
-    this.dynamicsSpace.addSolver(solveGravity);
-    this.dynamicsSpace.addSolver(solveVelocity);
-    this.dynamicsSpace.addSolver(solvePositionDynamics);
-    this.dynamicsSpace.addSolver(resetForce);
+    this.collisionsSpace.addSolver(solveImpulse, 2);
+    this.collisionsSpace.addSolver(positionalCorrection, 1);
+
+    this.addSolver(resetForce, 1);
   }
 
   update(delta: number) {
-    this.collisionsSpace.step(delta);
+    // step spaces
+    // dynamics space should be updated before collisions
     this.dynamicsSpace.step(delta);
+    this.collisionsSpace.step(delta);
+
+    this.step(delta);
+  }
+
+  step(delta: number) {
+    for (const obj of this.dynamicsSpace.objects) {
+      for (const s of this.solvers) {
+        s.cb(obj, delta, this.gravity);
+      }
+    }
   }
 
   /**
@@ -82,6 +102,7 @@ export default class Physics implements System {
   setGravity(gravity: vec2) {
     this.gravity = vec2.clone(gravity);
     this.dynamicsSpace.gravity = vec2.clone(gravity);
+    this.collisionsSpace.gravity = vec2.clone(gravity);
   }
 
   /**
