@@ -178,6 +178,7 @@ export default abstract class BatchRenderer extends Renderer {
       const uv = r.shape.getUVCoords();
       const texCoord = uv.map((uv, i) => {
         if (i % 2 === 0) {
+          // console.log(atlasImage.tl, atlasImage.br);
           if (uv === 1) return atlasImage.br[0] / this.atlas.getSize();
           else return atlasImage.tl[0] / this.atlas.getSize();
         } else {

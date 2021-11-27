@@ -168,7 +168,7 @@ export default class TextureAtlas extends Texture {
 
     for (const t of textures) {
       if (!t.texture.image) {
-        // when texture has no image substitute with 1x1 pixel of textures color
+        // when texture has no image substitute with 5x5 pixel of textures color
         this.ctx.fillStyle = t.texture.color.hex;
         this.ctx.fillRect(t.tl[0], t.tl[1], colorBlockSize, colorBlockSize);
       } else {

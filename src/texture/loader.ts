@@ -51,9 +51,12 @@ export default abstract class TextureLoader {
    */
   static loadTexture(texture: Texture) {
     this.checkReady();
-    if (this.isLoaded(texture)) return true;
+    if (this.isLoaded(texture) && !texture.isOld) return true;
 
-    const unit = this.findReplaceableTextureUnit();
+    // mark texture as not old anymore
+    texture.isOld = false;
+
+    const unit = this.getUnitOfTexture(texture) || this.findReplaceableTextureUnit();
     if (unit.texture) this.unloadTexture(unit.texture, unit);
 
     unit.texture = texture;

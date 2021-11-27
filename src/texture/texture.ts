@@ -13,6 +13,7 @@ export default class Texture {
   color: Color;
   imagePath: string;
   image: HTMLImageElement;
+  isOld = false;
 
   private unit: typeof WebGL2RenderingContext.TEXTURE0 = -1;
 
@@ -36,7 +37,10 @@ export default class Texture {
 
     this.image = new Image();
     const promise = new Promise<void>((resolve, reject) => {
-      this.image.onload = () => resolve();
+      this.image.onload = () => {
+        this.isOld = true;
+        resolve();
+      };
       this.image.onerror = () => reject();
     });
 
