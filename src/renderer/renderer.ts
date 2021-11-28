@@ -1,4 +1,4 @@
-import { vec2 } from "gl-matrix";
+import { glMatrix, vec2 } from "gl-matrix";
 
 import Rect from "../shapes/rect";
 import { clear, createShaderProgram, ShaderProgramInfo } from "../utils/gl";
@@ -13,6 +13,14 @@ import Color from "../utils/color";
 import Blaze from "../blaze";
 import Camera from "../camera/camera";
 import Circle from "../shapes/circle";
+import Shape from "../shapes/shape";
+import { ZMap } from "../utils/types";
+
+interface RenderQueueItem {
+  shape: Shape;
+  position: vec2;
+  rotation: number;
+}
 
 /**
  * Renders single instances of shapes at a time.
@@ -22,6 +30,26 @@ export default abstract class Renderer {
   private static resolutionScale = 1;
   private static mode: "TRIANGLES" | "LINES" = "TRIANGLES";
   private static camera: Camera;
+
+  /**
+   * The scale applied to shape vertices to obtain their clip space vertices.
+   */
+  protected static scale = vec2.fromValues(1, 1);
+
+  private static queue: ZMap<RenderQueueItem[]> = {};
+
+  // buffers
+  static positionBuffer: WebGLBuffer;
+  static texBuffer: WebGLBuffer;
+  static uvBuffer: WebGLBuffer;
+  static indexBuffer: WebGLBuffer;
+
+  // shader programs
+  static rectProgram: WebGLProgram;
+  static rectProgramInfo: ShaderProgramInfo;
+
+  static circleProgram: WebGLProgram;
+  static circleProgramInfo: ShaderProgramInfo;
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -53,26 +81,12 @@ export default abstract class Renderer {
     this.initShaders(gl);
   }
 
-  static rectProgram: WebGLProgram;
-  static rectProgramInfo: ShaderProgramInfo;
-  static rectPositionBuffer: WebGLBuffer;
-  static rectTexBuffer: WebGLBuffer;
-  static rectUvBuffer: WebGLBuffer;
-  static rectIndexBuffer: WebGLBuffer;
-
-  static circleProgram: WebGLProgram;
-  static circleProgramInfo: ShaderProgramInfo;
-  static circlePositionBuffer: WebGLBuffer;
-  static circleTexBuffer: WebGLBuffer;
-  static circleUvBuffer: WebGLBuffer;
-  static circleIndexBuffer: WebGLBuffer;
-
   private static initShaders(gl: WebGL2RenderingContext) {
     // Rectangle shader
-    this.rectPositionBuffer = gl.createBuffer();
-    this.rectIndexBuffer = gl.createBuffer();
-    this.rectTexBuffer = gl.createBuffer();
-    this.rectUvBuffer = gl.createBuffer();
+    this.positionBuffer = gl.createBuffer();
+    this.indexBuffer = gl.createBuffer();
+    this.texBuffer = gl.createBuffer();
+    this.uvBuffer = gl.createBuffer();
 
     this.rectProgram = createShaderProgram(gl, vsRect, fsRect);
     this.rectProgramInfo = {
@@ -89,11 +103,6 @@ export default abstract class Renderer {
     };
 
     // Circle shader
-    this.circlePositionBuffer = gl.createBuffer();
-    this.circleIndexBuffer = gl.createBuffer();
-    this.circleTexBuffer = gl.createBuffer();
-    this.circleUvBuffer = gl.createBuffer();
-
     this.circleProgram = createShaderProgram(gl, vsCircle, fsCircle);
     this.circleProgramInfo = {
       program: this.circleProgram,
@@ -124,128 +133,103 @@ export default abstract class Renderer {
   }
 
   /**
-   * Renders a rectangle.
+   * Renders all items currently in the render queue and clears the queue.
    *
-   * @param rect The rectangle to render
-   * @param position The x and y position to render the rectangle at
-   * @param zIndex The z position of the rendered rectangle
-   * @param scale The world cell size to clip space scale value
+   * Should be called at the end of each frame.
    */
-  static renderRect(
-    rect: Rect,
-    position = vec2.create(),
-    rotation = 0,
-    zIndex = 0,
-    scale = vec2.fromValues(1, 1)
-  ) {
-    const gl = this.gl;
-    const rectProgramInfo = this.rectProgramInfo;
+  static flush() {
+    const queue = this.queue;
+    const min = queue.min || 0;
+    const max = queue.max || Blaze.getZLevels();
 
-    // vertex positions
-    const renderPos = vec2.clone(position);
-    vec2.sub(renderPos, renderPos, this.camera.getPosition());
-    const vertices = rect.getVerticesClipSpace(renderPos, scale, rotation);
+    for (let z = min; z <= max; z++) {
+      if (!queue[z]) continue;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      for (const item of queue[z]) {
+        this.renderQueueItem(item, z);
+      }
 
-    gl.vertexAttribPointer(rectProgramInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.vertex);
-
-    // tex coords
-    const texCoords = rect.getUVCoords();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectTexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
-
-    gl.vertexAttribPointer(rectProgramInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.texCoord);
-
-    // uv coords
-    const uvs = rect.getUVCoords();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
-
-    gl.vertexAttribPointer(rectProgramInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(rectProgramInfo.attribLocations.uv);
-
-    // indices
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rect.getIndices(), gl.STATIC_DRAW);
-
-    gl.useProgram(rectProgramInfo.program);
-    gl.uniform1f(rectProgramInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
-
-    // set active texture
-    if (rect.texture) {
-      TextureLoader.loadTexture(rect.texture);
-
-      const unit = rect.texture.getTextureUnit();
-      TextureLoader.updateLastUsed(unit);
-      gl.uniform1i(rectProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
+      delete queue[z];
     }
-
-    gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);
   }
 
   /**
-   * Renders a circle.
+   * Adds a shape to the render queue.
    *
-   * @param circle The circle to render
-   * @param position The x and y position to render the circle at
-   * @param zIndex The z position of the rendered circle
-   * @param scale The world cell size to clip space scale value
+   * @param shape The shape to queue
+   * @param position The x and y position to render the rectangle at
+   * @param rotation The rotation to apply to the shape
+   * @param zIndex The z position of the rendered rectangle
+   * @param scale The world to clip space scale value
    */
-  static renderCircle(
-    circle: Circle,
-    position = vec2.create(),
-    rotation = 0,
-    zIndex = 0,
-    scale = vec2.fromValues(1, 1)
-  ) {
+  static queueShape(shape: Shape, position = vec2.create(), rotation = 0, zIndex = 0) {
+    const item: RenderQueueItem = {
+      shape,
+      position,
+      rotation,
+    };
+
+    if (this.queue[zIndex]) this.queue[zIndex].push(item);
+    else this.queue[zIndex] = [item];
+  }
+
+  /**
+   * Renders a shape from a {@link RenderQueueItem} object.
+   *
+   * @param item The {@link RenderQueueItem} to render
+   * @param zIndex The z index to render the shape at
+   */
+  private static renderQueueItem({ shape, position, rotation }: RenderQueueItem, zIndex: number) {
     const gl = this.gl;
-    const circleProgramInfo = this.circleProgramInfo;
+
+    let programInfo: ShaderProgramInfo;
+    if (shape instanceof Rect) {
+      programInfo = this.rectProgramInfo;
+    } else if (shape instanceof Circle) {
+      programInfo = this.circleProgramInfo;
+    }
 
     // vertex positions
     const renderPos = vec2.clone(position);
     vec2.sub(renderPos, renderPos, this.camera.getPosition());
-    const vertices = circle.getVerticesClipSpace(renderPos, scale, rotation);
+    const vertices = shape.getVerticesClipSpace(renderPos, this.scale, rotation);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.circlePositionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-    gl.vertexAttribPointer(circleProgramInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.vertex);
+    gl.vertexAttribPointer(programInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertex);
 
     // tex coords
-    const texCoords = circle.getUVCoords();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.circleTexBuffer);
+    const texCoords = shape.getUVCoords();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
 
-    gl.vertexAttribPointer(circleProgramInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.texCoord);
+    gl.vertexAttribPointer(programInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
 
     // uv coords
-    const uvs = circle.getUVCoords();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.circleUvBuffer);
+    const uvs = shape.getUVCoords();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
 
-    gl.vertexAttribPointer(circleProgramInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(circleProgramInfo.attribLocations.uv);
+    gl.vertexAttribPointer(programInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
     // indices
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.circleIndexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, circle.getIndices(), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, shape.getIndices(), gl.STATIC_DRAW);
 
-    gl.useProgram(circleProgramInfo.program);
-    gl.uniform1f(circleProgramInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
+    gl.useProgram(programInfo.program);
+    gl.uniform1f(programInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
 
     // set active texture
-    if (circle.texture) {
-      TextureLoader.loadTexture(circle.texture);
+    if (shape.texture) {
+      TextureLoader.loadTexture(shape.texture);
 
-      const unit = circle.texture.getTextureUnit();
+      const unit = shape.texture.getTextureUnit();
       TextureLoader.updateLastUsed(unit);
-      gl.uniform1i(circleProgramInfo.uniformLocations.texture, unit - gl.TEXTURE0);
+      gl.uniform1i(programInfo.uniformLocations.texture, unit - gl.TEXTURE0);
     }
 
     gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);
@@ -322,5 +306,23 @@ export default abstract class Renderer {
    */
   static getCamera() {
     return this.camera;
+  }
+
+  /**
+   * Set the scale that is applied to vertices to obtain the vertices in clip space.
+   *
+   * @param scale The scaling vector
+   */
+  static setScale(scale: vec2) {
+    this.scale = scale;
+  }
+
+  /**
+   * Gets the scale that is applied to vertices to obtain the vertices in clip space.
+   *
+   * @returns The scaling vector
+   */
+  static getScale() {
+    return this.scale;
   }
 }

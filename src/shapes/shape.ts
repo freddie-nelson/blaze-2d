@@ -23,10 +23,10 @@ export default abstract class Shape extends Object2D {
    * Renders the shape using the {@link Renderer}.
    *
    * @param position The x and y position to render the shape at
+   * @param rotation The rotation to apply to the rendered shape
    * @param zIndex The z position of the rendered shape
-   * @param scale The world to clip space scale value
    */
-  abstract render(position: vec2, rotation: number, zIndex: number, scale: vec2): void;
+  abstract render(position?: vec2, rotation?: number, zIndex?: number): void;
 
   /**
    * Calculates the shape's UV coords to be used for texture rendering.
@@ -99,5 +99,5 @@ export default abstract class Shape extends Object2D {
    * @param offset An offset to apply to each index
    * @returns The shape's vertex indices with the given offset added to each index
    */
-  abstract getIndices(offset: number): Uint16Array;
+  abstract getIndices(offset?: number): Uint16Array;
 }

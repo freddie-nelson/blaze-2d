@@ -7,6 +7,7 @@ import { System } from "./system";
 import TextureLoader from "./texture/loader";
 import Renderer from "./renderer/renderer";
 import validateZIndex from "./utils/validators";
+import BatchRenderer from "./renderer/batchRenderer";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -86,6 +87,8 @@ export default abstract class Blaze {
    * Update is called on every animation frame using [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
    *
    * Update clears the {@link Renderer} with the set background color and calls `update` on any systems in `this.systems`.
+   *
+   * At the end of the update the {@link Renderer} queue is flushed, drawing anything that was queued for rendering during the frame.
    */
   static update() {
     requestAnimationFrame(() => this.update());
@@ -100,6 +103,9 @@ export default abstract class Blaze {
     for (const system of this.systems) {
       system.update(delta);
     }
+
+    BatchRenderer.flush();
+    Renderer.flush();
 
     if (Debug.show) Debug.update(delta);
   }

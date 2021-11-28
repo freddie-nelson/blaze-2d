@@ -14,6 +14,7 @@ import TextureAtlas from "../texture/atlas";
 import Camera from "../camera/camera";
 import Blaze from "../blaze";
 import Circle from "../shapes/circle";
+import { ZMap } from "../utils/types";
 
 /**
  * Stores the data needed to render a shape in the world.
@@ -43,18 +44,99 @@ interface Geometry {
 export default abstract class BatchRenderer extends Renderer {
   static atlas: TextureAtlas;
 
+  static batchQueue: ZMap<{ [index: string]: Renderable<Shape>[] }> = {};
+
+  /**
+   * Renders all items currently in the batch render queue and clears the queue.
+   *
+   * Should be called at the end of each frame.
+   */
+  static flush() {
+    const queue = this.batchQueue;
+    const min = queue.min || 0;
+    const max = queue.max || Blaze.getZLevels();
+
+    for (let z = min; z <= max; z++) {
+      if (!queue[z]) continue;
+
+      for (const type of Object.keys(queue[z])) {
+        switch (type) {
+          case "rect":
+            this.renderRects(queue[z][type] as Renderable<Rect>[], z);
+            break;
+          case "circle":
+            this.renderCircles(queue[z][type] as Renderable<Circle>[], z);
+            break;
+          default:
+            break;
+        }
+      }
+
+      delete queue[z];
+    }
+  }
+
+  /**
+   * Queue an entity to be batch rendered.
+   *
+   * @param entity The entity to render
+   * @param zIndex The z index of the entity
+   */
+  static queueEntity(entity: Entity, zIndex = 0) {
+    const shapes = this.getRenderableShapesFromEntites([entity]);
+
+    this.queueRects(shapes.rects, zIndex);
+    this.queueCircles(shapes.circles, zIndex);
+  }
+
   /**
    * Batch render an array of entities.
    *
    * @param entities The entities to render
    * @param zIndex The z position of the rendered rectangle
-   * @param scale The world cell size to clip space scale value
    */
-  static renderEntities(entities: Entity[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
+  static queueEntities(entities: Entity[], zIndex = 0) {
     const shapes = this.getRenderableShapesFromEntites(entities);
 
-    this.renderRects(shapes.rects, zIndex, scale);
-    this.renderCircles(shapes.circles, zIndex, scale);
+    this.queueRects(shapes.rects, zIndex);
+    this.queueCircles(shapes.circles, zIndex);
+  }
+
+  /**
+   * Queue a group of rectangles to be batch rendered.
+   *
+   * @param rects The rects to queue
+   * @param zIndex The z index of the rectangles
+   */
+  private static queueRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
+    const renderable =
+      rects[0] instanceof Rect
+        ? this.getRenderableRectsFromRects(<Rect[]>rects)
+        : (rects as Renderable<Rect>[]);
+
+    this.addRenderablesToQueue(renderable, zIndex, "rect");
+  }
+
+  /**
+   * Queue a group of circle to be batch rendered.
+   *
+   * @param circles The circles to queue
+   * @param zIndex The z index of the circles
+   */
+  private static queueCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0) {
+    const renderable =
+      circles[0] instanceof Circle
+        ? this.getRenderableCirclesFromCircles(<Circle[]>circles)
+        : (circles as Renderable<Circle>[]);
+
+    this.addRenderablesToQueue(renderable, zIndex, "circle");
+  }
+
+  private static addRenderablesToQueue(renderables: Renderable<Shape>[], zIndex: number, type: string) {
+    if (!this.batchQueue[zIndex]) this.batchQueue[zIndex] = {};
+    if (!this.batchQueue[zIndex][type]) this.batchQueue[zIndex][type] = [];
+
+    this.batchQueue[zIndex][type].push(...renderables);
   }
 
   /**
@@ -62,15 +144,14 @@ export default abstract class BatchRenderer extends Renderer {
    *
    * @param rects The rects to render
    * @param zIndex The z index of the rendered rectangles
-   * @param scale The world cell size to clip space scale value
    */
-  static renderRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
+  private static renderRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
     const renderable =
       rects[0] instanceof Rect
         ? this.getRenderableRectsFromRects(<Rect[]>rects)
         : (rects as Renderable<Rect>[]);
 
-    const geometry = this.getGeometryFromRenderables(renderable, scale);
+    const geometry = this.getGeometryFromRenderables(renderable);
 
     this.renderGeometry(geometry, "rect", zIndex);
   }
@@ -80,15 +161,14 @@ export default abstract class BatchRenderer extends Renderer {
    *
    * @param circles The circles to render
    * @param zIndex The z index of the rendered circles
-   * @param scale The world cell size to clip space scale value
    */
-  static renderCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0, scale = vec2.fromValues(1, 1)) {
+  private static renderCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0) {
     const renderable =
       circles[0] instanceof Circle
         ? this.getRenderableCirclesFromCircles(<Circle[]>circles)
         : (circles as Renderable<Circle>[]);
 
-    const geometry = this.getGeometryFromRenderables(renderable, scale);
+    const geometry = this.getGeometryFromRenderables(renderable);
 
     this.renderGeometry(geometry, "circle", zIndex);
   }
@@ -100,7 +180,7 @@ export default abstract class BatchRenderer extends Renderer {
    * @param type The type of shape shader to use
    * @param zIndex The z position of the rendered rectangle
    */
-  static renderGeometry(geometry: Geometry, type: "rect" | "circle", zIndex = 0) {
+  private static renderGeometry(geometry: Geometry, type: "rect" | "circle", zIndex = 0) {
     const gl = this.getGL();
 
     // select shader program
@@ -117,28 +197,28 @@ export default abstract class BatchRenderer extends Renderer {
     }
 
     // vertex positions
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectPositionBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.vertices, gl.STATIC_DRAW);
 
     gl.vertexAttribPointer(programInfo.attribLocations.vertex, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertex);
 
     // tex coords
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectTexBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.texCoords, gl.STATIC_DRAW);
 
     gl.vertexAttribPointer(programInfo.attribLocations.texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
 
     // uv coords
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.rectUvBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry.uvs, gl.STATIC_DRAW);
 
     gl.vertexAttribPointer(programInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
     // index buffer
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.rectIndexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
 
     gl.useProgram(programInfo.program);
@@ -156,10 +236,7 @@ export default abstract class BatchRenderer extends Renderer {
   /**
    * Generates geometry data for an array of {@link Renderable} shapes.
    */
-  static getGeometryFromRenderables(
-    renderable: Renderable<Shape>[],
-    scale = vec2.fromValues(1, 1)
-  ): Geometry {
+  private static getGeometryFromRenderables(renderable: Renderable<Shape>[]): Geometry {
     const vertices: number[] = [];
     const indices: number[] = [];
     const texCoords: number[] = [];
@@ -169,7 +246,7 @@ export default abstract class BatchRenderer extends Renderer {
       const pos = vec2.clone(r.pos);
       vec2.sub(pos, pos, this.getCamera().getPosition());
 
-      const v = r.shape.getVerticesClipSpace(pos, scale, r.rot);
+      const v = r.shape.getVerticesClipSpace(pos, this.scale, r.rot);
       const i = r.shape.getIndices((indices.length / 3) * 2);
 
       const atlasImage = this.atlas.getTexture(r.shape.texture);
@@ -201,7 +278,7 @@ export default abstract class BatchRenderer extends Renderer {
     };
   }
 
-  static getRenderableRectsFromRects(rects: Rect[]) {
+  private static getRenderableRectsFromRects(rects: Rect[]) {
     const renderable: Renderable<Rect>[] = [];
 
     for (const r of rects) {
@@ -215,7 +292,7 @@ export default abstract class BatchRenderer extends Renderer {
     return renderable;
   }
 
-  static getRenderableCirclesFromCircles(circles: Circle[]) {
+  private static getRenderableCirclesFromCircles(circles: Circle[]) {
     const renderable: Renderable<Circle>[] = [];
 
     for (const c of circles) {
@@ -229,7 +306,7 @@ export default abstract class BatchRenderer extends Renderer {
     return renderable;
   }
 
-  static getRenderableShapesFromEntites(entities: Entity[]) {
+  private static getRenderableShapesFromEntites(entities: Entity[]) {
     const rects: Renderable<Rect>[] = [];
     const circles: Renderable<Circle>[] = [];
 

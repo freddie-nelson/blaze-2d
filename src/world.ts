@@ -21,15 +21,6 @@ const debugRGBA: RGBAColor = {
 const debugTexture = new Texture(new Color(debugRGBA));
 
 /**
- * Map to store data which belongs to certain z indexes of the world.
- */
-interface ZMap<T> {
-  [index: number]: T;
-  max?: number;
-  min?: number;
-}
-
-/**
  * Represents the 2D world.
  */
 export default class World implements System {
@@ -65,33 +56,16 @@ export default class World implements System {
 
     this.camera.update();
 
-    // z map of visible entities
-    const entityZMap: ZMap<Entity[]> = {
-      max: 0,
-      min: Blaze.getZLevels(),
-    };
-
-    // update entities and construct z map
+    // update entities
     for (const e of this.entities) {
       e.update(delta);
 
       if (this.camera.viewport.containsBoxCollider(e.collider as BoxCollider, this.getWorldToPixelSpace())) {
-        // add entity to z map
-        const z = e.getZIndex();
-        if (entityZMap[z]) entityZMap[z].push(e);
-        else entityZMap[z] = [e];
-
-        // update z map min and max
-        if (z > entityZMap.max) {
-          entityZMap.max = z;
-        } else if (z < entityZMap.min) {
-          entityZMap.min = z;
-        }
       }
     }
 
     // render entities
-    this.renderEntities(entityZMap);
+    this.renderEntities();
 
     // debug tooling
     if (this.debug) {
@@ -107,8 +81,7 @@ export default class World implements System {
             e.collider.getRotation()
           );
           rect.texture = this.debugTexture;
-
-          Renderer.renderRect(rect, undefined, undefined, undefined, worldToClipSpace);
+          rect.render();
         } else if (e.collider instanceof CircleCollider) {
           const circle = new Circle(
             e.collider.getRadius(),
@@ -116,15 +89,14 @@ export default class World implements System {
             e.collider.getRotation()
           );
           circle.texture = debugTexture;
-
-          Renderer.renderCircle(circle, undefined, undefined, undefined, worldToClipSpace);
+          circle.render();
         }
       }
     }
   }
 
   /**
-   * Renders a {@link ZMap} of entities in the world using the world's current camera.
+   * Renders the entities in the world using the world's current camera.
    *
    * If `this.useBatchRenderer` is true then the batch renderer will be used, otherwise the
    * entities will be sorted by zIndex and rendered normally.
@@ -133,24 +105,20 @@ export default class World implements System {
    *
    * @param delta Time since last frame
    */
-  renderEntities(queue: ZMap<Entity[]>) {
+  renderEntities() {
     const worldToClipSpace = this.getWorldtoClipSpace();
 
     Renderer.setMode("TRIANGLES");
     Renderer.useCamera(this.camera);
+    Renderer.setScale(worldToClipSpace);
 
-    const min = queue.min || 0;
-    const max = queue.max || Blaze.getZLevels();
-
-    for (let z = min; z <= max; z++) {
-      if (!queue[z]) continue;
-
-      if (this.useBatchRenderer) {
-        BatchRenderer.renderEntities(queue[z], z, worldToClipSpace);
-      } else {
-        for (const e of queue[z]) {
-          e.render(worldToClipSpace);
-        }
+    if (this.useBatchRenderer) {
+      for (const e of this.entities) {
+        BatchRenderer.queueEntity(e, e.getZIndex());
+      }
+    } else {
+      for (const e of this.entities) {
+        e.render();
       }
     }
   }

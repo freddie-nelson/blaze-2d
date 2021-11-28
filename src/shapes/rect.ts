@@ -40,11 +40,11 @@ export default class Rect extends Shape {
    * Renders the rectangle using the {@link Renderer}.
    *
    * @param position The x and y position to render the rectangle at
+   * @param rotation The rotation to apply to the rendered rectangle
    * @param zIndex The z position of the rendered rectangle
-   * @param scale The world cell size to clip space scale value
    */
-  render(position: vec2, rotation: number, zIndex: number, scale: vec2) {
-    Renderer.renderRect(this, position, rotation, zIndex, scale);
+  render(position?: vec2, rotation?: number, zIndex?: number) {
+    Renderer.queueShape(this, position, rotation, zIndex);
   }
 
   /**

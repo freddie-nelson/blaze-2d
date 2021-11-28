@@ -42,10 +42,9 @@ export default class Circle extends Shape {
    * @param position The x and y position to render the circle at
    * @param rotation The rotation to apply to the rendered circle
    * @param zIndex The z position of the rendered circle
-   * @param scale The world cell size to clip space scale value
    */
-  render(position: vec2, rotation: number, zIndex: number, scale: vec2) {
-    Renderer.renderCircle(this, position, rotation, zIndex, scale);
+  render(position?: vec2, rotation?: number, zIndex?: number) {
+    Renderer.queueShape(this, position, rotation, zIndex);
   }
 
   /**
