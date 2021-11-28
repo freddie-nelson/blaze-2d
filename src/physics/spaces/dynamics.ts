@@ -21,16 +21,16 @@ export default class DynamicsSpace extends Space<RigidBody, DynamicsSolver> {
   }
 
   /**
-   * Steps the dynamics of every object in the space forward by the given delta time.
+   * Executes a solver on every object in the space.
    *
-   * @param delta The time since the last frame
+   * @param id The id of the solver to execute
    */
-  step(delta: number) {
-    for (const solver of this.solvers) {
-      for (let i = 0; i < solver.iterations; i++) {
-        for (const obj of this.objects) {
-          solver.cb(obj, delta, this.gravity);
-        }
+  solve(id: string, delta: number) {
+    const solver = this.solvers[id];
+
+    for (let i = 0; i < solver.iterations; i++) {
+      for (const obj of this.objects) {
+        solver.cb(obj, delta, obj.takesGravity ? this.gravity : obj.gravity);
       }
     }
   }

@@ -1,11 +1,12 @@
 import { vec2 } from "gl-matrix";
 import RigidBody from "../../rigidbody";
+import solveForces from "./forces";
 
-const ITERATIONS = 1;
+export default function solveVelocity(obj: RigidBody, delta: number, gravity: vec2) {
+  if (obj.getInverseMass() === 0) return;
 
-export default function solveVelocity(obj: RigidBody, delta: number) {
-  for (let i = 0; i < ITERATIONS; i++) {
-    vec2.scaleAndAdd(obj.velocity, obj.velocity, obj.force, delta * obj.getInverseMass());
-    obj.angularVelocity += obj.torque * delta * obj.getInertia();
-  }
+  obj.translate(vec2.scale(vec2.create(), obj.velocity, delta));
+  obj.rotate(obj.angularVelocity * delta);
+
+  solveForces(obj, delta, gravity);
 }

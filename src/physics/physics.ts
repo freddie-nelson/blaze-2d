@@ -3,16 +3,14 @@ import { System } from "../system";
 import CollisionObject from "./collisionObject";
 import RigidBody from "./rigidbody";
 import solveImpulse from "./solvers/collision/impulse";
-import solvePositionCollisions from "./solvers/collision/position";
-import solveGravity from "./solvers/dynamics/gravity";
 import solveVelocity from "./solvers/dynamics/velocity";
-import solvePositionDynamics from "./solvers/dynamics/position";
 import CollisionsSpace from "./spaces/collisions";
 import DynamicsSpace from "./spaces/dynamics";
 import resetForce from "./solvers/dynamics/resetForce";
 import positionalCorrection from "./solvers/collision/positionalCorrection";
 import Space from "./spaces/space";
 import { DynamicsSolver } from "./solvers/solver";
+import solveForces from "./solvers/dynamics/forces";
 
 /**
  * Handles all physics updates for bodies in the system.
@@ -21,7 +19,7 @@ import { DynamicsSolver } from "./solvers/solver";
  *
  * Solvers added to the physics system are executed after all other spaces in the system have been updated.
  */
-export default class Physics extends Space<undefined, DynamicsSolver> implements System {
+export default class Physics implements System {
   debug = false;
   private gravity = vec2.fromValues(0, -9.8);
 
@@ -34,36 +32,39 @@ export default class Physics extends Space<undefined, DynamicsSolver> implements
    * @param gravity The gravitional force applied to objects in the system
    */
   constructor(gravity?: vec2) {
-    super();
-
     if (gravity) this.setGravity(gravity);
 
     // add default solvers
-    this.dynamicsSpace.addSolver(solveGravity, 1);
-    this.dynamicsSpace.addSolver(solveVelocity, 1);
-    this.dynamicsSpace.addSolver(solvePositionDynamics, 1);
+    this.dynamicsSpace.addSolver("forces", solveForces, 1);
+    this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
+    this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
-    this.collisionsSpace.addSolver(solveImpulse, 2);
-    this.collisionsSpace.addSolver(positionalCorrection, 1);
-
-    this.addSolver(resetForce, 1);
+    this.collisionsSpace.addSolver("impulse", solveImpulse, 20);
+    this.collisionsSpace.addSolver("position", positionalCorrection, 1);
   }
 
   update(delta: number) {
-    // step spaces
-    // dynamics space should be updated before collisions
-    this.dynamicsSpace.step(delta);
-    this.collisionsSpace.step(delta);
+    // step bodies
+    // order is very important
+    this.collisionsSpace.obtainManifolds(delta);
 
-    this.step(delta);
-  }
+    // integrate forces
+    this.dynamicsSpace.solve("forces", delta);
 
-  step(delta: number) {
-    for (const obj of this.dynamicsSpace.objects) {
-      for (const s of this.solvers) {
-        s.cb(obj, delta, this.gravity);
-      }
-    }
+    // solve collisions
+    this.collisionsSpace.solve("impulse");
+
+    // integrate velocities
+    this.dynamicsSpace.solve("velocity", delta);
+
+    // correct positions
+    this.collisionsSpace.solve("position");
+
+    // clear forces
+    this.dynamicsSpace.solve("reset", delta);
+
+    // fire collision and trigger events
+    this.collisionsSpace.fireEvents();
   }
 
   /**

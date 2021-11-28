@@ -101,14 +101,13 @@ export default class Manifold {
 
     // console.log(this.contactPoints.length < 2);
 
-    // try to prevent jitter
-    const g = vec2.sqrLen(vec2.scale(vec2.create(), gravity, delta)) + 0.005;
-    for (const contact of this.contactPoints) {
-      // const contactA = vec2.sub(vec2.create(), contact.point, a.getPosition());
-      // const contactB = vec2.sub(vec2.create(), contact.point, b.getPosition());
+    const g = vec2.sqrLen(vec2.scale(vec2.create(), gravity, delta)) + 0.0001;
 
-      const relativeVelocity = vec2.sub(vec2.create(), this.b.velocity, this.a.velocity);
-      // console.log(vec2.sqrLen(relativeVelocity) < g);
+    for (const contact of this.contactPoints) {
+      const contactA = vec2.sub(vec2.create(), contact.point, a.getPosition());
+      const contactB = vec2.sub(vec2.create(), contact.point, b.getPosition());
+
+      const relativeVelocity = calculateRelativeVelocity(this, contactA, contactB);
 
       // Determine if we should perform a resting collision or not
       // The idea is if the only thing moving this object is gravity,

@@ -47,14 +47,14 @@ export default class PhysicsObject extends Object2D {
    *
    * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
    */
-  staticFriction = 0.2;
+  staticFriction = 0.1;
 
   /**
    * Coefficient of dynamic/kinetic friction.
    *
    * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
    */
-  dynamicFriction = 0.2;
+  dynamicFriction = 0.1;
 
   // ROTATIONAL MOMENTUM
 

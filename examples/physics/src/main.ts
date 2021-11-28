@@ -161,6 +161,7 @@ floorRect.texture = floorTex;
 const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect], 0);
 floor.setInertia(0);
 floor.isStatic = true;
+
 WORLD.addEntity(floor);
 PHYSICS.addBody(floor);
 
@@ -189,7 +190,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   shape.texture = debugTex;
 
-  const entity = new Entity(pos, collider, [shape], mass);
+  const entity = new Entity(pos, collider, [shape], 1);
 
   // rotations
   if (ROTATE) {

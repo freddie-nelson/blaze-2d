@@ -6,7 +6,7 @@
  */
 export default abstract class Space<O, S> {
   objects: O[] = [];
-  solvers: { cb: S; iterations: number }[] = [];
+  solvers: { [index: string]: { cb: S; iterations: number } } = {};
 
   /**
    * Creates a {@link Space} instance.
@@ -14,11 +14,18 @@ export default abstract class Space<O, S> {
   constructor() {}
 
   /**
+   * Executes a solver on every object in the space.
+   *
+   * @param id The id of the solver to execute
+   */
+  abstract solve(id: string, ...args: any): void;
+
+  /**
    * Steps the space forward by the given delta time.
    *
    * @param delta The time since the last frame
    */
-  abstract step(delta: number): void;
+  // abstract step(delta: number): void;
 
   /**
    * Gets all objects in the space.
@@ -60,29 +67,6 @@ export default abstract class Space<O, S> {
   }
 
   /**
-   * Gets a clone of the solvers in the space with a count variable which can be used
-   * to track how many times the solver has to run.
-   *
-   * @returns The max solver iterations and the solvers to be executed
-   */
-  // getSolverCounters() {
-  //   let count = 0;
-  //   const solvers = this.solvers.map((s) => {
-  //     if (s.iterations > count) count = s.iterations;
-
-  //     return {
-  //       cb: s.cb,
-  //       count: s.iterations,
-  //     };
-  //   });
-
-  //   return {
-  //     count,
-  //     solvers,
-  //   };
-  // }
-
-  /**
    * Gets all solvers in the space.
    *
    * @returns All solvers in the space
@@ -95,30 +79,28 @@ export default abstract class Space<O, S> {
    * Removes all solvers from the space.
    */
   clearSolvers() {
-    this.solvers.length = 0;
+    this.solvers = {};
   }
 
   /**
    * Adds a solver to the space.
    *
+   * @param id The solver's identifier
    * @param cb The solver to add
    * @param iterations The number of times to run the solver, per time step
    */
-  addSolver(cb: S, iterations: number) {
-    this.solvers.push({ cb, iterations });
+  addSolver(id: string, cb: S, iterations: number) {
+    this.solvers[id] = { cb, iterations };
   }
 
   /**
    * Removes a solver from the space.
    *
-   * @param cb The callback of the solver to remove
+   * @param id The id of the solver to remove
    * @returns Wether or not the solver was removed
    */
-  removeSolver(cb: S) {
-    const i = this.solvers.findIndex((s) => s.cb === cb);
-    if (i === -1) return false;
-
-    this.solvers.splice(i, 1);
+  removeSolver(id: string) {
+    delete this.solvers[id];
     return true;
   }
 }

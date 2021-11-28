@@ -55,7 +55,7 @@ export default function solveImpulse(m: Manifold) {
     tangentImpulseMag /= m.contactPoints.length;
 
     // don't apply tiny friction impulses
-    if (Math.abs(tangentImpulseMag) <= 0.01) return;
+    if (Math.abs(tangentImpulseMag) <= 0.0001) return;
 
     // coulumb's law
     let tangentImpulse = vec2.create();
