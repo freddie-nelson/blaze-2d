@@ -13,7 +13,7 @@ export interface BlazeOptions {
 }
 
 const defaultOpts: BlazeOptions = {
-  antialias: false,
+  antialias: true,
 };
 
 export default abstract class Blaze {
@@ -31,6 +31,8 @@ export default abstract class Blaze {
   private static zLevels = 100;
 
   private static systems: System[] = [];
+  private static fixedSystems: System[] = [];
+
   private static threadPool = new ThreadPool();
 
   private static lastUpdateTime = performance.now();
@@ -39,6 +41,18 @@ export default abstract class Blaze {
    * The time since `lastUpdateTime`
    */
   private static delta = 0;
+
+  /**
+   * The minimum time in ms between each fixed update.
+   */
+  private static fixedTimeStep = 1000 / 60;
+
+  private static lastFixedUpdateTime = performance.now();
+
+  /**
+   * The time since `lastFixedUpdateTime`
+   */
+  private static fixedDelta = 0;
 
   /**
    * Initializes the engine and creates the renderer.
@@ -59,21 +73,27 @@ export default abstract class Blaze {
    * i.e. calls `this.update`
    */
   static start() {
+    this.lastUpdateTime = performance.now();
+    this.lastFixedUpdateTime = this.lastUpdateTime;
+
     this.update();
+    this.fixedUpdate();
   }
 
   /**
-   * Blaze's global update loop.
+   * Blaze's update loop.
    *
-   * Controls updating and rendering of all objects, entities and chunks.
+   * Update is called on every animation frame using [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
    *
-   * Also calls any before and after update hooks.
+   * Update clears the {@link Renderer} with the set background color and calls `update` on any systems in `this.systems`.
    */
   static update() {
     requestAnimationFrame(() => this.update());
-    const delta = (performance.now() - this.lastUpdateTime) / 1000;
+
+    const now = performance.now();
+    const delta = (now - this.lastUpdateTime) / 1000;
     this.delta = delta;
-    this.lastUpdateTime = performance.now();
+    this.lastUpdateTime = now;
 
     Renderer.clear(this.bgColor);
 
@@ -85,7 +105,30 @@ export default abstract class Blaze {
   }
 
   /**
-   * Gets the systems running at the top level of the engine.
+   * Blaze's fixed update loop.
+   *
+   * Fixed update is called every `this.fixedTimeStep`ms using [setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/setTimeout),
+   * due to how the JS event loop works and any other tasks being ran on the main thread this may not always be the case.
+   *
+   * To account for the possible variations in time between each update a seperate delta time value is calculated for the fixed update loop.
+   *
+   * Fixed update calls `update` on all systems in `this.fixedSystems`.
+   */
+  static fixedUpdate() {
+    setTimeout(() => this.fixedUpdate(), this.fixedTimeStep);
+
+    const now = performance.now();
+    const delta = (now - this.lastFixedUpdateTime) / 1000;
+    this.fixedDelta = delta;
+    this.lastFixedUpdateTime = now;
+
+    for (const system of this.fixedSystems) {
+      system.update(delta);
+    }
+  }
+
+  /**
+   * Gets the systems added to the engine.
    *
    * @returns The engine's top level systems
    */
@@ -94,26 +137,51 @@ export default abstract class Blaze {
   }
 
   /**
-   * Adds a system to the top level of the engine.
+   * Gets the fixed systems added to the engine.
    *
-   * @param system The system to add
+   * @returns The engine's fixed systems
    */
-  static addSystem(system: System) {
-    this.systems.push(system);
+  static getFixedSystems() {
+    return this.fixedSystems;
   }
 
   /**
-   * Removes a system from the top level of the engine.
+   * Adds a system to the engine.
+   *
+   * @param system The system to add
+   * @param fixed Wether the system will run in the fixed update or normal update loop
+   */
+  static addSystem(system: System, fixed = false) {
+    if (fixed) this.fixedSystems.push(system);
+    else this.systems.push(system);
+  }
+
+  /**
+   * Removes a system from the engine.
+   *
+   * Will search for the system in both the fixed and normal system arrays.
+   *
+   * If the system is in both the fixed and normal system arrays then it will only
+   * be removed from the normal array. Another call to removeSystem will remove it
+   * from the fixed array.
    *
    * @param system The system to remove
    * @returns Wether or not the system was removed
    */
   static removeSystem(system: System) {
-    const i = this.systems.findIndex((s) => s === system);
-    if (i === -1) return false;
+    let i = this.systems.findIndex((s) => s === system);
+    if (i !== -1) {
+      this.systems.splice(i, 1);
+      return true;
+    }
 
-    this.systems.splice(i, 1);
-    return true;
+    i = this.fixedSystems.findIndex((s) => s === system);
+    if (i !== -1) {
+      this.fixedSystems.splice(i, 1);
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -257,6 +325,44 @@ export default abstract class Blaze {
    */
   static getDelta() {
     return this.delta;
+  }
+
+  /**
+   * Set the minimum time step between each fixed update in ms.
+   *
+   * @param step The time step in ms
+   */
+  static setFixedTimeStep(step: number) {
+    this.fixedTimeStep = step;
+  }
+
+  /**
+   * Get the time step between each fixed update.
+   *
+   * @returns The fixed time step in ms
+   */
+  static getFixedTimeStep() {
+    return this.fixedTimeStep;
+  }
+
+  /**
+   * Gets the time of the last fixed update, measured from the time the page started to load.
+   *
+   * @see Uses [performance.now](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now)
+   *
+   * @returns The time of the last fixed update
+   */
+  static getLastFixedUpdateTime() {
+    return this.lastFixedUpdateTime;
+  }
+
+  /**
+   * Gets the time since the last fixed update, measured in ms.
+   *
+   * @returns The time since the last fixed update
+   */
+  static getFixedDelta() {
+    return this.fixedDelta;
   }
 
   /**

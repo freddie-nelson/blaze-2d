@@ -39,7 +39,7 @@ const VIEWPORT = CAMERA.viewport;
 const PHYSICS = new Physics();
 
 Blaze.addSystem(WORLD);
-Blaze.addSystem(PHYSICS);
+Blaze.addSystem(PHYSICS, true);
 
 // setup renderer
 Renderer.useCamera(CAMERA);

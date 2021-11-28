@@ -13,11 +13,9 @@ import { DynamicsSolver } from "./solvers/solver";
 import solveForces from "./solvers/dynamics/forces";
 
 /**
- * Handles all physics updates for bodies in the system.
+ * Handles physics updates for all bodies in the system.
  *
- * As a general rule the physics system should be added after the {@link World} system.
- *
- * Solvers added to the physics system are executed after all other spaces in the system have been updated.
+ * As a general rule the physics system should be added to Blaze's fixed update loop.
  */
 export default class Physics implements System {
   debug = false;
@@ -39,7 +37,7 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
-    this.collisionsSpace.addSolver("impulse", solveImpulse, 20);
+    this.collisionsSpace.addSolver("impulse", solveImpulse, 5);
     this.collisionsSpace.addSolver("position", positionalCorrection, 1);
   }
 
