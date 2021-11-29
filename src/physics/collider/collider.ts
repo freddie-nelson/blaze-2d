@@ -6,15 +6,11 @@ import MeshCollider from "./meshCollider";
 /**
  * Describes a collision between two {@link Collider}s (A and B).
  *
- * @field `a` The furthest point on collider **A** inside collider **B**
- * @field `b` The furthest point on collider **B** inside collider **A**
  * @field `normal` vector `b - a` normalised
  * @field `depth` The length of the vector `b - a`
  * @field `hasCollision` Wether or not the A and B are colliding
  */
 export interface CollisionResult {
-  a: vec2;
-  b: vec2;
   normal: vec2;
   depth: number;
   hasCollision: boolean;

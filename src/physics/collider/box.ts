@@ -27,8 +27,6 @@ export default class BoxCollider extends Rect implements Collider {
    */
   testCollision(c: Collider): CollisionResult {
     const res = {
-      a: vec2.create(),
-      b: vec2.create(),
       normal: vec2.create(),
       depth: 0,
       hasCollision: false,
@@ -95,7 +93,7 @@ export default class BoxCollider extends Rect implements Collider {
     let max = 0;
     let maxDist = -Infinity;
 
-    for (let i = max + 1; i < points.length; i++) {
+    for (let i = max; i < points.length; i++) {
       const p = points[i];
       const dist = vec2.dot(p, direction);
 

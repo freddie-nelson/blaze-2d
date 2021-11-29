@@ -14,6 +14,7 @@ import Texture from "@blz/texture/texture";
 import TextureAtlas from "@blz/texture/atlas";
 import TextureLoader from "@blz/texture/loader";
 import Debug from "@blz/debug";
+import testManifold from "@blz/physics/manifold.test";
 import { addMouseListener, Mouse } from "@blz/mouse";
 import { addKeyListener } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
@@ -48,6 +49,7 @@ Renderer.useCamera(CAMERA);
 Debug.world = WORLD;
 Blaze.toggleDebug();
 WORLD.debug = true;
+PHYSICS.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -190,7 +192,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   shape.texture = debugTex;
 
-  const entity = new Entity(pos, collider, [shape], 1);
+  const entity = new Entity(pos, collider, [shape], mass);
 
   // rotations
   if (ROTATE) {

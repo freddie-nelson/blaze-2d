@@ -113,6 +113,7 @@ function findClosestEdge(polytope: vec2[], winding: Winding): Edge {
     }
     vec2.normalize(normal, normal);
 
+    // distance from edge to origin
     const dist = vec2.dot(normal, a);
 
     // update closest edge if the new edge is closer to the origin

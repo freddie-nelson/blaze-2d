@@ -65,6 +65,11 @@ export default class Manifold {
   contactPoints: ContactPoint[];
 
   /**
+   * store used edges for debugging [inc, ref]
+   */
+  edges: Edge[] = [];
+
+  /**
    * Creates a {@link Manifold} describing a collision between **a** and **b** in detail.
    *
    * @param a First collision object
@@ -119,20 +124,31 @@ export default class Manifold {
     }
   }
 
+  /**
+   * Calculates the contact points of the collision.
+   *
+   * @see [Dyn4j Contact Points](https://dyn4j.org/2011/11/contact-points-using-clipping/)
+   *
+   * @returns The points fo contact for the collision
+   */
   private calculateContactPoints(): ContactPoint[] {
     if (this.a.collider instanceof CircleCollider) {
       return [{ point: this.a.collider.findFurthestPoint(this.normal), depth: this.depth }];
     } else if (this.b.collider instanceof CircleCollider) {
-      return [{ point: this.b.collider.findFurthestPoint(this.normal), depth: this.depth }];
+      return [
+        {
+          point: this.b.collider.findFurthestPoint(vec2.negate(vec2.create(), this.normal)),
+          depth: this.depth,
+        },
+      ];
     }
 
     const e1 = this.bestEdge(this.a, this.normal);
-    const e2 = this.bestEdge(this.b, vec2.scale(vec2.create(), this.normal, -1));
+    const e2 = this.bestEdge(this.b, vec2.negate(vec2.create(), this.normal));
 
     // identify reference and incident edge for clipping
     let ref: Edge;
     let inc: Edge;
-    let flip = false;
 
     if (Math.abs(vec2.dot(e1.e, this.normal)) <= Math.abs(vec2.dot(e2.e, this.normal))) {
       ref = e1;
@@ -140,41 +156,41 @@ export default class Manifold {
     } else {
       ref = e2;
       inc = e1;
-
-      // we need to set a flag indicating that the reference
-      // and incident edge were flipped so that when we do the final
-      // clip operation, we use the right edge normal
-      flip = true;
     }
 
-    // perform clipping
-    vec2.normalize(ref.e, ref.e);
+    this.edges = [inc, ref];
 
-    const o1 = vec2.dot(ref.e, ref.p0);
+    // perform clipping
+    const refv = vec2.clone(ref.e);
+    vec2.normalize(refv, refv);
+
+    const o1 = vec2.dot(refv, ref.p0);
 
     // clip the incident edge by the first vertex of the reference edge
     let cp = this.clipPoints(
       { point: inc.p0, depth: this.depth },
       { point: inc.p1, depth: this.depth },
-      ref.e,
+      refv,
       o1
     );
-    if (cp.length < 2) return cp;
+    if (cp.length < 2) return [];
 
     // clip whats left of the incident edge by the second vertex of
     // the reference edge
     // but we need to clip in opposite direction so we flip the
     // direction and offset
-    const o2 = vec2.dot(ref.e, ref.p1);
-    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), ref.e), -o2);
-    if (cp.length < 2) return cp;
+    const o2 = vec2.dot(refv, ref.p1);
+    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), refv), -o2);
+    if (cp.length < 2) return [];
 
     // calculate 2d vector cross product with scalar
-    const refNorm = cross2DWithScalar(vec2.create(), ref.e, -1);
+    const refNorm = cross2DWithScalar(vec2.create(), refv, -1);
 
     // if we had to flip the incident and reference edges
     // then we need to flip the ref edge normal to clip properly
-    if (flip) vec2.negate(refNorm, refNorm);
+    // * NOTE: No need to flip normal because of how GJK and EPA are implemented.
+    // * see comments of dyn4j post (search for comments between May 30, 2018 and June 15, 2019)
+    // if (flip) vec2.negate(refNorm, refNorm);
 
     // get the largest depth
     const max = vec2.dot(refNorm, ref.max);
@@ -197,11 +213,23 @@ export default class Manifold {
     return cp;
   }
 
+  /**
+   * Finds the best edge of a {@link CollisionObject} in a given direction.
+   *
+   * The best edge is defined as the edge most perpendicular to the given direction.
+   *
+   * @param obj The collision object to calculate the edge for
+   * @param direction The direction in which to calculate the edge
+   * @returns The best edge of `obj` for the direction given
+   */
   private bestEdge(obj: CollisionObject, direction: vec2): Edge {
     const points = obj.collider.findFurthestNeighbours(direction);
 
     const l = vec2.sub(vec2.create(), points.furthest, points.left);
     const r = vec2.sub(vec2.create(), points.furthest, points.right);
+
+    vec2.normalize(l, l);
+    vec2.normalize(r, r);
 
     if (vec2.dot(r, direction) <= vec2.dot(l, direction)) {
       // the right edge is better
@@ -210,7 +238,7 @@ export default class Manifold {
         max: points.furthest,
         p0: points.right,
         p1: points.furthest,
-        e: r,
+        e: vec2.sub(vec2.create(), points.furthest, points.right),
       };
     } else {
       // the left edge is better
@@ -219,7 +247,7 @@ export default class Manifold {
         max: points.furthest,
         p0: points.furthest,
         p1: points.left,
-        e: vec2.negate(l, l),
+        e: vec2.sub(vec2.create(), points.left, points.furthest),
       };
     }
   }

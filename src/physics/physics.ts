@@ -11,6 +11,41 @@ import positionalCorrection from "./solvers/collision/positionalCorrection";
 import Space from "./spaces/space";
 import { DynamicsSolver } from "./solvers/solver";
 import solveForces from "./solvers/dynamics/forces";
+import Texture from "../texture/texture";
+import Color, { RGBAColor } from "../utils/color";
+import Circle from "../shapes/circle";
+
+const debugRGBA: RGBAColor = {
+  r: 255,
+  g: 0,
+  b: 0,
+  a: 0.2,
+};
+const debugTexture = new Texture(new Color(debugRGBA));
+
+const contactRGBA: RGBAColor = {
+  r: 0,
+  g: 255,
+  b: 0,
+  a: 0.5,
+};
+const contactTexture = new Texture(new Color(contactRGBA));
+
+const refRGBA: RGBAColor = {
+  r: 0,
+  g: 0,
+  b: 255,
+  a: 0.5,
+};
+const refTexture = new Texture(new Color(refRGBA));
+
+const incRGBA: RGBAColor = {
+  r: 255,
+  g: 0,
+  b: 0,
+  a: 0.5,
+};
+const incTexture = new Texture(new Color(incRGBA));
 
 /**
  * Handles physics updates for all bodies in the system.
@@ -63,6 +98,39 @@ export default class Physics implements System {
 
     // fire collision and trigger events
     this.collisionsSpace.fireEvents();
+
+    if (this.debug) this.drawDebug();
+  }
+
+  drawDebug() {
+    for (const obj of this.dynamicsSpace.objects) {
+      // draw entity bounding boxes (colliders)
+      obj.collider.texture = debugTexture;
+      obj.collider.render();
+    }
+
+    for (const m of this.collisionsSpace.manifolds.collisions) {
+      // draw contact points
+      for (const p of m.contactPoints) {
+        const circle = new Circle(0.1, p.point);
+        circle.texture = contactTexture;
+        circle.render();
+      }
+
+      for (let i = 0; i < m.edges.length; i++) {
+        // incident edge is red, reference edge is blue
+        const e = m.edges[i];
+        let texture = i === 0 ? incTexture : refTexture;
+
+        const circle = new Circle(0.1, e.p0);
+        circle.texture = texture;
+        circle.render();
+
+        const circle2 = new Circle(0.1, e.p1);
+        circle2.texture = texture;
+        circle2.render();
+      }
+    }
   }
 
   /**

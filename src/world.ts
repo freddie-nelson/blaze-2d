@@ -70,28 +70,6 @@ export default class World implements System {
     // debug tooling
     if (this.debug) {
       // Renderer.setMode("LINES");
-
-      for (const e of this.entities) {
-        // draw entity bounding boxes (colliders)
-        if (e.collider instanceof BoxCollider) {
-          const rect = new Rect(
-            e.collider.getWidth(),
-            e.collider.getHeight(),
-            e.collider.getPosition(),
-            e.collider.getRotation()
-          );
-          rect.texture = this.debugTexture;
-          rect.render();
-        } else if (e.collider instanceof CircleCollider) {
-          const circle = new Circle(
-            e.collider.getRadius(),
-            e.collider.getPosition(),
-            e.collider.getRotation()
-          );
-          circle.texture = debugTexture;
-          circle.render();
-        }
-      }
     }
   }
 

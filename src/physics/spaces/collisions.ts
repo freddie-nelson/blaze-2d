@@ -13,7 +13,7 @@ import Space from "./space";
 export default class CollisionsSpace extends Space<CollisionObject, CollisionSolver> {
   gravity: vec2;
 
-  private manifolds: { collisions: Manifold[]; triggers: Manifold[] };
+  manifolds: { collisions: Manifold[]; triggers: Manifold[] };
 
   /**
    * Map used to store pairs objects which have had collisisions checked.
