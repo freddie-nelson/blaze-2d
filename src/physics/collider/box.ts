@@ -26,9 +26,9 @@ export default class BoxCollider extends Rect implements Collider {
    * @returns {@link CollisionResult} with the results of the test
    */
   testCollision(c: Collider): CollisionResult {
-    const res = {
-      normal: vec2.create(),
-      depth: 0,
+    const res: CollisionResult = {
+      normal: undefined,
+      depth: undefined,
       hasCollision: false,
     };
 

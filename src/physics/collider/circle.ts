@@ -25,11 +25,9 @@ export default class CircleCollider extends Circle implements Collider {
    * @returns {@link CollisionResult} with the results of the test
    */
   testCollision(c: Collider): CollisionResult {
-    const res = {
-      a: vec2.create(),
-      b: vec2.create(),
-      normal: vec2.create(),
-      depth: 0,
+    const res: CollisionResult = {
+      normal: undefined,
+      depth: undefined,
       hasCollision: false,
     };
 

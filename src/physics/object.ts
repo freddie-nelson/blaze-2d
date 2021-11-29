@@ -27,8 +27,28 @@ export default class PhysicsObject extends Object2D {
 
   /**
    * Elasticity/bounciness
+   *
+   * This value should be between 0 and 1 for best results.
    */
   restitution = 0.3;
+
+  /**
+   * Coefficient of static friction.
+   *
+   * This value should be between 0 and 1 for best results.
+   *
+   * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
+   */
+  staticFriction = 0.1;
+
+  /**
+   * Coefficient of dynamic/kinetic friction.
+   *
+   * This value should be between 0 and 1 for best results.
+   *
+   * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
+   */
+  dynamicFriction = 0.1;
 
   // POSITIONAL MOMENTUM
 
@@ -43,18 +63,9 @@ export default class PhysicsObject extends Object2D {
   velocity = vec2.create();
 
   /**
-   * Coefficient of static friction.
-   *
-   * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
+   * The damping applied to the object's linear velocity every physics update.
    */
-  staticFriction = 0.1;
-
-  /**
-   * Coefficient of dynamic/kinetic friction.
-   *
-   * @see [Static And Kinetic Friction](https://www.geeksforgeeks.org/static-and-kinetic-friction/)
-   */
-  dynamicFriction = 0.1;
+  linearDamping = 0.001;
 
   // ROTATIONAL MOMENTUM
 
@@ -79,6 +90,11 @@ export default class PhysicsObject extends Object2D {
    * The inverse of the object's inertia (1 / inertia).
    */
   private inverseInertia = 0.2;
+
+  /**
+   * The damping applied to the object's angular velocity every physics update.
+   */
+  angularDamping = 0.001;
 
   // OPTIONS
 

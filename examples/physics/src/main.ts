@@ -49,7 +49,7 @@ Renderer.useCamera(CAMERA);
 Debug.world = WORLD;
 Blaze.toggleDebug();
 WORLD.debug = true;
-PHYSICS.debug = true;
+// PHYSICS.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -193,6 +193,9 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   shape.texture = debugTex;
 
   const entity = new Entity(pos, collider, [shape], mass);
+  // entity.restitution = 1;
+  // entity.staticFriction = 1;
+  // entity.dynamicFriction = 1;
 
   // rotations
   if (ROTATE) {

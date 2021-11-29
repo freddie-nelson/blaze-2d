@@ -72,7 +72,7 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
-    this.collisionsSpace.addSolver("impulse", solveImpulse, 5);
+    this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
     this.collisionsSpace.addSolver("position", positionalCorrection, 1);
   }
 
@@ -117,19 +117,19 @@ export default class Physics implements System {
         circle.render();
       }
 
-      for (let i = 0; i < m.edges.length; i++) {
-        // incident edge is red, reference edge is blue
-        const e = m.edges[i];
-        let texture = i === 0 ? incTexture : refTexture;
+      // for (let i = 0; i < m.edges.length; i++) {
+      //   // incident edge is red, reference edge is blue
+      //   const e = m.edges[i];
+      //   let texture = i === 0 ? incTexture : refTexture;
 
-        const circle = new Circle(0.1, e.p0);
-        circle.texture = texture;
-        circle.render();
+      //   const circle = new Circle(0.1, e.p0);
+      //   circle.texture = texture;
+      //   circle.render();
 
-        const circle2 = new Circle(0.1, e.p1);
-        circle2.texture = texture;
-        circle2.render();
-      }
+      //   const circle2 = new Circle(0.1, e.p1);
+      //   circle2.texture = texture;
+      //   circle2.render();
+      // }
     }
   }
 
