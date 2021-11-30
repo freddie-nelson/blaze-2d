@@ -11,6 +11,7 @@ import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
 import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
+import GradientTexture, { GradientType } from "@blz/texture/gradient";
 import TextureAtlas from "@blz/texture/atlas";
 import TextureLoader from "@blz/texture/loader";
 import Debug from "@blz/debug";
@@ -76,14 +77,32 @@ Debug.rendererToggle.checked = true;
 const floorTex = new Texture(new Color("brown"));
 ATLAS.addTexture(floorTex);
 
-const shapeTexs: Texture[] = [];
-for (let i = 0; i < 200; i++) {
-  const color: RGBAColor = {
+const randGradient = () => {
+  const startColor: RGBAColor = {
     r: randInt(0, 255),
     g: randInt(0, 255),
     b: randInt(0, 255),
   };
-  const tex = new Texture(new Color(color));
+  const endColor: RGBAColor = {
+    r: randInt(0, 255),
+    g: randInt(0, 255),
+    b: randInt(0, 255),
+  };
+
+  const tex = new GradientTexture(
+    GradientType.RADIAL,
+    80,
+    { offset: 0, color: new Color(startColor) },
+    { offset: 1, color: new Color(endColor) }
+  );
+  tex.refresh();
+
+  return tex;
+};
+
+const shapeTexs: Texture[] = [];
+for (let i = 0; i < 50; i++) {
+  const tex = randGradient();
   shapeTexs.push(tex);
   ATLAS.addTexture(tex);
 }
@@ -190,7 +209,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
     collider = new CircleCollider(size[0] / 2, pos);
   }
 
-  shape.texture = debugTex;
+  shape.texture = tex;
 
   const entity = new Entity(pos, collider, [shape], mass);
   // entity.restitution = 1;

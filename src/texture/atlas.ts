@@ -190,7 +190,7 @@ export default class TextureAtlas extends Texture {
 
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i];
-      const h = t.texture.image ? t.texture.image.height : 1;
+      const h = t.texture.image ? t.texture.image.height || colorBlockSize : colorBlockSize;
 
       if (h > maxHeight) {
         maxHeight = h;
