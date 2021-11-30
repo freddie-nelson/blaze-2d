@@ -11,7 +11,7 @@ import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
 import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
-import GradientTexture, { GradientType } from "@blz/texture/gradient";
+import GradientTexture, { GradientDirection, GradientType } from "@blz/texture/gradient";
 import TextureAtlas from "@blz/texture/atlas";
 import TextureLoader from "@blz/texture/loader";
 import Debug from "@blz/debug";
@@ -74,9 +74,6 @@ WORLD.useBatchRenderer = true;
 Debug.rendererToggle.checked = true;
 
 // textures
-const floorTex = new Texture(new Color("brown"));
-ATLAS.addTexture(floorTex);
-
 const randGradient = () => {
   const startColor: RGBAColor = {
     r: randInt(0, 255),
@@ -90,7 +87,8 @@ const randGradient = () => {
   };
 
   const tex = new GradientTexture(
-    GradientType.RADIAL,
+    GradientType.LINEAR,
+    GradientDirection.BOTTOM_TO_TOP,
     80,
     { offset: 0, color: new Color(startColor) },
     { offset: 1, color: new Color(endColor) }
@@ -99,6 +97,9 @@ const randGradient = () => {
 
   return tex;
 };
+
+const floorTex = new Texture(new Color("brown"));
+ATLAS.addTexture(floorTex);
 
 const shapeTexs: Texture[] = [];
 for (let i = 0; i < 50; i++) {
