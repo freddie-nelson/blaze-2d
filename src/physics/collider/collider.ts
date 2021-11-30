@@ -55,11 +55,4 @@ export default abstract class Collider extends Shape {
     leftIndex?: number;
     rightIndex?: number;
   };
-
-  /**
-   * Get the world space vertices of the collider as vec2s.
-   *
-   * @returns The collider's vertices in world space as a vec2 array
-   */
-  abstract getPoints(): vec2[];
 }

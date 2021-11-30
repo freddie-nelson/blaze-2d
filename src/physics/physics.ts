@@ -122,35 +122,19 @@ export default class Physics implements System {
         circle.render();
       }
 
-      for (let i = 0; i < m.edges.length; i++) {
-        // incident edge is red, reference edge is blue
-        const e = m.edges[i];
-        let texture = i === 0 ? incTexture : refTexture;
+      // for (let i = 0; i < m.edges.length; i++) {
+      //   // incident edge is red, reference edge is blue
+      //   const e = m.edges[i];
+      //   let texture = i === 0 ? incTexture : refTexture;
 
-        // const circle = new Circle(0.1, e.p0);
-        // circle.texture = texture;
-        // circle.render();
+      //   const circle = new Circle(0.1, e.p0);
+      //   circle.texture = texture;
+      //   circle.render();
 
-        // const circle2 = new Circle(0.1, e.p1);
-        // circle2.texture = texture;
-        // circle2.render();
-
-        if (i === 0) {
-          const p0 = new Circle(0.1, e.p0Neighbour.p0);
-          const p01 = new Circle(0.1, e.p0Neighbour.p1);
-          p0.texture = texture;
-          p01.texture = texture;
-          p0.render();
-          p01.render();
-
-          const p1 = new Circle(0.1, e.p1Neighbour.p0);
-          const p11 = new Circle(0.1, e.p1Neighbour.p1);
-          p1.texture = texture;
-          p11.texture = texture;
-          p1.render();
-          p11.render();
-        }
-      }
+      //   const circle2 = new Circle(0.1, e.p1);
+      //   circle2.texture = texture;
+      //   circle2.render();
+      // }
     }
   }
 

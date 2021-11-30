@@ -14,17 +14,12 @@ interface Edge {
   p1: vec2;
   e: vec2;
   max: vec2;
-  p0Neighbour?: Edge;
-  p1Neighbour?: Edge;
 }
 
 export interface ContactPoint {
   point: vec2;
   normal: vec2;
   depth: number;
-
-  // feature id is an array of vec2s representing the edges that clip the contact point
-  featureId?: vec2[];
 
   contactA?: vec2;
   contactB?: vec2;
@@ -40,7 +35,7 @@ export interface ContactPoint {
  * Information about a collision which has occured between two objects.
  */
 export default class Manifold {
-  static CACHED_CONTACTS_TOLERANCE = 0;
+  static CACHED_CONTACTS_TOLERANCE = 0.000005;
 
   /**
    * An object in the collision.
@@ -163,9 +158,6 @@ export default class Manifold {
     // if we have different number of contacts drop manifold
     if (newContacts.length !== oldContacts.length) return (this.isDead = true);
 
-    // if no feature id provided in old contacts then drop manifold
-    if (oldContacts[0].featureId === null) return (this.isDead = true);
-
     // merge contacts
     for (let i = 0; i < newContacts.length; i++) {
       const nc = newContacts[i];
@@ -174,14 +166,13 @@ export default class Manifold {
       for (let j = 0; j < oldContacts.length; j++) {
         const oc = oldContacts[j];
 
-        if (this.compareFeatureIds(nc.featureId, oc.featureId)) {
+        if (this.compareContacts(nc, oc)) {
           match = j;
           break;
         }
       }
 
       if (match === -1) {
-        mergedContacts.push(newContacts[i]);
         continue;
       }
 
@@ -203,21 +194,10 @@ export default class Manifold {
     this.contactPoints = mergedContacts;
   }
 
-  private compareFeatureIds(f1: vec2[], f2: vec2[]) {
-    if (!f1 || !f2 || f1.length !== f2.length || f1.length === 0) return false;
-
-    for (let i = 0; i < f1.length; i++) {
-      const e1 = f1[i];
-      const e2 = f2[i];
-
-      if (
-        Math.abs(e1[0] - e2[0]) > Manifold.CACHED_CONTACTS_TOLERANCE ||
-        Math.abs(e1[1] - e2[1]) > Manifold.CACHED_CONTACTS_TOLERANCE
-      )
-        return false;
-    }
-
-    return true;
+  private compareContacts(c1: ContactPoint, c2: ContactPoint) {
+    const d = vec2.sqrDist(c1.point, c2.point);
+    // console.log(d, Manifold.CACHED_CONTACTS_TOLERANCE, d < Manifold.CACHED_CONTACTS_TOLERANCE);
+    return d <= Manifold.CACHED_CONTACTS_TOLERANCE;
   }
 
   /**
@@ -294,7 +274,6 @@ export default class Manifold {
           point: this.a.collider.findFurthestPoint(this.normal),
           depth: this.depth,
           normal: this.normal,
-          featureId: null,
         },
       ];
     } else if (this.b.collider instanceof CircleCollider) {
@@ -303,7 +282,6 @@ export default class Manifold {
           point: this.b.collider.findFurthestPoint(vec2.negate(vec2.create(), this.normal)),
           depth: this.depth,
           normal: this.normal,
-          featureId: null,
         },
       ];
     }
@@ -333,11 +311,10 @@ export default class Manifold {
 
     // clip the incident edge by the first vertex of the reference edge
     let cp = this.clipPoints(
-      { point: inc.p0, depth: this.depth, normal: this.normal, featureId: [] },
-      { point: inc.p1, depth: this.depth, normal: this.normal, featureId: [] },
+      { point: inc.p0, depth: this.depth, normal: this.normal },
+      { point: inc.p1, depth: this.depth, normal: this.normal },
       refv,
-      o1,
-      ref.p0Neighbour.e
+      o1
     );
     if (cp.length < 2) return [];
 
@@ -346,7 +323,7 @@ export default class Manifold {
     // but we need to clip in opposite direction so we flip the
     // direction and offset
     const o2 = vec2.dot(refv, ref.p1);
-    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), refv), -o2, ref.p1Neighbour.e);
+    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), refv), -o2);
     if (cp.length < 2) return [];
 
     // calculate 2d vector cross product with scalar
@@ -390,7 +367,6 @@ export default class Manifold {
    */
   private bestEdge(obj: CollisionObject, direction: vec2): Edge {
     const points = obj.collider.findFurthestNeighbours(direction);
-    const vertices = obj.collider.getPoints();
 
     const l = vec2.sub(vec2.create(), points.furthest, points.left);
     const r = vec2.sub(vec2.create(), points.furthest, points.right);
@@ -398,56 +374,23 @@ export default class Manifold {
     vec2.normalize(l, l);
     vec2.normalize(r, r);
 
-    // calculate edges
-    const right = {
-      max: points.furthest,
-      p0: points.right,
-      p1: points.furthest,
-      e: vec2.sub(vec2.create(), points.furthest, points.right),
-    };
-
-    const left = {
-      max: points.furthest,
-      p0: points.furthest,
-      p1: points.left,
-      e: vec2.sub(vec2.create(), points.left, points.furthest),
-    };
-
     if (vec2.dot(r, direction) <= vec2.dot(l, direction)) {
       // the right edge is better
-      const rightNeighbour =
-        vertices[points.rightIndex - 1 < 0 ? vertices.length - 1 : points.rightIndex - 1];
-
       // make sure to retain the winding direction
       return {
-        ...right,
-        p0Neighbour: {
-          max: rightNeighbour,
-          p0: points.right,
-          p1: rightNeighbour,
-          e: vec2.sub(vec2.create(), rightNeighbour, points.right),
-        },
-        p1Neighbour: left,
+        max: points.furthest,
+        p0: points.right,
+        p1: points.furthest,
+        e: vec2.sub(vec2.create(), points.furthest, points.right),
       };
     } else {
       // the left edge is better
-      const leftNeighbour = vertices[points.leftIndex + 1 >= vertices.length ? 0 : points.leftIndex + 1];
-
       // make sure to retain the winding direction
       return {
-        ...left,
-        p0Neighbour: {
-          max: points.furthest,
-          p0: points.furthest,
-          p1: points.right,
-          e: vec2.sub(vec2.create(), points.right, points.furthest),
-        },
-        p1Neighbour: {
-          max: leftNeighbour,
-          p0: points.left,
-          p1: leftNeighbour,
-          e: vec2.sub(vec2.create(), leftNeighbour, points.left),
-        },
+        max: points.furthest,
+        p0: points.furthest,
+        p1: points.left,
+        e: vec2.sub(vec2.create(), points.left, points.furthest),
       };
     }
   }
@@ -460,27 +403,15 @@ export default class Manifold {
    * @param direction The direction to clip in
    * @param o The vector to clip past
    */
-  private clipPoints(
-    p0: ContactPoint,
-    p1: ContactPoint,
-    direction: vec2,
-    o: number,
-    clippingPlane: vec2
-  ): ContactPoint[] {
+  private clipPoints(p0: ContactPoint, p1: ContactPoint, direction: vec2, o: number): ContactPoint[] {
     const clipped: ContactPoint[] = [];
 
     const dist0 = vec2.dot(direction, p0.point) - o;
     const dist1 = vec2.dot(direction, p1.point) - o;
 
     // if either point is past o along n then we can keep it
-    if (dist0 >= 0) {
-      clipped.push(p0);
-      p0.featureId.push(clippingPlane);
-    }
-    if (dist1 >= 0) {
-      clipped.push(p1);
-      p1.featureId.push(clippingPlane);
-    }
+    if (dist0 >= 0) clipped.push(p0);
+    if (dist1 >= 0) clipped.push(p1);
 
     // finally we need to check if they are on opposing sides
     // so that we can compute the correct point
@@ -502,7 +433,6 @@ export default class Manifold {
         point: e,
         depth: p0.depth,
         normal: this.normal,
-        featureId: [vec2.sub(vec2.create(), p1.point, p0.point)],
       });
     }
 
