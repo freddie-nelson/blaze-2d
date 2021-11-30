@@ -50,7 +50,7 @@ Renderer.useCamera(CAMERA);
 Debug.world = WORLD;
 Blaze.toggleDebug();
 WORLD.debug = true;
-// PHYSICS.debug = true;
+PHYSICS.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {

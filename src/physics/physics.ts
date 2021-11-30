@@ -14,6 +14,7 @@ import solveForces from "./solvers/dynamics/forces";
 import Texture from "../texture/texture";
 import Color, { RGBAColor } from "../utils/color";
 import Circle from "../shapes/circle";
+import preStep from "./solvers/collision/preStep";
 
 const debugRGBA: RGBAColor = {
   r: 255,
@@ -74,6 +75,7 @@ export default class Physics implements System {
 
     this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
     this.collisionsSpace.addSolver("position", positionalCorrection, 1);
+    this.collisionsSpace.addSolver("preStep", preStep, 1);
   }
 
   update(delta: number) {
@@ -84,14 +86,17 @@ export default class Physics implements System {
     // integrate forces
     this.dynamicsSpace.solve("forces", delta);
 
+    // pre steps
+    this.collisionsSpace.solve("preStep", delta);
+
     // solve collisions
-    this.collisionsSpace.solve("impulse");
+    this.collisionsSpace.solve("impulse", delta);
 
     // integrate velocities
     this.dynamicsSpace.solve("velocity", delta);
 
     // correct positions
-    this.collisionsSpace.solve("position");
+    this.collisionsSpace.solve("position", delta);
 
     // clear forces
     this.dynamicsSpace.solve("reset", delta);
@@ -109,7 +114,7 @@ export default class Physics implements System {
       obj.collider.render();
     }
 
-    for (const m of this.collisionsSpace.manifolds.collisions) {
+    for (const m of this.collisionsSpace.collisionManifolds) {
       // draw contact points
       for (const p of m.contactPoints) {
         const circle = new Circle(0.1, p.point);
@@ -117,19 +122,35 @@ export default class Physics implements System {
         circle.render();
       }
 
-      // for (let i = 0; i < m.edges.length; i++) {
-      //   // incident edge is red, reference edge is blue
-      //   const e = m.edges[i];
-      //   let texture = i === 0 ? incTexture : refTexture;
+      for (let i = 0; i < m.edges.length; i++) {
+        // incident edge is red, reference edge is blue
+        const e = m.edges[i];
+        let texture = i === 0 ? incTexture : refTexture;
 
-      //   const circle = new Circle(0.1, e.p0);
-      //   circle.texture = texture;
-      //   circle.render();
+        // const circle = new Circle(0.1, e.p0);
+        // circle.texture = texture;
+        // circle.render();
 
-      //   const circle2 = new Circle(0.1, e.p1);
-      //   circle2.texture = texture;
-      //   circle2.render();
-      // }
+        // const circle2 = new Circle(0.1, e.p1);
+        // circle2.texture = texture;
+        // circle2.render();
+
+        if (i === 0) {
+          const p0 = new Circle(0.1, e.p0Neighbour.p0);
+          const p01 = new Circle(0.1, e.p0Neighbour.p1);
+          p0.texture = texture;
+          p01.texture = texture;
+          p0.render();
+          p01.render();
+
+          const p1 = new Circle(0.1, e.p1Neighbour.p0);
+          const p11 = new Circle(0.1, e.p1Neighbour.p1);
+          p1.texture = texture;
+          p11.texture = texture;
+          p1.render();
+          p11.render();
+        }
+      }
     }
   }
 

@@ -6,6 +6,7 @@ import { cross2DWithScalar } from "../utils/vectors";
 import CircleCollider from "./collider/circle";
 import { CollisionResult } from "./collider/collider";
 import CollisionObject from "./collisionObject";
+import PHYSICS_CONF from "./config";
 import { calculateRelativeVelocity } from "./solvers/collision/impulse";
 
 interface Edge {
@@ -13,17 +14,34 @@ interface Edge {
   p1: vec2;
   e: vec2;
   max: vec2;
+  p0Neighbour?: Edge;
+  p1Neighbour?: Edge;
 }
 
 export interface ContactPoint {
   point: vec2;
+  normal: vec2;
   depth: number;
+
+  // feature id is an array of vec2s representing the edges that clip the contact point
+  featureId?: vec2[];
+
+  contactA?: vec2;
+  contactB?: vec2;
+  massNormal?: number;
+  massTangent?: number;
+  bias?: number;
+  impulseNormal?: number;
+  impulseTangent?: number;
+  impulseNormalPosition?: number;
 }
 
 /**
  * Information about a collision which has occured between two objects.
  */
 export default class Manifold {
+  static CACHED_CONTACTS_TOLERANCE = 0;
+
   /**
    * An object in the collision.
    */
@@ -69,6 +87,8 @@ export default class Manifold {
    */
   edges: Edge[] = [];
 
+  isDead = false;
+
   /**
    * Creates a {@link Manifold} describing a collision between **a** and **b** in detail.
    *
@@ -99,6 +119,17 @@ export default class Manifold {
     this.df = Math.sqrt(a.dynamicFriction * b.dynamicFriction);
 
     this.contactPoints = this.calculateContactPoints();
+
+    // add missing properties to contacts
+    for (const contact of this.contactPoints) {
+      contact.bias = 0;
+      contact.impulseNormal = 0;
+      contact.impulseNormalPosition = 0;
+      contact.impulseTangent = 0;
+      contact.massNormal = 0;
+      contact.massTangent = 0;
+    }
+
     // for (const p of this.contactPoints) {
     //   const circle = new Circle(0.001, p);
     //   Renderer.renderCircle(circle);
@@ -124,21 +155,155 @@ export default class Manifold {
     }
   }
 
+  update(m: Manifold) {
+    const newContacts = m.contactPoints;
+    const oldContacts = this.contactPoints;
+    const mergedContacts = [];
+
+    // if we have different number of contacts drop manifold
+    if (newContacts.length !== oldContacts.length) return (this.isDead = true);
+
+    // if no feature id provided in old contacts then drop manifold
+    if (oldContacts[0].featureId === null) return (this.isDead = true);
+
+    // merge contacts
+    for (let i = 0; i < newContacts.length; i++) {
+      const nc = newContacts[i];
+      let match = -1;
+
+      for (let j = 0; j < oldContacts.length; j++) {
+        const oc = oldContacts[j];
+
+        if (this.compareFeatureIds(nc.featureId, oc.featureId)) {
+          match = j;
+          break;
+        }
+      }
+
+      if (match === -1) {
+        mergedContacts.push(newContacts[i]);
+        continue;
+      }
+
+      const oc = oldContacts[match];
+      if (PHYSICS_CONF.WARM_START) {
+        nc.impulseNormal = oc.impulseNormal;
+        nc.impulseTangent = oc.impulseTangent;
+        nc.impulseNormalPosition = oc.impulseNormalPosition;
+      }
+
+      mergedContacts.push(nc);
+    }
+
+    if (mergedContacts.length !== oldContacts.length) return (this.isDead = true);
+
+    console.log("match");
+
+    this.edges = m.edges;
+    this.contactPoints = mergedContacts;
+  }
+
+  private compareFeatureIds(f1: vec2[], f2: vec2[]) {
+    if (!f1 || !f2 || f1.length !== f2.length || f1.length === 0) return false;
+
+    for (let i = 0; i < f1.length; i++) {
+      const e1 = f1[i];
+      const e2 = f2[i];
+
+      if (
+        Math.abs(e1[0] - e2[0]) > Manifold.CACHED_CONTACTS_TOLERANCE ||
+        Math.abs(e1[1] - e2[1]) > Manifold.CACHED_CONTACTS_TOLERANCE
+      )
+        return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Precompute some additional information about the contact points for impulse resolution.
+   *
+   * Calculates and applies accumulative impulse.
+   *
+   * @param delta The time since the last udpate
+   */
+  preStep(delta: number) {
+    const allowedPenetration = 0.01;
+    const biasFactor = 0.2;
+
+    for (const contact of this.contactPoints) {
+      const contactA = vec2.sub(vec2.create(), contact.point, this.a.getPosition());
+      const contactB = vec2.sub(vec2.create(), contact.point, this.b.getPosition());
+      contact.contactA = contactA;
+      contact.contactB = contactB;
+
+      // compute distances along normal for contacts
+      const distAlongNormalA = vec2.dot(contactA, contact.normal);
+      const distAlongNormalB = vec2.dot(contactB, contact.normal);
+
+      // normal mass
+      const invMass = this.a.getInverseMass() + this.b.getInverseMass();
+      const invInertiaA =
+        this.a.getInverseInertia() * (vec2.dot(contactA, contactA) - distAlongNormalA * distAlongNormalA);
+      const invInertiaB =
+        this.b.getInverseInertia() * (vec2.dot(contactB, contactB) - distAlongNormalB * distAlongNormalB);
+
+      const massNormal = invMass + invInertiaA + invInertiaB;
+      contact.massNormal = 1 / massNormal;
+
+      const tangent = cross2DWithScalar(vec2.create(), contact.normal, 1);
+
+      // compute distance along tangent for contacts
+      const distAlongTangentA = vec2.dot(contactA, tangent);
+      const distAlongTangentB = vec2.dot(contactB, tangent);
+
+      const invInertiaTangentA =
+        this.a.getInverseInertia() * (vec2.dot(contactA, contactA) - distAlongTangentA * distAlongTangentA);
+      const invInertiaTangentB =
+        this.b.getInverseInertia() * (vec2.dot(contactB, contactB) - distAlongTangentB * distAlongTangentB);
+
+      // tangent mass
+      const massTangent = invMass + invInertiaTangentA + invInertiaTangentB;
+      contact.massTangent = 1 / massTangent;
+
+      contact.bias = (-biasFactor / delta) * Math.min(0, contact.depth + allowedPenetration);
+
+      // apply accumulate impulse
+      if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+        const impulseNormal = vec2.scale(vec2.create(), contact.normal, contact.impulseNormal);
+        const impulseTangent = vec2.scale(vec2.create(), tangent, contact.impulseTangent);
+        const impulse = vec2.add(vec2.create(), impulseNormal, impulseTangent);
+
+        this.a.applyImpulse(vec2.negate(vec2.create(), impulse), contactA);
+        this.b.applyImpulse(impulse, contactB);
+      }
+    }
+  }
+
   /**
    * Calculates the contact points of the collision.
    *
    * @see [Dyn4j Contact Points](https://dyn4j.org/2011/11/contact-points-using-clipping/)
    *
-   * @returns The points fo contact for the collision
+   * @returns The points of contact for the collision
    */
   private calculateContactPoints(): ContactPoint[] {
     if (this.a.collider instanceof CircleCollider) {
-      return [{ point: this.a.collider.findFurthestPoint(this.normal), depth: this.depth }];
+      return [
+        {
+          point: this.a.collider.findFurthestPoint(this.normal),
+          depth: this.depth,
+          normal: this.normal,
+          featureId: null,
+        },
+      ];
     } else if (this.b.collider instanceof CircleCollider) {
       return [
         {
           point: this.b.collider.findFurthestPoint(vec2.negate(vec2.create(), this.normal)),
           depth: this.depth,
+          normal: this.normal,
+          featureId: null,
         },
       ];
     }
@@ -168,10 +333,11 @@ export default class Manifold {
 
     // clip the incident edge by the first vertex of the reference edge
     let cp = this.clipPoints(
-      { point: inc.p0, depth: this.depth },
-      { point: inc.p1, depth: this.depth },
+      { point: inc.p0, depth: this.depth, normal: this.normal, featureId: [] },
+      { point: inc.p1, depth: this.depth, normal: this.normal, featureId: [] },
       refv,
-      o1
+      o1,
+      ref.p0Neighbour.e
     );
     if (cp.length < 2) return [];
 
@@ -180,7 +346,7 @@ export default class Manifold {
     // but we need to clip in opposite direction so we flip the
     // direction and offset
     const o2 = vec2.dot(refv, ref.p1);
-    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), refv), -o2);
+    cp = this.clipPoints(cp[0], cp[1], vec2.negate(vec2.create(), refv), -o2, ref.p1Neighbour.e);
     if (cp.length < 2) return [];
 
     // calculate 2d vector cross product with scalar
@@ -224,6 +390,7 @@ export default class Manifold {
    */
   private bestEdge(obj: CollisionObject, direction: vec2): Edge {
     const points = obj.collider.findFurthestNeighbours(direction);
+    const vertices = obj.collider.getPoints();
 
     const l = vec2.sub(vec2.create(), points.furthest, points.left);
     const r = vec2.sub(vec2.create(), points.furthest, points.right);
@@ -231,23 +398,56 @@ export default class Manifold {
     vec2.normalize(l, l);
     vec2.normalize(r, r);
 
+    // calculate edges
+    const right = {
+      max: points.furthest,
+      p0: points.right,
+      p1: points.furthest,
+      e: vec2.sub(vec2.create(), points.furthest, points.right),
+    };
+
+    const left = {
+      max: points.furthest,
+      p0: points.furthest,
+      p1: points.left,
+      e: vec2.sub(vec2.create(), points.left, points.furthest),
+    };
+
     if (vec2.dot(r, direction) <= vec2.dot(l, direction)) {
       // the right edge is better
+      const rightNeighbour =
+        vertices[points.rightIndex - 1 < 0 ? vertices.length - 1 : points.rightIndex - 1];
+
       // make sure to retain the winding direction
       return {
-        max: points.furthest,
-        p0: points.right,
-        p1: points.furthest,
-        e: vec2.sub(vec2.create(), points.furthest, points.right),
+        ...right,
+        p0Neighbour: {
+          max: rightNeighbour,
+          p0: points.right,
+          p1: rightNeighbour,
+          e: vec2.sub(vec2.create(), rightNeighbour, points.right),
+        },
+        p1Neighbour: left,
       };
     } else {
       // the left edge is better
+      const leftNeighbour = vertices[points.leftIndex + 1 >= vertices.length ? 0 : points.leftIndex + 1];
+
       // make sure to retain the winding direction
       return {
-        max: points.furthest,
-        p0: points.furthest,
-        p1: points.left,
-        e: vec2.sub(vec2.create(), points.left, points.furthest),
+        ...left,
+        p0Neighbour: {
+          max: points.furthest,
+          p0: points.furthest,
+          p1: points.right,
+          e: vec2.sub(vec2.create(), points.right, points.furthest),
+        },
+        p1Neighbour: {
+          max: leftNeighbour,
+          p0: points.left,
+          p1: leftNeighbour,
+          e: vec2.sub(vec2.create(), leftNeighbour, points.left),
+        },
       };
     }
   }
@@ -260,19 +460,31 @@ export default class Manifold {
    * @param direction The direction to clip in
    * @param o The vector to clip past
    */
-  private clipPoints(p0: ContactPoint, p1: ContactPoint, direction: vec2, o: number): ContactPoint[] {
+  private clipPoints(
+    p0: ContactPoint,
+    p1: ContactPoint,
+    direction: vec2,
+    o: number,
+    clippingPlane: vec2
+  ): ContactPoint[] {
     const clipped: ContactPoint[] = [];
 
-    const d1 = vec2.dot(direction, p0.point) - o;
-    const d2 = vec2.dot(direction, p1.point) - o;
+    const dist0 = vec2.dot(direction, p0.point) - o;
+    const dist1 = vec2.dot(direction, p1.point) - o;
 
     // if either point is past o along n then we can keep it
-    if (d1 >= 0) clipped.push(p0);
-    if (d2 >= 0) clipped.push(p1);
+    if (dist0 >= 0) {
+      clipped.push(p0);
+      p0.featureId.push(clippingPlane);
+    }
+    if (dist1 >= 0) {
+      clipped.push(p1);
+      p1.featureId.push(clippingPlane);
+    }
 
     // finally we need to check if they are on opposing sides
     // so that we can compute the correct point
-    if (d1 * d2 < 0) {
+    if (dist0 * dist1 < 0) {
       // if they are on different sides of the offset, d1 and d2
       // will be (+) * (-) and will yield a negative result
       // therefore be less than zero
@@ -281,12 +493,17 @@ export default class Manifold {
       const e = vec2.sub(vec2.create(), p1.point, p0.point);
 
       // compute the location along e
-      const u = d1 / (d1 - d2);
+      const u = dist0 / (dist0 - dist1);
       vec2.scale(e, e, u);
       vec2.add(e, e, p0.point);
 
       // add the point
-      clipped.push({ point: e, depth: p0.depth });
+      clipped.push({
+        point: e,
+        depth: p0.depth,
+        normal: this.normal,
+        featureId: [vec2.sub(vec2.create(), p1.point, p0.point)],
+      });
     }
 
     return clipped;

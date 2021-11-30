@@ -5,7 +5,7 @@ import RigidBody from "../rigidbody";
 /**
  * Solves an aspect of a collision described by a {@link Manifold}.
  */
-export type CollisionSolver = (m: Manifold) => void;
+export type CollisionSolver = (m: Manifold, delta?: number) => void;
 
 /**
  * Solves a property of the dynamics of a {@link RigidBody}.

@@ -92,4 +92,15 @@ export default class CircleCollider extends Circle implements Collider {
       right: vec2.rotate(vec2.create(), p, this.getPosition(), Math.PI / 45),
     };
   }
+
+  /**
+   * Gets the points that make up the circle collider.
+   *
+   * Only returns the circle's centre.
+   *
+   * @returns The centre of the circle
+   */
+  getPoints() {
+    return [this.getPosition()];
+  }
 }

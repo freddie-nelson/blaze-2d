@@ -1,5 +1,7 @@
 import { vec2 } from "gl-matrix";
 import { cross2D, cross2DWithScalar } from "../../../utils/vectors";
+import CollisionObject from "../../collisionObject";
+import PHYSICS_CONF from "../../config";
 import Manifold from "../../manifold";
 
 // initialise needed vectors
@@ -24,26 +26,36 @@ export default function solveImpulse(m: Manifold) {
     let relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
 
     // calculate relative velocity in terms of normal direction
-    const contactVelocity = vec2.dot(relativeVelocity, m.normal);
+    const contactVelocity = vec2.dot(relativeVelocity, contact.normal);
 
     // do not resolve if velocities are seperating
-    if (contactVelocity > 0) return;
+    // if (contactVelocity > 0) return;
 
     // calculate impulse scalar
-    const contactACrossN = cross2D(contactA, m.normal);
-    const contactBCrossN = cross2D(contactB, m.normal);
-    const invMass =
-      m.a.getInverseMass() +
-      m.b.getInverseMass() +
-      contactACrossN ** 2 * m.a.getInverseInertia() +
-      contactBCrossN ** 2 * m.b.getInverseInertia();
+    // const contactACrossN = cross2D(contactA, contact.normal);
+    // const contactBCrossN = cross2D(contactB, contact.normal);
+    // const invMass =
+    //   m.a.getInverseMass() +
+    //   m.b.getInverseMass() +
+    //   contactACrossN ** 2 * m.a.getInverseInertia() +
+    //   contactBCrossN ** 2 * m.b.getInverseInertia();
 
-    let impulseScalar = -(1 + m.epsilon) * contactVelocity;
-    impulseScalar /= invMass;
-    impulseScalar /= m.contactPoints.length;
+    // let impulseScalar = -(1 + m.epsilon) * contactVelocity;
+    // impulseScalar /= invMass;
+    // impulseScalar /= m.contactPoints.length;
+    let deltaImpulseNormal = contact.massNormal * (-contactVelocity + contact.bias);
+
+    if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+      // clamp the accumulated impulse
+      const old = contact.impulseNormal;
+      contact.impulseNormal = Math.max(old + deltaImpulseNormal, 0);
+      deltaImpulseNormal = contact.impulseNormal - old;
+    } else {
+      deltaImpulseNormal = Math.max(deltaImpulseNormal, 0);
+    }
 
     // apply impulse
-    vec2.scale(impulse, m.normal, impulseScalar);
+    vec2.scale(impulse, contact.normal, deltaImpulseNormal);
 
     m.a.applyImpulse(vec2.negate(vec2.create(), impulse), contactA);
     m.b.applyImpulse(impulse, contactB);
@@ -51,34 +63,67 @@ export default function solveImpulse(m: Manifold) {
     // friction impulse
     relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
 
-    vec2.sub(
-      velTangent,
-      relativeVelocity,
-      vec2.scale(vec2.create(), m.normal, vec2.dot(relativeVelocity, m.normal))
-    );
-    vec2.normalize(velTangent, velTangent);
+    // calculate tangent velocity
+    // vec2.sub(
+    //   velTangent,
+    //   relativeVelocity,
+    //   vec2.scale(vec2.create(), contact.normal, vec2.dot(relativeVelocity, m.normal))
+    // );
+    // vec2.normalize(velTangent, velTangent);
 
-    let tangentImpulseMag = -vec2.dot(relativeVelocity, velTangent);
-    tangentImpulseMag /= invMass;
-    tangentImpulseMag /= m.contactPoints.length;
+    // let tangentImpulseMag = -vec2.dot(relativeVelocity, velTangent);
+    // tangentImpulseMag /= invMass;
+    // tangentImpulseMag /= m.contactPoints.length;
 
     // don't apply tiny friction impulses
-    if (Math.abs(tangentImpulseMag) <= 0.0001) return;
+    // if (Math.abs(tangentImpulseMag) <= 0.0001) return;
 
     // coulumb's law
-    if (Math.abs(tangentImpulseMag) < impulseScalar * m.sf) {
-      vec2.scale(tangentImpulse, velTangent, tangentImpulseMag);
+    // if (Math.abs(tangentImpulseMag) < impulseScalar * m.sf) {
+    //   vec2.scale(tangentImpulse, velTangent, tangentImpulseMag);
+    // } else {
+    //   vec2.scale(tangentImpulse, velTangent, -impulseScalar * m.df);
+    // }
+
+    // vec2.negate(reverseTangentImpulse, tangentImpulse);
+
+    const tangent = cross2DWithScalar(vec2.create(), contact.normal, 1);
+    const velTangent = vec2.dot(relativeVelocity, tangent);
+    let deltaImpulseTangent = contact.massTangent * -velTangent;
+
+    if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+      // compute friction impulse
+      const maxImpulseTangent = m.df * contact.impulseNormal;
+
+      // clamp friction
+      const old = contact.impulseTangent;
+      contact.impulseTangent = Math.max(
+        -maxImpulseTangent,
+        Math.min(maxImpulseTangent, old + deltaImpulseTangent)
+      );
+      deltaImpulseTangent = contact.impulseTangent - old;
     } else {
-      vec2.scale(tangentImpulse, velTangent, -impulseScalar * m.df);
+      const maxImpulseTangent = m.df * deltaImpulseNormal;
+      deltaImpulseTangent = Math.max(-maxImpulseTangent, Math.min(maxImpulseTangent, deltaImpulseTangent));
     }
 
+    // apply friction impulse
+    vec2.scale(tangentImpulse, tangent, deltaImpulseTangent);
     vec2.negate(reverseTangentImpulse, tangentImpulse);
 
-    // apply friction impulse
     m.a.applyImpulse(reverseTangentImpulse, contactA);
     m.b.applyImpulse(tangentImpulse, contactB);
   }
 }
+
+/**
+ * Calculate and apply the accumulative impulse for a collision between 2 {@link CollisionObject}s, **a** and **b**.
+ *
+ * @param m The manifold of the collision between **a** and **b**
+ * @param contactA The contact point on **a**
+ * @param contactB The contact point on **b**
+ */
+export function accumulateImpulse(m: Manifold, contactA: vec2, contactB: vec2) {}
 
 // export default function solveImpulse(m: Manifold) {
 //   const A = m.a;
@@ -92,13 +137,13 @@ export default function solveImpulse(m: Manifold) {
 //     const contactB = vec2.sub(vec2.create(), contact.point, m.b.getPosition());
 
 //     let relV = vec2.sub(vec2.create(), B.velocity, A.velocity);
-//     const contactV = vec2.dot(relV, m.normal);
+//     const contactV = vec2.dot(relV, contact.normal);
 
 //     if (contactV > 0) return;
 
 //     // calculate impulse vector along the normal
 //     const impulseMagnitude = (-(1 + m.epsilon) * contactV) / invMassSum;
-//     const impulseDirection = m.normal;
+//     const impulseDirection = contact.normal;
 
 //     const jn = vec2.scale(vec2.create(), impulseDirection, impulseMagnitude);
 
