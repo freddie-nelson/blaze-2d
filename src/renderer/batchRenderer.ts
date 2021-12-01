@@ -15,6 +15,7 @@ import Camera from "../camera/camera";
 import Blaze from "../blaze";
 import Circle from "../shapes/circle";
 import { ZMap } from "../utils/types";
+import Triangle from "../shapes/triangle";
 
 /**
  * Stores the data needed to render a shape in the world.
@@ -67,6 +68,9 @@ export default abstract class BatchRenderer extends Renderer {
           case "circle":
             this.renderCircles(queue[z][type] as Renderable<Circle>[], z);
             break;
+          case "triangle":
+            this.renderTriangles(queue[z][type] as Renderable<Triangle>[], z);
+            break;
           default:
             break;
         }
@@ -87,6 +91,7 @@ export default abstract class BatchRenderer extends Renderer {
 
     this.queueRects(shapes.rects, zIndex);
     this.queueCircles(shapes.circles, zIndex);
+    this.queueTriangles(shapes.triangles, zIndex);
   }
 
   /**
@@ -100,6 +105,7 @@ export default abstract class BatchRenderer extends Renderer {
 
     this.queueRects(shapes.rects, zIndex);
     this.queueCircles(shapes.circles, zIndex);
+    this.queueTriangles(shapes.triangles, zIndex);
   }
 
   /**
@@ -130,6 +136,21 @@ export default abstract class BatchRenderer extends Renderer {
         : (circles as Renderable<Circle>[]);
 
     this.addRenderablesToQueue(renderable, zIndex, "circle");
+  }
+
+  /**
+   * Queue a group of triangle to be batch rendered.
+   *
+   * @param triangles The triangles to queue
+   * @param zIndex The z index of the triangles
+   */
+  private static queueTriangles(triangles: (Triangle | Renderable<Triangle>)[], zIndex = 0) {
+    const renderable =
+      triangles[0] instanceof Triangle
+        ? this.getRenderableTrianglesfromTriangles(<Triangle[]>triangles)
+        : (triangles as Renderable<Triangle>[]);
+
+    this.addRenderablesToQueue(renderable, zIndex, "triangle");
   }
 
   private static addRenderablesToQueue(renderables: Renderable<Shape>[], zIndex: number, type: string) {
@@ -174,13 +195,30 @@ export default abstract class BatchRenderer extends Renderer {
   }
 
   /**
+   * Batch render an array of triangles.
+   *
+   * @param triangles The triangles to render
+   * @param zIndex The z index of the rendered triangles
+   */
+  private static renderTriangles(triangles: (Triangle | Renderable<Triangle>)[], zIndex = 0) {
+    const renderable =
+      triangles[0] instanceof Triangle
+        ? this.getRenderableTrianglesfromTriangles(<Triangle[]>triangles)
+        : (triangles as Renderable<Triangle>[]);
+
+    const geometry = this.getGeometryFromRenderables(renderable);
+
+    this.renderGeometry(geometry, "triangle", zIndex);
+  }
+
+  /**
    * Renders geometry using a shape shader.
    *
    * @param geometry The geometry to render
    * @param type The type of shape shader to use
    * @param zIndex The z position of the rendered rectangle
    */
-  private static renderGeometry(geometry: Geometry, type: "rect" | "circle", zIndex = 0) {
+  private static renderGeometry(geometry: Geometry, type: "rect" | "circle" | "triangle", zIndex = 0) {
     const gl = this.getGL();
 
     // select shader program
@@ -192,8 +230,11 @@ export default abstract class BatchRenderer extends Renderer {
       case "circle":
         programInfo = this.circleProgramInfo;
         break;
-      default:
+      case "triangle":
+        programInfo = this.triangleProgramInfo;
         break;
+      default:
+        return;
     }
 
     // vertex positions
@@ -242,12 +283,15 @@ export default abstract class BatchRenderer extends Renderer {
     const texCoords: number[] = [];
     const uvs: number[] = [];
 
+    let indicesOffset = 0;
+
     for (const r of renderable) {
       const pos = vec2.clone(r.pos);
       vec2.sub(pos, pos, this.getCamera().getPosition());
 
       const v = r.shape.getVerticesClipSpace(pos, this.scale, r.rot);
-      const i = r.shape.getIndices((indices.length / 3) * 2);
+      const i = r.shape.getIndices(indicesOffset);
+      indicesOffset += v.length / 2;
 
       const atlasImage = this.atlas.getTexture(r.shape.texture);
       if (!atlasImage) continue;
@@ -306,9 +350,24 @@ export default abstract class BatchRenderer extends Renderer {
     return renderable;
   }
 
+  private static getRenderableTrianglesfromTriangles(triangles: Triangle[]) {
+    const renderable: Renderable<Triangle>[] = [];
+
+    for (const t of triangles) {
+      renderable.push({
+        shape: t,
+        pos: vec2.create(),
+        rot: 0,
+      });
+    }
+
+    return renderable;
+  }
+
   private static getRenderableShapesFromEntites(entities: Entity[]) {
     const rects: Renderable<Rect>[] = [];
     const circles: Renderable<Circle>[] = [];
+    const triangles: Renderable<Triangle>[] = [];
 
     for (const e of entities) {
       const pieces = e.getPieces();
@@ -326,6 +385,12 @@ export default abstract class BatchRenderer extends Renderer {
             pos: e.getPosition(),
             rot: e.getRotation(),
           });
+        } else if (p instanceof Triangle) {
+          triangles.push({
+            shape: p,
+            pos: e.getPosition(),
+            rot: e.getRotation(),
+          });
         }
       }
     }
@@ -333,6 +398,7 @@ export default abstract class BatchRenderer extends Renderer {
     return {
       rects,
       circles,
+      triangles,
     };
   }
 }

@@ -8,6 +8,8 @@ import vsRect from "../shaders/rect/vertex.glsl";
 import fsRect from "../shaders/rect/fragment.glsl";
 import vsCircle from "../shaders/circle/vertex.glsl";
 import fsCircle from "../shaders/circle/fragment.glsl";
+import vsTriangle from "../shaders/triangle/vertex.glsl";
+import fsTriangle from "../shaders/triangle/fragment.glsl";
 
 import Color from "../utils/color";
 import Blaze from "../blaze";
@@ -15,6 +17,7 @@ import Camera from "../camera/camera";
 import Circle from "../shapes/circle";
 import Shape from "../shapes/shape";
 import { ZMap } from "../utils/types";
+import Triangle from "../shapes/triangle";
 
 interface RenderQueueItem {
   shape: Shape;
@@ -50,6 +53,9 @@ export default abstract class Renderer {
 
   static circleProgram: WebGLProgram;
   static circleProgramInfo: ShaderProgramInfo;
+
+  static triangleProgram: WebGLProgram;
+  static triangleProgramInfo: ShaderProgramInfo;
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -114,6 +120,21 @@ export default abstract class Renderer {
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.circleProgram, "u_ZIndex"),
         texture: gl.getUniformLocation(this.circleProgram, "u_Texture"),
+      },
+    };
+
+    // triangle shader
+    this.triangleProgram = createShaderProgram(gl, vsTriangle, fsTriangle);
+    this.triangleProgramInfo = {
+      program: this.triangleProgram,
+      attribLocations: {
+        vertex: gl.getAttribLocation(this.triangleProgram, "a_Vertex"),
+        texCoord: gl.getAttribLocation(this.circleProgram, "a_TexCoord"),
+        uv: gl.getAttribLocation(this.triangleProgram, "a_Uv"),
+      },
+      uniformLocations: {
+        zIndex: gl.getUniformLocation(this.triangleProgram, "u_ZIndex"),
+        texture: gl.getUniformLocation(this.triangleProgram, "u_Texture"),
       },
     };
   }
@@ -187,6 +208,8 @@ export default abstract class Renderer {
       programInfo = this.rectProgramInfo;
     } else if (shape instanceof Circle) {
       programInfo = this.circleProgramInfo;
+    } else if (shape instanceof Triangle) {
+      programInfo = this.triangleProgramInfo;
     }
 
     // vertex positions
@@ -217,8 +240,9 @@ export default abstract class Renderer {
     gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
     // indices
+    const indices = shape.getIndices();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, shape.getIndices(), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
     gl.useProgram(programInfo.program);
     gl.uniform1f(programInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
@@ -232,7 +256,7 @@ export default abstract class Renderer {
       gl.uniform1i(programInfo.uniformLocations.texture, unit - gl.TEXTURE0);
     }
 
-    gl.drawElements(gl[this.mode], 6, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl[this.mode], indices.length, gl.UNSIGNED_SHORT, 0);
   }
 
   /**

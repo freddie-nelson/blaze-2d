@@ -5,9 +5,11 @@ import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
 import BoxCollider from "@blz/physics/collider/box";
+import TriangleCollider from "@blz/physics/collider/triangle";
 import CircleCollider from "@blz/physics/collider/circle";
 import Collider from "@blz/physics/collider/collider";
 import Rect from "@blz/shapes/rect";
+import Triangle from "@blz/shapes/triangle";
 import Circle from "@blz/shapes/circle";
 import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
@@ -173,6 +175,14 @@ addKeyListener("KeyC", (pressed) => {
   }
 });
 
+addKeyListener("KeyT", (pressed) => {
+  if (pressed) {
+    TYPE = "triangle";
+  } else {
+    TYPE = "rect";
+  }
+});
+
 // floor
 const FLOOR_WIDTH = 28;
 const FLOOR_HEIGHT = 3;
@@ -208,6 +218,9 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   } else if (TYPE === "circle") {
     shape = new Circle(size[0] / 2);
     collider = new CircleCollider(size[0] / 2, pos);
+  } else if (TYPE === "triangle") {
+    shape = new Triangle(size[0], size[1]);
+    collider = new TriangleCollider(size[0], size[1], pos);
   }
 
   shape.texture = tex;
