@@ -121,6 +121,50 @@ debugTex
 
 ATLAS.refreshAtlas();
 
+// setup walls and floor
+
+// floor
+const FLOOR_WIDTH = 28;
+const FLOOR_HEIGHT = 3;
+const floorPos = vec2.fromValues(0, -10.5);
+
+const floorCollider = new BoxCollider(FLOOR_WIDTH, FLOOR_HEIGHT, floorPos);
+const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
+floorRect.texture = floorTex;
+
+const floor = new Entity(floorPos, floorCollider, [floorRect], 0);
+floor.setInertia(0);
+floor.isStatic = true;
+
+WORLD.addEntity(floor);
+PHYSICS.addBody(floor);
+
+// left wall
+const leftPos = vec2.fromValues(-FLOOR_WIDTH / 2, 0);
+const leftCollider = new BoxCollider(FLOOR_HEIGHT, FLOOR_WIDTH, leftPos);
+const leftRect = new Rect(FLOOR_HEIGHT, FLOOR_WIDTH);
+leftRect.texture = floorTex;
+
+const left = new Entity(leftPos, leftCollider, [leftRect], 0);
+left.setInertia(0);
+left.isStatic = true;
+
+WORLD.addEntity(left);
+PHYSICS.addBody(left);
+
+// right wall
+const rightPos = vec2.fromValues(FLOOR_WIDTH / 2, 0);
+const rightCollider = new BoxCollider(FLOOR_HEIGHT, FLOOR_WIDTH, rightPos);
+const rightRect = new Rect(FLOOR_HEIGHT, FLOOR_WIDTH);
+rightRect.texture = floorTex;
+
+const right = new Entity(rightPos, rightCollider, [rightRect], 0);
+right.setInertia(0);
+right.isStatic = true;
+
+WORLD.addEntity(right);
+PHYSICS.addBody(right);
+
 // menu
 const menu = document.createElement("div");
 menu.style.cssText = `
@@ -146,18 +190,54 @@ const rotatePara = document.createElement("p");
 rotatePara.style.cssText = textCSS;
 rotatePara.textContent = "Press 'R' to randomize rotations.";
 
-const typePara = document.createElement("p");
-typePara.style.cssText = textCSS;
-typePara.textContent = "Press 'C' to create circles.";
+const circlePara = document.createElement("p");
+circlePara.style.cssText = textCSS;
+circlePara.textContent = "Press 'C' to create circles.";
+
+const trianglePara = document.createElement("p");
+trianglePara.style.cssText = textCSS;
+trianglePara.textContent = "Press 'T' to create triangles.";
 
 let bodyCount = 1;
 const bodyCountPara = document.createElement("p");
 bodyCountPara.style.cssText = textCSS;
 bodyCountPara.textContent = `Bodies: ${bodyCount}`;
 
-menu.appendChild(rotatePara);
-menu.appendChild(typePara);
+const wallsToggle = document.createElement("input");
+wallsToggle.style.cssText = "margin-left: .5rem;";
+wallsToggle.type = "checkbox";
+wallsToggle.onclick = (e) => {
+  const checked = wallsToggle.checked;
+  if (checked) {
+    WORLD.addEntity(left);
+    PHYSICS.addBody(left);
+
+    WORLD.addEntity(right);
+    PHYSICS.addBody(right);
+  } else {
+    WORLD.removeEntity(left);
+    PHYSICS.removeBody(left);
+
+    WORLD.removeEntity(right);
+    PHYSICS.removeBody(right);
+  }
+};
+wallsToggle.checked = true;
+
+const wallsTogglePara = document.createElement("p");
+wallsTogglePara.style.cssText = textCSS;
+wallsTogglePara.textContent = "Toggle walls: ";
+
+const wallsToggleWrapper = document.createElement("div");
+wallsToggleWrapper.style.cssText = "display: flex; align-items: center;";
+wallsToggleWrapper.appendChild(wallsTogglePara);
+wallsToggleWrapper.appendChild(wallsToggle);
+
 menu.appendChild(bodyCountPara);
+menu.appendChild(rotatePara);
+menu.appendChild(circlePara);
+menu.appendChild(trianglePara);
+menu.appendChild(wallsToggleWrapper);
 document.body.appendChild(menu);
 
 // toggles
@@ -182,20 +262,6 @@ addKeyListener("KeyT", (pressed) => {
     TYPE = "rect";
   }
 });
-
-// floor
-const FLOOR_WIDTH = 28;
-const FLOOR_HEIGHT = 3;
-const floorCollider = new BoxCollider(FLOOR_WIDTH, FLOOR_HEIGHT, vec2.fromValues(0, -9));
-const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
-floorRect.texture = floorTex;
-
-const floor = new Entity(vec2.fromValues(0, -9), floorCollider, [floorRect], 0);
-floor.setInertia(0);
-floor.isStatic = true;
-
-WORLD.addEntity(floor);
-PHYSICS.addBody(floor);
 
 // generate random shapes on click
 addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {

@@ -162,6 +162,34 @@ export default class Physics implements System {
   }
 
   /**
+   * Removes a {@link CollisionObject} from the world's collisions space.
+   *
+   * @param c The collision object to remove
+   */
+  removeCollisionObj(c: CollisionObject) {
+    this.collisionsSpace.removeObject(c);
+  }
+
+  /**
+   * Removes a {@link RigidBody} from the world's dynamics space.
+   *
+   * @param obj The object to remove
+   */
+  removeDynamicsObj(obj: RigidBody) {
+    this.dynamicsSpace.removeObject(obj);
+  }
+
+  /**
+   * Removes a {@link Rigidbody} from the world's dynamics and collisions spaces.
+   *
+   * @param body The body to remove
+   */
+  removeBody(body: RigidBody) {
+    this.removeCollisionObj(body);
+    this.removeDynamicsObj(body);
+  }
+
+  /**
    * Sets the gravity to use in the physics world.
    *
    * @param gravity The new gravity to use

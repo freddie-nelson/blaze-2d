@@ -16,6 +16,9 @@ const reverseTangentImpulse = vec2.create();
  * @param m {@link Manifold} describing the collision to solve the impulse for
  */
 export default function solveImpulse(m: Manifold) {
+  // don't resolve impulse if both objects have infinite mass
+  if (m.a.getInverseMass() === 0 && m.b.getInverseMass() === 0) return;
+
   for (const contact of m.contactPoints) {
     // calculate contact vectors
     vec2.sub(contactA, contact.point, m.a.getPosition());
