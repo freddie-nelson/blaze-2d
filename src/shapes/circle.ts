@@ -37,17 +37,6 @@ export default class Circle extends Shape {
   }
 
   /**
-   * Renders the circle using the {@link Renderer}.
-   *
-   * @param position The x and y position to render the circle at
-   * @param rotation The rotation to apply to the rendered circle
-   * @param zIndex The z position of the rendered circle
-   */
-  render(position?: vec2, rotation?: number, zIndex?: number) {
-    Renderer.queueShape(this, position, rotation, zIndex);
-  }
-
-  /**
    * Calculates the circles's vertices in local space.
    *
    * @returns The circle's vertices
@@ -80,13 +69,10 @@ export default class Circle extends Shape {
     // const worldLocalTranslation = worldRotated;
 
     // vector to get from tl vertex to br vertex
-    const tlbr = vec2.create();
-    vec2.sub(tlbr, worldLocalRotated[1], worldLocalRotated[3]);
+    const tlbr = vec2.sub(vec2.create(), worldLocalRotated[1], worldLocalRotated[3]);
 
     // centre of the rectangle after translations
-    const centre = vec2.create();
-    vec2.scale(centre, tlbr, 0.5);
-    vec2.add(centre, centre, worldLocalRotated[3]);
+    const centre = vec2.scaleAndAdd(vec2.create(), worldLocalRotated[3], tlbr, 0.5);
 
     const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, centre, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
@@ -117,16 +103,17 @@ export default class Circle extends Shape {
   /**
    * Calculates the base vertices of the circle.
    *
-   * These vertices are the base vertices for a quad, scaled to the radius of the circle.
+   * These vertices are the base vertices for a quad, scaled to the diameter of the {@link Circle} instance.
    *
    * @returns The circle's base vertices
    */
-  private getBaseVertices() {
+  getBaseVertices() {
+    const diameter = this.radius * 2;
     const base = [
       baseVertices.bl,
-      this.vertexScale(baseVertices.br, [this.width, 1]),
-      this.vertexScale(baseVertices.tr, [this.width, this.height]),
-      this.vertexScale(baseVertices.tl, [1, this.height]),
+      this.vertexScale(baseVertices.br, [diameter, 1]),
+      this.vertexScale(baseVertices.tr, [diameter, diameter]),
+      this.vertexScale(baseVertices.tl, [1, diameter]),
     ];
 
     const temp = vec2.create();
@@ -171,7 +158,7 @@ export default class Circle extends Shape {
   }
 
   /**
-   * Sets the circle's radius by setting the `width` and `height` to `radius`.
+   * Sets the circle's radius.
    *
    * @throws When the provided radius is < 0
    *
@@ -181,8 +168,6 @@ export default class Circle extends Shape {
     if (radius < 0) throw new Error("Circle: Radius cannot be < 0.");
 
     this.radius = radius;
-    this.width = radius * 2;
-    this.height = radius * 2;
   }
 
   /**
@@ -192,63 +177,5 @@ export default class Circle extends Shape {
    */
   getRadius() {
     return this.radius;
-  }
-
-  /**
-   * Sets the circle's width.
-   *
-   * Is equivalent to setting the circle's diameter.
-   *
-   * The circle's radius will be set to half of the given diameter.
-   *
-   * @throws When the provided diameter is < 0
-   *
-   * @param diameter The circle's new diameter
-   */
-  setWidth(diameter: number) {
-    if (diameter < 0) throw new Error("Circle: Diameter cannot be < 0.");
-
-    this.width = diameter;
-    this.height = diameter;
-    this.radius = diameter / 2;
-  }
-
-  /**
-   * Gets the radius of the circle.
-   *
-   * @returns The radius of the circle
-   */
-  getWidth() {
-    return this.width;
-  }
-
-  /**
-   * Sets the circle's height.
-   *
-   * Is equivalent to setting the circle's diameter.
-   *
-   * The circle's radius will be set to half of the given diameter.
-   *
-   * @throws When the provided diameter is < 0
-   *
-   * @param diameter The circle's new diameter
-   */
-  setHeight(diameter: number) {
-    if (diameter < 0) throw new Error("Circle: Diameter cannot be < 0.");
-
-    this.width = diameter;
-    this.height = diameter;
-    this.radius = diameter / 2;
-  }
-
-  /**
-   * Gets the height of the circle.
-   *
-   * This is equivalent to the diameter of the circle.
-   *
-   * @returns The height of the circle
-   */
-  getHeight() {
-    return this.height;
   }
 }

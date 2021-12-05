@@ -15,9 +15,12 @@ const indices = new Uint16Array([0, 1, 2]);
 const uvs = new Float32Array([0, 0, 1, 0, 0.5, 1]);
 
 /**
- * Represents a Cuboid in 3D space with a width, height and depth.
+ * Represents a triangle in 2D space with a width and height.
  */
 export default class Triangle extends Shape {
+  private height: number;
+  private width: number;
+
   /**
    * Creates a new {@link Triangle} instance with dimensions, position and rotation.
    *
@@ -33,17 +36,6 @@ export default class Triangle extends Shape {
 
     this.width = width;
     this.height = height;
-  }
-
-  /**
-   * Renders the triangle using the {@link Renderer}.
-   *
-   * @param position The x and y position to render the triangle at
-   * @param rotation The rotation to apply to the rendered triangle
-   * @param zIndex The z position of the rendered triangle
-   */
-  render(position?: vec2, rotation?: number, zIndex?: number) {
-    Renderer.queueShape(this, position, rotation, zIndex);
   }
 
   /**
@@ -78,17 +70,17 @@ export default class Triangle extends Shape {
     const worldLocal = applyTranslation(world, this.getPosition());
     const worldLocalRotated = rotation ? applyRotation(worldLocal, origin, rotation) : worldLocal;
 
-    // const worldLocalTranslation = worldRotated;
-
-    // vector to get from tl vertex to br
-    const tl = vec2.fromValues(worldLocalRotated[0][0], worldLocalRotated[2][1]);
-    const tlbr = vec2.create();
-    vec2.sub(tlbr, worldLocalRotated[1], tl);
+    // vector to get from tc vertex to bc
+    // worldLocalRotated[2] is tc
+    const tcbc = vec2.sub(
+      vec2.create(),
+      vec2.fromValues(worldLocalRotated[2][0], worldLocalRotated[0][1]),
+      worldLocalRotated[2]
+    );
 
     // centre of the triangle after translations
-    const centre = vec2.create();
-    vec2.scale(centre, tlbr, 0.5);
-    vec2.add(centre, centre, tl);
+    // TODO: Could change centre calculation to Midpoint formula
+    const centre = vec2.scaleAndAdd(vec2.create(), worldLocalRotated[2], tcbc, 0.5);
 
     const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, centre, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
@@ -119,15 +111,15 @@ export default class Triangle extends Shape {
   /**
    * Calculates the base vertices of the triangle.
    *
-   * These vertices are the base vertices for a quad, scaled to the width and height of the triangle.
+   * These are the vertices for a triangle scaled to the width and height of the {@link Triangle} instance.
    *
    * @returns The triangles base vertices
    */
-  private getBaseVertices() {
+  getBaseVertices() {
     const base = [
       baseVertices.bl,
-      this.vertexScale(baseVertices.br, [this.width, 1]),
-      this.vertexScale(baseVertices.tc, [this.width, this.height]),
+      vec2.multiply(vec2.create(), baseVertices.br, vec2.fromValues(this.width, 1)),
+      vec2.multiply(vec2.create(), baseVertices.tc, vec2.fromValues(this.width, this.height)),
     ];
 
     const temp = vec2.create();
@@ -158,17 +150,6 @@ export default class Triangle extends Shape {
    */
   getUVCoords() {
     return uvs;
-  }
-
-  /**
-   * Scales the first vector by the components in the second vector, returning the resultant vector.
-   *
-   * @param v1 The first vector
-   * @param v2 The second vector
-   * @returns A new vector with the scaled components
-   */
-  private vertexScale(v1: vec2, v2: vec2): vec2 {
-    return [v1[0] * v2[0], v1[1] * v2[1]];
   }
 
   /**

@@ -1,5 +1,6 @@
 import { vec2 } from "gl-matrix";
 import Object2D from "../object2d";
+import Renderer from "../renderer/renderer";
 import Texture from "../texture/texture";
 import Color from "../utils/color";
 
@@ -11,8 +12,8 @@ const defaultTexture = new Texture(new Color("gray"));
  * A shape is self contained and includes functions to render itself.
  */
 export default abstract class Shape extends Object2D {
-  protected width: number;
-  protected height: number;
+  // protected height: number;
+  // protected width: number;
   texture = defaultTexture;
 
   constructor() {
@@ -26,7 +27,9 @@ export default abstract class Shape extends Object2D {
    * @param rotation The rotation to apply to the rendered shape
    * @param zIndex The z position of the rendered shape
    */
-  abstract render(position?: vec2, rotation?: number, zIndex?: number): void;
+  render(position?: vec2, rotation?: number, zIndex?: number) {
+    Renderer.queueShape(this, position, rotation, zIndex);
+  }
 
   /**
    * Calculates the shape's UV coords to be used for texture rendering.
@@ -34,45 +37,6 @@ export default abstract class Shape extends Object2D {
    * @returns the shape's UV coords
    */
   abstract getUVCoords(): Float32Array;
-
-  /**
-   * Sets the shape's width.
-   *
-   * @throws When the the provided width is <= 0
-   *
-   * @param width The shape's new width
-   */
-  abstract setWidth(width: number): void;
-
-  /**
-   * Gets the shape's width in world space units.
-   *
-   * @returns The shape's width in world space
-   */
-  abstract getWidth(): number;
-
-  /**
-   * Sets the shape's height.
-   *
-   * @throws When the the provided height is <= 0
-   *
-   * @param height The shape's new height
-   */
-  abstract setHeight(height: number): void;
-
-  /**
-   * Gets the shape's height in world space units.
-   *
-   * @returns The shape's height in world space
-   */
-  abstract getHeight(): number;
-
-  /**
-   * Calculates the shape's vertices in local space.
-   *
-   * @returns The shapes vertices
-   */
-  abstract getVertices(): number[];
 
   /**
    * Calculates the shape's vertices relative to the provided origin in world space.
@@ -92,6 +56,15 @@ export default abstract class Shape extends Object2D {
    * @returns The shape's vertices relative to the provided origin in clip space
    */
   abstract getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number): number[];
+
+  /**
+   * Calculates the base vertices of the shape.
+   *
+   * These are the vertices for the type of shape at unit size, scaled to the shape's dimensions.
+   *
+   * @returns The shape's vertices
+   */
+  abstract getBaseVertices(): vec2[];
 
   /**
    * Gets the shape's vertex indices for drawing using element arrays.
