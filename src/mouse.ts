@@ -1,12 +1,13 @@
 import { vec2 } from "gl-matrix";
 
 /**
- * Enum for {@link MouseEvent.button} numbers
+ * Enum for {@link MouseEvent.state} numbers
  */
 export enum Mouse {
   LEFT = 0,
   MIDDLE = 1,
   RIGHT = 2,
+  MOVE = 123,
 }
 
 /**
@@ -29,6 +30,11 @@ document.body.addEventListener("mouseup", (e) => {
 
   const pos = vec2.fromValues(e.clientX, e.clientY);
   listeners[e.button]?.forEach((cb) => cb(false, pos));
+});
+
+document.body.addEventListener("mousemove", (e) => {
+  const pos = vec2.fromValues(e.clientX, e.clientY);
+  listeners[Mouse.MOVE].forEach((cb) => cb(isMouseDown(), pos));
 });
 
 /**
