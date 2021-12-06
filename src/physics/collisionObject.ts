@@ -6,6 +6,7 @@ import PhysicsObject from "./object";
 export default class CollisionObject extends PhysicsObject {
   private terrainCollisionFlags: { [index: number]: boolean } = {};
 
+  // ! TODO: Position colliders relative to CollisionObject (local space instead of world)
   collider: Collider;
 
   /**

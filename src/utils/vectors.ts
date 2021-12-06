@@ -87,3 +87,17 @@ export function cross2DWithScalar(out: vec2, a: vec2, scalar: number) {
 export function cross2D(a: vec2, b: vec2) {
   return a[0] * b[1] - a[1] * b[0];
 }
+
+/**
+ * Calculate the midpoint between two vectors.
+ *
+ * @param out The vector to output the result to
+ * @param a The start vector
+ * @param b The end vector
+ * @returns The resultant vector, `out`
+ */
+export function midpoint(out: vec2, a: vec2, b: vec2) {
+  out[0] = (a[0] + b[0]) / 2;
+  out[1] = (a[1] + b[1]) / 2;
+  return out;
+}
