@@ -35,7 +35,7 @@ export interface ContactPoint {
  * Information about a collision which has occured between two objects.
  */
 export default class Manifold {
-  static CACHED_CONTACTS_TOLERANCE = 0.000005;
+  static CACHED_CONTACTS_TOLERANCE = 0.0005;
 
   /**
    * An object in the collision.
@@ -153,7 +153,7 @@ export default class Manifold {
   update(m: Manifold) {
     const newContacts = m.contactPoints;
     const oldContacts = this.contactPoints;
-    const mergedContacts = [];
+    const mergedContacts: ContactPoint[] = [];
 
     // if we have different number of contacts drop manifold
     if (newContacts.length !== oldContacts.length) return (this.isDead = true);
@@ -188,10 +188,12 @@ export default class Manifold {
 
     if (mergedContacts.length !== oldContacts.length) return (this.isDead = true);
 
-    console.log("match");
+    this.mergeManifold(m, mergedContacts);
+  }
 
+  private mergeManifold(m: Manifold, contacts: ContactPoint[]) {
     this.edges = m.edges;
-    this.contactPoints = mergedContacts;
+    this.contactPoints = contacts;
   }
 
   private compareContacts(c1: ContactPoint, c2: ContactPoint) {
@@ -208,8 +210,8 @@ export default class Manifold {
    * @param delta The time since the last udpate
    */
   preStep(delta: number) {
-    const allowedPenetration = 0.01;
-    const biasFactor = 0.2;
+    const allowedPenetration = 0.03;
+    const biasFactor = 0.7;
 
     for (const contact of this.contactPoints) {
       const contactA = vec2.sub(vec2.create(), contact.point, this.a.getPosition());

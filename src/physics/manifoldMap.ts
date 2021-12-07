@@ -62,8 +62,10 @@ export default class ManifoldMap {
       if (old === m) return;
 
       old.update(m);
-      if (old.isDead) this.removeManifold(a, b);
-      else return;
+      if (old.isDead) {
+        this.removeManifold(a, b);
+        console.log("dead");
+      } else return;
     }
 
     let map: Map<CollisionObject, Manifold>;

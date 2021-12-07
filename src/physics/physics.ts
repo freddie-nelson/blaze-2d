@@ -73,9 +73,9 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
+    this.collisionsSpace.addSolver("preStep", preStep, 1);
     this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
     this.collisionsSpace.addSolver("position", positionalCorrection, 1);
-    this.collisionsSpace.addSolver("preStep", preStep, 1);
   }
 
   update(delta: number) {

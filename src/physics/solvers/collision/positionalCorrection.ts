@@ -7,8 +7,8 @@ import Manifold from "../../manifold";
  * @param m {@link Manifold} describing the collision to correct positions for
  */
 export default function positionalCorrection(m: Manifold) {
-  const percent = 0.8;
-  const slop = 0.03;
+  const percent = 0.9;
+  const slop = 0.04;
 
   // calculate correction vector
   const invMass = m.a.getInverseMass() + m.b.getInverseMass();
