@@ -5,7 +5,7 @@ import Circle from "../../shapes/circle";
 import EPA from "../epa";
 
 /**
- * Represents a box in 2D space with a position and dimensions.
+ * Represents a circle collider in 2D world space with a position and dimensions.
  */
 export default class CircleCollider extends Circle implements Collider {
   /**

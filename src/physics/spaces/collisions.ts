@@ -99,10 +99,8 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
         // mark pair as checked in collision map
         this.collisionPairs.get(A).set(B, true);
 
-        const colliderB = B.collider;
-
         // test collision
-        const res = colliderA.testCollision(colliderB);
+        const res = A.testCollision(B);
         if (res.hasCollision) {
           const manifold = new Manifold(A, B, res, this.gravity, delta);
 

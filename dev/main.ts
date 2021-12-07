@@ -8,7 +8,7 @@ import Color, { RGBAColor } from "../lib/src/utils/color";
 import World from "../lib/src/world";
 import Physics from "../lib/src/physics/physics";
 import Entity from "../lib/src/entity";
-import BoxCollider from "../lib/src/physics/collider/box";
+import RectCollider from "../lib/src/physics/collider/rect";
 import Rect from "../lib/src/shapes/rect";
 import Player from "../lib/src/player";
 import { createVirtualJoystick } from "../lib/src/dropins/player/controls";
@@ -90,7 +90,7 @@ Debug.world = world;
     );
     const test = new Entity(
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
-      new BoxCollider(size[0], size[1]),
+      new RectCollider(size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
       "test"
@@ -118,7 +118,7 @@ Debug.world = world;
   const size = vec2.fromValues(6, 6);
   const test = new Entity(
     vec2.fromValues(0, 0),
-    new BoxCollider(size[0] * 2.5, size[0] * 2.5),
+    new RectCollider(size[0] * 2.5, size[0] * 2.5),
     [new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)), new Rect(2, 6)],
     "test"
   );

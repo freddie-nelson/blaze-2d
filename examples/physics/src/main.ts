@@ -4,7 +4,7 @@ import BatchRenderer from "@blz/renderer/batchRenderer";
 import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
-import BoxCollider from "@blz/physics/collider/box";
+import RectCollider from "@blz/physics/collider/rect";
 import TriangleCollider from "@blz/physics/collider/triangle";
 import CircleCollider from "@blz/physics/collider/circle";
 import Collider from "@blz/physics/collider/collider";
@@ -52,7 +52,7 @@ Renderer.useCamera(CAMERA);
 Debug.world = WORLD;
 Blaze.toggleDebug();
 WORLD.debug = true;
-// PHYSICS.debug = true;
+PHYSICS.debug = true;
 
 // lock canvas to window size
 window.addEventListener("resize", () => {
@@ -128,7 +128,7 @@ const FLOOR_WIDTH = 28;
 const FLOOR_HEIGHT = 3;
 const floorPos = vec2.fromValues(0, -10.5);
 
-const floorCollider = new BoxCollider(FLOOR_WIDTH, FLOOR_HEIGHT, floorPos);
+const floorCollider = new RectCollider(FLOOR_WIDTH, FLOOR_HEIGHT, floorPos);
 const floorRect = new Rect(FLOOR_WIDTH, FLOOR_HEIGHT);
 floorRect.texture = floorTex;
 
@@ -141,7 +141,7 @@ PHYSICS.addBody(floor);
 
 // left wall
 const leftPos = vec2.fromValues(-FLOOR_WIDTH / 2, 0);
-const leftCollider = new BoxCollider(FLOOR_HEIGHT, FLOOR_WIDTH, leftPos);
+const leftCollider = new RectCollider(FLOOR_HEIGHT, FLOOR_WIDTH, leftPos);
 const leftRect = new Rect(FLOOR_HEIGHT, FLOOR_WIDTH);
 leftRect.texture = floorTex;
 
@@ -154,7 +154,7 @@ PHYSICS.addBody(left);
 
 // right wall
 const rightPos = vec2.fromValues(FLOOR_WIDTH / 2, 0);
-const rightCollider = new BoxCollider(FLOOR_HEIGHT, FLOOR_WIDTH, rightPos);
+const rightCollider = new RectCollider(FLOOR_HEIGHT, FLOOR_WIDTH, rightPos);
 const rightRect = new Rect(FLOOR_HEIGHT, FLOOR_WIDTH);
 rightRect.texture = floorTex;
 
@@ -280,13 +280,13 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   if (TYPE === "rect") {
     shape = new Rect(size[0], size[1]);
-    collider = new BoxCollider(size[0], size[1], pos);
+    collider = new RectCollider(size[0], size[1]);
   } else if (TYPE === "circle") {
     shape = new Circle(size[0] / 2);
-    collider = new CircleCollider(size[0] / 2, pos);
+    collider = new CircleCollider(size[0] / 2);
   } else if (TYPE === "triangle") {
     shape = new Triangle(size[0], size[1]);
-    collider = new TriangleCollider(size[0], size[1], pos);
+    collider = new TriangleCollider(size[0], size[1]);
   }
 
   shape.texture = tex;

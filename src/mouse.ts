@@ -34,7 +34,7 @@ document.body.addEventListener("mouseup", (e) => {
 
 document.body.addEventListener("mousemove", (e) => {
   const pos = vec2.fromValues(e.clientX, e.clientY);
-  listeners[Mouse.MOVE].forEach((cb) => cb(isMouseDown(), pos));
+  listeners[Mouse.MOVE]?.forEach((cb) => cb(isMouseDown(), pos));
 });
 
 /**

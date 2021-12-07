@@ -2,7 +2,7 @@ import { vec2 } from "gl-matrix";
 import Blaze from "./blaze";
 import Camera from "./camera/camera";
 import Entity from "./entity";
-import BoxCollider from "./physics/collider/box";
+import RectCollider from "./physics/collider/rect";
 import CircleCollider from "./physics/collider/circle";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
@@ -60,7 +60,9 @@ export default class World implements System {
     for (const e of this.entities) {
       e.update(delta);
 
-      if (this.camera.viewport.containsBoxCollider(e.collider as BoxCollider, this.getWorldToPixelSpace())) {
+      if (
+        this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())
+      ) {
       }
     }
 

@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import BoxCollider from "../physics/collider/box";
+import RectCollider from "../physics/collider/rect";
 
 /**
  * Represents a {@link Camera}'s viewable area and can be used to perform culling.
@@ -32,14 +32,14 @@ export default class Viewport {
   }
 
   /**
-   * Checks wether the provided box is contained within the viewport.
+   * Checks wether the provided rectangle collider is contained within the viewport.
    *
-   * TODO: Change this to use physics collision system so it works with more than just BoxCollider
+   * TODO: Change this to use physics collision system so it works with more than just RectCollider
    *
-   * @param box The box to check
+   * @param rect The rect to check
    * @returns Wether or not the box is withing the viewport
    */
-  containsBoxCollider(box: BoxCollider, worldToPixelScale: vec2) {
+  containsRectCollider(rect: RectCollider, worldToPixelScale: vec2) {
     return true;
     // const points = box.getPoints();
     // const maxDistX = this.width / 2;

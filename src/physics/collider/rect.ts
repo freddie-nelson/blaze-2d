@@ -5,22 +5,22 @@ import Collider, { CollisionResult } from "./collider";
 import EPA from "../epa";
 
 /**
- * Represents a box in 2D space with a position and dimensions.
+ * Represents a rectangle collider in 2D world space with a position and dimensions.
  */
-export default class BoxCollider extends Rect implements Collider {
+export default class RectCollider extends Rect implements Collider {
   /**
-   * Creates a new {@link BoxCollider} instance with a position and dimensions.
+   * Creates a new {@link RectCollider} instance with a position and dimensions.
    *
-   * @param width The width of the box
-   * @param height The height of the box
-   * @param position The box's position in world space
+   * @param width The width of the rect
+   * @param height The height of the rect
+   * @param position The rect's position in world space
    */
   constructor(width: number, height: number, position?: vec2) {
     super(width, height, position);
   }
 
   /**
-   * Checks if this box is colliding with another collider.
+   * Checks if this rect is colliding with another collider.
    *
    * @param c {@link Collider} to test collisions against
    * @returns {@link CollisionResult} with the results of the test
@@ -111,9 +111,9 @@ export default class BoxCollider extends Rect implements Collider {
   }
 
   /**
-   * Calculates the bounding points of the {@link BoxCollider} instance.
+   * Calculates the bounding points of the {@link RectCollider} instance.
    *
-   * **NOTE: The box's vertices are recalculated everytime this function is called.**
+   * **NOTE: The rect's vertices are recalculated everytime this function is called.**
    *
    * @returns The bounding points of the box
    */

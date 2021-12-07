@@ -1,7 +1,7 @@
 import { vec2 } from "gl-matrix";
 import Shape from "../../shapes/shape";
 import PhysicsObject from "../object";
-import MeshCollider from "./meshCollider";
+import CollisionObject from "../collisionObject";
 
 /**
  * Describes a collision between two {@link Collider}s (A and B).
@@ -16,6 +16,11 @@ export interface CollisionResult {
   hasCollision: boolean;
 }
 
+/**
+ * Represents a collider (bounding box) in 2D space.
+ *
+ * Collider's should always be positioned in world space so that collisions can be calculated correctly.
+ */
 export default abstract class Collider extends Shape {
   /**
    * Checks if this collider is colliding with another collider.

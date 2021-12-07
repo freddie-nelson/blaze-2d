@@ -17,7 +17,7 @@ import { addKeyListener, isKeyPressed } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
 import Entity from "@blz/entity";
-import BoxCollider from "@blz/physics/collider/box";
+import RectCollider from "@blz/physics/collider/rect";
 
 // constants
 const CANVAS = <HTMLCanvasElement>document.getElementById("canvas");

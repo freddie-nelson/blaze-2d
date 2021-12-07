@@ -5,7 +5,7 @@ import EPA from "../epa";
 import Triangle from "../../shapes/triangle";
 
 /**
- * Represents a triangle collider in 2D space with a position and dimensions.
+ * Represents a triangle collider in 2D world space with a position and dimensions.
  */
 export default class TriangleCollider extends Triangle implements Collider {
   /**

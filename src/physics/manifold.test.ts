@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import BoxCollider from "./collider/box";
+import RectCollider from "./collider/rect";
 import CollisionObject from "./collisionObject";
 import EPA from "./epa";
 import GJK from "./gjk";
@@ -8,8 +8,8 @@ import Manifold from "./manifold";
 export default function testManifold() {
   // first example
   {
-    const a = new CollisionObject(new BoxCollider(6, 5, vec2.fromValues(11, 6.5)));
-    const b = new CollisionObject(new BoxCollider(8, 3, vec2.fromValues(8, 3.5)));
+    const a = new CollisionObject(new RectCollider(6, 5, vec2.fromValues(11, 6.5)));
+    const b = new CollisionObject(new RectCollider(8, 3, vec2.fromValues(8, 3.5)));
 
     const gjk = GJK(a.collider, b.collider);
     const epa = EPA(gjk.simplex, a.collider, b.collider);
@@ -32,10 +32,10 @@ export default function testManifold() {
 
   // second example
   {
-    const aCollider = new BoxCollider(6, 5, vec2.fromValues(5.5, 7.5));
+    const aCollider = new RectCollider(6, 5, vec2.fromValues(5.5, 7.5));
     aCollider.rotate((30 * Math.PI) / 180);
     const a = new CollisionObject(aCollider);
-    const b = new CollisionObject(new BoxCollider(8, 3, vec2.fromValues(8, 3.5)));
+    const b = new CollisionObject(new RectCollider(8, 3, vec2.fromValues(8, 3.5)));
 
     const gjk = GJK(a.collider, b.collider);
     const epa = EPA(gjk.simplex, a.collider, b.collider);
