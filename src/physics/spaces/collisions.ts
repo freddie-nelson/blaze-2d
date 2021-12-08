@@ -57,7 +57,7 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
 
     for (let i = 0; i < solver.iterations; i++) {
       for (const m of this.collisionManifolds) {
-        solver.cb(m, delta);
+        solver.cb(m, delta, i, solver.iterations);
       }
     }
   }

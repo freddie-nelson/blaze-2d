@@ -14,6 +14,7 @@ interface Edge {
   p1: vec2;
   e: vec2;
   max: vec2;
+  normal?: vec2;
 }
 
 export interface ContactPoint {
@@ -78,7 +79,7 @@ export default class Manifold {
   contactPoints: ContactPoint[];
 
   /**
-   * store used edges for debugging [inc, ref]
+   * store used edges [inc, ref]
    */
   edges: Edge[] = [];
 
@@ -330,6 +331,7 @@ export default class Manifold {
 
     // calculate 2d vector cross product with scalar
     const refNorm = cross2DWithScalar(vec2.create(), refv, -1);
+    ref.normal = refNorm;
 
     // if we had to flip the incident and reference edges
     // then we need to flip the ref edge normal to clip properly
@@ -439,5 +441,26 @@ export default class Manifold {
     }
 
     return clipped;
+  }
+
+  /**
+   * Translates the manifold's incident edge by the given vector.
+   *
+   * @param v The vector to translate by
+   */
+  translateIncEdge(v: vec2) {
+    this.translateEdge(this.edges[0], v);
+  }
+
+  /**
+   * Translates the provided edge by the given vector.
+   *
+   * @param edge The edge to translate
+   * @param v The vector to translate by
+   */
+  private translateEdge(edge: Edge, v: vec2) {
+    vec2.add(edge.p0, edge.p0, v);
+    vec2.add(edge.p1, edge.p1, v);
+    vec2.add(edge.max, edge.max, v);
   }
 }

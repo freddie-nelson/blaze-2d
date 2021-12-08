@@ -116,15 +116,6 @@ export default function solveImpulse(m: Manifold) {
   }
 }
 
-/**
- * Calculate and apply the accumulative impulse for a collision between 2 {@link CollisionObject}s, **a** and **b**.
- *
- * @param m The manifold of the collision between **a** and **b**
- * @param contactA The contact point on **a**
- * @param contactB The contact point on **b**
- */
-export function accumulateImpulse(m: Manifold, contactA: vec2, contactB: vec2) {}
-
 // export default function solveImpulse(m: Manifold) {
 //   const A = m.a;
 //   const B = m.b;
