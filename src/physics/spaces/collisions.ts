@@ -147,4 +147,16 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   private getTriggerManifolds() {
     this.triggerManifolds = this.triggers.getAllManifolds();
   }
+
+  /**
+   * Removes an object from the space and deletes any manifolds associated with it.
+   *
+   * @param obj The {@link CollisionObject} to remove from the space
+   */
+  removeObject(obj: CollisionObject) {
+    this.collisions.removeManifoldsInvolving(obj);
+    this.triggers.removeManifoldsInvolving(obj);
+
+    return super.removeObject(obj);
+  }
 }

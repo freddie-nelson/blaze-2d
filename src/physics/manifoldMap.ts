@@ -1,11 +1,19 @@
 import CollisionObject from "./collisionObject";
 import Manifold from "./manifold";
 
+/**
+ * Represents a 2 layered {@link Map} containing {@link Manifold}s for {@link CollisionObject} pairs.
+ */
 export default class ManifoldMap {
   map: Map<CollisionObject, Map<CollisionObject, Manifold>> = new Map();
 
   constructor() {}
 
+  /**
+   * Gets all the manifolds in the map and returns them as a contiguous array.
+   *
+   * @returns All the manifolds in the map as an array
+   */
   getAllManifolds() {
     const maps = Array.from(this.map.values());
     const manifolds = [];
@@ -37,6 +45,13 @@ export default class ManifoldMap {
     return usedA ? top.get(b) : top.get(a);
   }
 
+  /**
+   * Finds the correct key in the map for objects `a` and `b`.
+   *
+   * @param a An object in the key
+   * @param b An object in the key
+   * @returns The manifold key or undefined
+   */
   getManifoldKey(
     a: CollisionObject,
     b: CollisionObject
@@ -56,6 +71,13 @@ export default class ManifoldMap {
     return k;
   }
 
+  /**
+   * Adds a manifold to the map with the top level key being `a` and inner key being `b`.
+   *
+   * @param a The first object for the key
+   * @param b The second object for the key
+   * @param m The manifold to insert
+   */
   addManifold(a: CollisionObject, b: CollisionObject, m: Manifold) {
     const old = this.getManifold(a, b);
     if (old) {
@@ -64,7 +86,7 @@ export default class ManifoldMap {
       old.update(m);
       if (old.isDead) {
         this.removeManifold(a, b);
-        console.log("dead");
+        // console.log("dead");
       } else return;
     }
 
@@ -86,10 +108,29 @@ export default class ManifoldMap {
     this.map.set(key, map);
   }
 
+  /**
+   * Removes the manifold involving objects `a` and `b`.
+   *
+   * @param a An object in the manifold
+   * @param b Another object in the manifold
+   * @returns Wether or not a manifold was removed
+   */
   removeManifold(a: CollisionObject, b: CollisionObject) {
     const key = this.getManifoldKey(a, b);
-    if (!key) return;
+    if (!key) return false;
 
-    this.map.get(key.top).delete(key.key);
+    return this.map.get(key.top).delete(key.key);
+  }
+
+  /**
+   * Removes all manifolds involving the given object.
+   *
+   * @param obj The obj to remove manifolds of
+   */
+  removeManifoldsInvolving(obj: CollisionObject) {
+    this.map.delete(obj);
+    this.map.forEach((m) => {
+      m.delete(obj);
+    });
   }
 }
