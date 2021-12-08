@@ -7,14 +7,16 @@ import Manifold from "../../manifold";
  * @param m {@link Manifold} describing the collision to correct positions for
  */
 export default function positionalCorrection(m: Manifold) {
-  const percent = 0.8;
-  const slop = 0.03;
+  const percent = 0.9;
+  const slop = 0.015;
 
   // calculate correction vector
   const invMass = m.a.getInverseMass() + m.b.getInverseMass();
   if (invMass === 0) return;
 
   const scale = Math.max(m.depth - slop, 0) / invMass;
+  if (scale === 0) return;
+
   const correction = vec2.scale(vec2.create(), m.normal, scale * percent);
 
   const aCorrection = vec2.scale(vec2.create(), correction, -m.a.getInverseMass());

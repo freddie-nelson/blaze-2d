@@ -2,6 +2,7 @@ import { vec2 } from "gl-matrix";
 import { CollisionResult } from "../collider/collider";
 import CollisionObject from "../collisionObject";
 import Manifold from "../manifold";
+import ManifoldMap from "../manifoldMap";
 import { CollisionSolver } from "../solvers/solver";
 import Space from "./space";
 
@@ -13,7 +14,18 @@ import Space from "./space";
 export default class CollisionsSpace extends Space<CollisionObject, CollisionSolver> {
   gravity: vec2;
 
-  manifolds: { collisions: Manifold[]; triggers: Manifold[] };
+  collisionManifolds: Manifold[] = [];
+  triggerManifolds: Manifold[] = [];
+
+  /**
+   * Collision manifolds map.
+   */
+  collisions = new ManifoldMap();
+
+  /**
+   * Trigger manifolds map.
+   */
+  triggers = new ManifoldMap();
 
   /**
    * Map used to store pairs objects which have had collisisions checked.
@@ -37,13 +49,15 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * Make sure to call `this.obtainManifolds` before executing any solvers.
    *
    * @param id The id of the solver to execute
+   * @param delta The time since the last update
    */
-  solve(id: string) {
+  solve(id: string, delta: number) {
     const solver = this.solvers[id];
+    if (!solver) return;
 
     for (let i = 0; i < solver.iterations; i++) {
-      for (const m of this.manifolds.collisions) {
-        solver.cb(m);
+      for (const m of this.collisionManifolds) {
+        solver.cb(m, delta, i, solver.iterations);
       }
     }
   }
@@ -54,12 +68,12 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * If both objects in a collision are triggers object `a` will recieve the "trigger" the event.
    */
   fireEvents() {
-    for (const m of this.manifolds.collisions) {
+    for (const m of this.collisionManifolds) {
       m.a.fireEvent("collision", m);
       m.b.fireEvent("collision", m);
     }
 
-    for (const m of this.manifolds.triggers) {
+    for (const m of this.triggerManifolds) {
       if (m.a.isTrigger) {
         m.a.fireEvent("trigger", m);
       } else if (m.b.isTrigger) {
@@ -78,9 +92,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * @param delta Time since last frame
    */
   obtainManifolds(delta: number) {
-    const collisions: Manifold[] = [];
-    const triggers: Manifold[] = [];
-
     this.collisionPairs.clear();
     let checks = 0;
 
@@ -104,20 +115,36 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
         if (res.hasCollision) {
           const manifold = new Manifold(A, B, res, this.gravity, delta);
 
-          // console.log(
-          //   vec2.dot(manifold.normal, vec2.sub(vec2.create(), B.getPosition(), A.getPosition())) > 0,
-          //   manifold.normal
-          // );
-
           if (A.isTrigger || B.isTrigger) {
-            triggers.push(manifold);
+            this.triggers.addManifold(A, B, manifold);
           } else {
-            collisions.push(manifold);
+            this.collisions.addManifold(A, B, manifold);
           }
+        } else {
+          this.triggers.removeManifold(A, B);
+          this.collisions.removeManifold(A, B);
         }
       }
     }
 
-    this.manifolds = { collisions, triggers };
+    // console.log(this.collisions);
+
+    // update manifold arrays
+    this.getCollisionManifolds();
+    this.getTriggerManifolds();
+  }
+
+  /**
+   * Gets all the manifolds in the collisions {@link ManifoldMap} and stores them in `this.collisionManifolds`.
+   */
+  private getCollisionManifolds() {
+    this.collisionManifolds = this.collisions.getAllManifolds();
+  }
+
+  /**
+   * Gets all the manifolds in the triggers {@link ManifoldMap} and stores them in `this.triggersManifolds`.
+   */
+  private getTriggerManifolds() {
+    this.triggerManifolds = this.triggers.getAllManifolds();
   }
 }

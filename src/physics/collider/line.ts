@@ -93,10 +93,16 @@ export default class LineCollider extends Line implements Collider {
       }
     }
 
+    const leftIndex = max + 1 >= points.length ? 0 : max + 1;
+    const rightIndex = max - 1 < 0 ? points.length - 1 : max - 1;
+
     return {
       furthest: points[max],
-      left: points[max + 1 >= points.length ? 0 : max + 1],
-      right: points[max - 1 < 0 ? points.length - 1 : max - 1],
+      left: points[leftIndex],
+      right: points[rightIndex],
+      furthestIndex: max,
+      leftIndex,
+      rightIndex,
     };
   }
 

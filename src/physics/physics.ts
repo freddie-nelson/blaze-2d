@@ -14,6 +14,7 @@ import solveForces from "./solvers/dynamics/forces";
 import Texture from "../texture/texture";
 import Color, { RGBAColor } from "../utils/color";
 import Circle from "../shapes/circle";
+import preStep from "./solvers/collision/preStep";
 
 const debugRGBA: RGBAColor = {
   r: 255,
@@ -72,6 +73,7 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
+    this.collisionsSpace.addSolver("preStep", preStep, 1);
     this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
     this.collisionsSpace.addSolver("position", positionalCorrection, 1);
   }
@@ -84,14 +86,17 @@ export default class Physics implements System {
     // integrate forces
     this.dynamicsSpace.solve("forces", delta);
 
+    // pre steps
+    this.collisionsSpace.solve("preStep", delta);
+
     // solve collisions
-    this.collisionsSpace.solve("impulse");
+    this.collisionsSpace.solve("impulse", delta);
 
     // integrate velocities
     this.dynamicsSpace.solve("velocity", delta);
 
     // correct positions
-    this.collisionsSpace.solve("position");
+    this.collisionsSpace.solve("position", delta);
 
     // clear forces
     this.dynamicsSpace.solve("reset", delta);
@@ -109,7 +114,7 @@ export default class Physics implements System {
       obj.collider.render();
     }
 
-    for (const m of this.collisionsSpace.manifolds.collisions) {
+    for (const m of this.collisionsSpace.collisionManifolds) {
       // draw contact points
       for (const p of m.contactPoints) {
         const circle = new Circle(0.1, p.point);
