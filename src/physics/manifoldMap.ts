@@ -74,6 +74,8 @@ export default class ManifoldMap {
   /**
    * Adds a manifold to the map with the top level key being `a` and inner key being `b`.
    *
+   * If a manifold is already in the map with key [b, a] then that manifold will be updated instead.
+   *
    * @param a The first object for the key
    * @param b The second object for the key
    * @param m The manifold to insert
@@ -86,7 +88,6 @@ export default class ManifoldMap {
       old.update(m);
       if (old.isDead) {
         this.removeManifold(a, b);
-        // console.log("dead");
       } else return;
     }
 
@@ -117,7 +118,10 @@ export default class ManifoldMap {
    */
   removeManifold(a: CollisionObject, b: CollisionObject) {
     const key = this.getManifoldKey(a, b);
-    if (!key) return false;
+    if (!key) {
+      // console.log(a, b);
+      return false;
+    }
 
     return this.map.get(key.top).delete(key.key);
   }
@@ -132,5 +136,34 @@ export default class ManifoldMap {
     this.map.forEach((m) => {
       m.delete(obj);
     });
+  }
+
+  /**
+   * Removes all manifolds in the map which have `isDead` set to true.
+   */
+  removeDeadManifolds() {
+    const keys = this.map.keys();
+
+    for (const top of keys) {
+      const innerKeys = this.map.get(top).keys();
+
+      for (const inner of innerKeys) {
+        if (this.map.get(top).get(inner).isDead) this.map.get(top).delete(inner);
+      }
+    }
+  }
+
+  /**
+   * Sets `isDead` to true for every manifold in the map.
+   */
+  killAllManifolds() {
+    const maps = this.map.values();
+
+    for (const map of maps) {
+      const inners = map.values();
+      for (const inner of inners) {
+        inner.isDead = true;
+      }
+    }
   }
 }

@@ -93,13 +93,16 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    */
   obtainManifolds(delta: number) {
     this.collisionPairs.clear();
+
+    // invalidate all manifolds
+    this.collisions.killAllManifolds();
+    this.triggers.killAllManifolds();
+
     let checks = 0;
 
     // check every object against every other object for collisions
     // collision checks are only performed between unique pairs
     for (const A of this.objects) {
-      const colliderA = A.collider;
-
       this.collisionPairs.set(A, new Map());
 
       for (const B of this.objects) {
@@ -120,14 +123,13 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
           } else {
             this.collisions.addManifold(A, B, manifold);
           }
-        } else {
-          this.triggers.removeManifold(A, B);
-          this.collisions.removeManifold(A, B);
         }
       }
     }
 
-    // console.log(this.collisions);
+    // remove dead manifolds
+    this.collisions.removeDeadManifolds();
+    this.triggers.removeDeadManifolds();
 
     // update manifold arrays
     this.getCollisionManifolds();
