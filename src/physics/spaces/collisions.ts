@@ -28,7 +28,7 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   triggers = new ManifoldMap();
 
   /**
-   * Map used to store pairs objects which have had collisisions checked.
+   * Map used to store pairs of objects which have been checked for a collision.
    */
   private collisionPairs: Map<CollisionObject, Map<CollisionObject, true>> = new Map();
 

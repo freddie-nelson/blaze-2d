@@ -37,6 +37,9 @@ export interface ContactPoint {
  */
 export default class Manifold {
   static CACHED_CONTACTS_TOLERANCE = 0.0005;
+  static POSITION_SLOP = 0.02;
+  static POSITION_DAMPING = 1;
+  static POSITION_WARMING = 1;
 
   /**
    * An object in the collision.
@@ -57,6 +60,11 @@ export default class Manifold {
    * The collision normal, should always point from **a** to **b**.
    */
   normal: vec2;
+
+  /**
+   * The penetration vector, this is the collision normal scaled by the penetration depth.
+   */
+  penetration: vec2;
 
   /**
    * Minimum restitution between **a** and **b**.
@@ -83,6 +91,11 @@ export default class Manifold {
    */
   edges: Edge[] = [];
 
+  positionImpulse = {
+    a: vec2.create(),
+    b: vec2.create(),
+  };
+
   isDead = false;
 
   /**
@@ -105,6 +118,7 @@ export default class Manifold {
     this.b = b;
     this.depth = collision.depth;
     this.normal = collision.normal;
+    this.penetration = vec2.scale(vec2.create(), this.normal, this.depth);
 
     // calculate restitution
     // smallest value from a and b is used
@@ -196,6 +210,13 @@ export default class Manifold {
     this.isDead = false;
     this.edges = m.edges;
     this.contactPoints = contacts;
+    this.normal = m.normal;
+    this.depth = m.depth;
+    this.penetration = m.penetration;
+    this.sf = m.sf;
+    this.df = m.df;
+    this.epsilon = m.epsilon;
+    this.positionImpulse = m.positionImpulse;
   }
 
   private compareContacts(c1: ContactPoint, c2: ContactPoint) {
@@ -205,13 +226,54 @@ export default class Manifold {
   }
 
   /**
+   * Calculates the position impulse for objects `a` and `b` in the manifold.
+   *
+   * @param delta The time since the last update
+   */
+  solvePositionImpulse(delta: number) {
+    const aPos = vec2.add(
+      vec2.create(),
+      this.positionImpulse.a,
+      vec2.sub(vec2.create(), this.b.getPosition(), this.penetration)
+    );
+    const bPos = vec2.add(vec2.create(), this.b.getPosition(), this.positionImpulse.b);
+
+    const bToA = vec2.sub(vec2.create(), bPos, aPos);
+    const separation = vec2.dot(bToA, this.normal);
+
+    let positionImpulse = (separation - Manifold.POSITION_SLOP) * delta;
+    // if (positionImpulse > 0.1) console.log(positionImpulse, delta);
+
+    const invMass = this.a.getInverseMass() + this.b.getInverseMass();
+    if (invMass === 0) return;
+
+    const share = Manifold.POSITION_DAMPING / invMass;
+
+    if (!this.a.isStatic)
+      vec2.scaleAndAdd(
+        this.positionImpulse.a,
+        this.positionImpulse.a,
+        this.normal,
+        -positionImpulse * share * this.a.getInverseMass()
+      );
+
+    if (!this.b.isStatic)
+      vec2.scaleAndAdd(
+        this.positionImpulse.b,
+        this.positionImpulse.b,
+        this.normal,
+        positionImpulse * share * this.b.getInverseMass()
+      );
+  }
+
+  /**
    * Precompute some additional information about the contact points for impulse resolution.
    *
    * Calculates and applies accumulative impulse.
    *
    * @param delta The time since the last udpate
    */
-  preStep(delta: number) {
+  preStepImpulse(delta: number) {
     const allowedPenetration = 0.03;
     const biasFactor = 0.7;
 

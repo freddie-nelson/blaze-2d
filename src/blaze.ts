@@ -43,12 +43,17 @@ export default abstract class Blaze {
    */
   private static delta = 0;
 
+  private static lastFixedUpdateTime = performance.now();
+
   /**
    * The minimum time in ms between each fixed update.
    */
   private static fixedTimeStep = 1000 / 60;
 
-  private static lastFixedUpdateTime = performance.now();
+  /**
+   * The maximum delta time passed to each fixed update system.
+   */
+  private static maxFixedTimeStep = 1000 / 50;
 
   /**
    * The time since `lastFixedUpdateTime`
@@ -124,7 +129,7 @@ export default abstract class Blaze {
     setTimeout(() => this.fixedUpdate(), this.fixedTimeStep);
 
     const now = performance.now();
-    const delta = (now - this.lastFixedUpdateTime) / 1000;
+    const delta = Math.min((now - this.lastFixedUpdateTime) / 1000, this.maxFixedTimeStep);
     this.fixedDelta = delta;
     this.lastFixedUpdateTime = now;
 

@@ -7,14 +7,13 @@ import solveVelocity from "./solvers/dynamics/velocity";
 import CollisionsSpace from "./spaces/collisions";
 import DynamicsSpace from "./spaces/dynamics";
 import resetForce from "./solvers/dynamics/resetForce";
-import positionalCorrection from "./solvers/collision/positionalCorrection";
-import Space from "./spaces/space";
-import { DynamicsSolver } from "./solvers/solver";
 import solveForces from "./solvers/dynamics/forces";
 import Texture from "../texture/texture";
 import Color, { RGBAColor } from "../utils/color";
 import Circle from "../shapes/circle";
-import preStep from "./solvers/collision/preStep";
+import preStepImpulse from "./solvers/collision/preStepImpulse";
+import solvePositionImpulse from "./solvers/collision/positionImpulse";
+import applyPositionImpulse from "./solvers/collision/applyPositionImpulse";
 
 const debugRGBA: RGBAColor = {
   r: 255,
@@ -73,9 +72,11 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("velocity", solveVelocity, 1);
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
-    this.collisionsSpace.addSolver("preStep", preStep, 1);
+    this.collisionsSpace.addSolver("preStepImpulse", preStepImpulse, 1);
+    this.collisionsSpace.addSolver("positionImpulse", solvePositionImpulse, 10);
+
     this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
-    this.collisionsSpace.addSolver("position", positionalCorrection, 1);
+    this.collisionsSpace.addSolver("position", applyPositionImpulse, 1);
   }
 
   update(delta: number) {
@@ -87,7 +88,8 @@ export default class Physics implements System {
     this.dynamicsSpace.solve("forces", delta);
 
     // pre steps
-    this.collisionsSpace.solve("preStep", delta);
+    this.collisionsSpace.solve("preStepImpulse", delta);
+    this.collisionsSpace.solve("positionImpulse", delta);
 
     // solve collisions
     this.collisionsSpace.solve("impulse", delta);
