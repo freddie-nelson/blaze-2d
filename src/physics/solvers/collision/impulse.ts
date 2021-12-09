@@ -3,6 +3,7 @@ import { cross2D, cross2DWithScalar } from "../../../utils/vectors";
 import CollisionObject from "../../collisionObject";
 import PHYSICS_CONF from "../../config";
 import Manifold from "../../manifold";
+import Physics from "../../physics";
 
 // initialise needed vectors
 const contactA = vec2.create();
@@ -48,7 +49,7 @@ export default function solveImpulse(m: Manifold) {
     // impulseScalar /= m.contactPoints.length;
     let deltaImpulseNormal = contact.massNormal * (-contactVelocity + contact.bias);
 
-    if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+    if (Physics.ACUMMULATE_IMPULSE) {
       // clamp the accumulated impulse
       const old = contact.impulseNormal;
       contact.impulseNormal = Math.max(old + deltaImpulseNormal, 0);
@@ -94,7 +95,7 @@ export default function solveImpulse(m: Manifold) {
     const velTangent = vec2.dot(relativeVelocity, tangent);
     let deltaImpulseTangent = contact.massTangent * -velTangent;
 
-    if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+    if (Physics.ACUMMULATE_IMPULSE) {
       // compute friction impulse
       const maxImpulseTangent = m.df * contact.impulseNormal;
 
