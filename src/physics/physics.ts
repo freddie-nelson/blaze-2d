@@ -53,7 +53,18 @@ const incTexture = new Texture(new Color(incRGBA));
  * As a general rule the physics system should be added to Blaze's fixed update loop.
  */
 export default class Physics implements System {
+  // config
+  static POSITION_ITERATIONS = 8;
+  static VELOCITY_ITERATIONS = 8;
+  static ACUMMULATE_IMPULSE = true;
+  static WARM_IMPULSE = true;
+  static CACHED_CONTACTS_TOLERANCE = 0.0005;
+  static POSITION_SLOP = 0.015;
+  static POSITION_DAMPING = 1;
+  static POSITION_WARMING = 0.9;
+
   debug = false;
+
   private gravity = vec2.fromValues(0, -9.8);
 
   // spaces
@@ -73,9 +84,9 @@ export default class Physics implements System {
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
     this.collisionsSpace.addSolver("preStepImpulse", preStepImpulse, 1);
-    this.collisionsSpace.addSolver("positionImpulse", solvePositionImpulse, 10);
+    this.collisionsSpace.addSolver("positionImpulse", solvePositionImpulse, Physics.POSITION_ITERATIONS);
 
-    this.collisionsSpace.addSolver("impulse", solveImpulse, 8);
+    this.collisionsSpace.addSolver("impulse", solveImpulse, Physics.VELOCITY_ITERATIONS);
     this.collisionsSpace.addSolver("position", applyPositionImpulse, 1);
   }
 
@@ -89,15 +100,19 @@ export default class Physics implements System {
 
     // pre steps
     this.collisionsSpace.solve("preStepImpulse", delta);
+
+    // solve position impulse
+    this.collisionsSpace.setSolverIterations("positionImpulse", Physics.POSITION_ITERATIONS);
     this.collisionsSpace.solve("positionImpulse", delta);
 
     // solve collisions
+    this.collisionsSpace.setSolverIterations("impulse", Physics.VELOCITY_ITERATIONS);
     this.collisionsSpace.solve("impulse", delta);
 
     // integrate velocities
     this.dynamicsSpace.solve("velocity", delta);
 
-    // correct positions
+    // apply position impulse
     this.collisionsSpace.solve("position", delta);
 
     // clear forces

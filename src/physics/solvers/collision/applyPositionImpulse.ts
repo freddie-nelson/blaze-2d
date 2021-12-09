@@ -1,5 +1,6 @@
 import { vec2 } from "gl-matrix";
 import Manifold from "../../manifold";
+import Physics from "../../physics";
 
 /**
  * Corrects the colliding objects positions, by applying the position impulse in the given manifold.
@@ -39,7 +40,7 @@ export default function applyPositionImpulse(m: Manifold) {
       vec2.zero(positionImpulse);
       // console.log("position impulse zero");
     } else {
-      vec2.scale(positionImpulse, positionImpulse, Manifold.POSITION_WARMING);
+      vec2.scale(positionImpulse, positionImpulse, Physics.POSITION_WARMING);
       // console.log("position impulse warmed");
     }
   }

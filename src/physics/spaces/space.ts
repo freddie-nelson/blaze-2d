@@ -103,4 +103,16 @@ export default abstract class Space<O, S> {
     delete this.solvers[id];
     return true;
   }
+
+  /**
+   * Sets the number of iterations a solver should run.
+   *
+   * @param id The id of the solver to update
+   * @param iterations The new number of iterations
+   */
+  setSolverIterations(id: string, iterations: number) {
+    if (!this.solvers[id]) return;
+
+    this.solvers[id].iterations = iterations;
+  }
 }

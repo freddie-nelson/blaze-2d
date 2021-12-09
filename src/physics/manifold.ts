@@ -7,6 +7,7 @@ import CircleCollider from "./collider/circle";
 import { CollisionResult } from "./collider/collider";
 import CollisionObject from "./collisionObject";
 import PHYSICS_CONF from "./config";
+import Physics from "./physics";
 import { calculateRelativeVelocity } from "./solvers/collision/impulse";
 
 interface Edge {
@@ -36,11 +37,6 @@ export interface ContactPoint {
  * Information about a collision which has occured between two objects.
  */
 export default class Manifold {
-  static CACHED_CONTACTS_TOLERANCE = 0.0005;
-  static POSITION_SLOP = 0.02;
-  static POSITION_DAMPING = 1;
-  static POSITION_WARMING = 1;
-
   /**
    * An object in the collision.
    */
@@ -192,7 +188,7 @@ export default class Manifold {
       }
 
       const oc = oldContacts[match];
-      if (PHYSICS_CONF.WARM_START) {
+      if (Physics.WARM_IMPULSE) {
         nc.impulseNormal = oc.impulseNormal;
         nc.impulseTangent = oc.impulseTangent;
         nc.impulseNormalPosition = oc.impulseNormalPosition;
@@ -222,7 +218,7 @@ export default class Manifold {
   private compareContacts(c1: ContactPoint, c2: ContactPoint) {
     const d = vec2.sqrDist(c1.point, c2.point);
     // console.log(d, Manifold.CACHED_CONTACTS_TOLERANCE, d < Manifold.CACHED_CONTACTS_TOLERANCE);
-    return d <= Manifold.CACHED_CONTACTS_TOLERANCE;
+    return d <= Physics.CACHED_CONTACTS_TOLERANCE;
   }
 
   /**
@@ -231,23 +227,26 @@ export default class Manifold {
    * @param delta The time since the last update
    */
   solvePositionImpulse(delta: number) {
+    // calculate position of a and b if current position impulse was applied
     const aPos = vec2.add(
       vec2.create(),
       this.positionImpulse.a,
-      vec2.sub(vec2.create(), this.b.getPosition(), this.penetration)
+      vec2.add(vec2.create(), this.b.getPosition(), this.penetration)
     );
     const bPos = vec2.add(vec2.create(), this.b.getPosition(), this.positionImpulse.b);
 
-    const bToA = vec2.sub(vec2.create(), bPos, aPos);
+    // calculate separation distance of aPos and bPos along normal
+    const bToA = vec2.sub(vec2.create(), aPos, bPos);
     const separation = vec2.dot(bToA, this.normal);
 
-    let positionImpulse = (separation - Manifold.POSITION_SLOP) * delta;
+    let positionImpulse = (separation - Physics.POSITION_SLOP) * delta;
     // if (positionImpulse > 0.1) console.log(positionImpulse, delta);
 
+    // split position impulse between a and b based on mass ratio
     const invMass = this.a.getInverseMass() + this.b.getInverseMass();
     if (invMass === 0) return;
 
-    const share = Manifold.POSITION_DAMPING / invMass;
+    const share = Physics.POSITION_DAMPING / invMass;
 
     if (!this.a.isStatic)
       vec2.scaleAndAdd(
@@ -315,7 +314,7 @@ export default class Manifold {
       contact.bias = (-biasFactor / delta) * Math.min(0, contact.depth + allowedPenetration);
 
       // apply accumulate impulse
-      if (PHYSICS_CONF.ACUMMULATE_IMPULSE) {
+      if (Physics.ACUMMULATE_IMPULSE) {
         const impulseNormal = vec2.scale(vec2.create(), contact.normal, contact.impulseNormal);
         const impulseTangent = vec2.scale(vec2.create(), tangent, contact.impulseTangent);
         const impulse = vec2.add(vec2.create(), impulseNormal, impulseTangent);
