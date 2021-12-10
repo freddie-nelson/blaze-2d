@@ -37,22 +37,6 @@ export default class Circle extends Shape {
   }
 
   /**
-   * Calculates the circles's vertices in local space.
-   *
-   * @returns The circle's vertices
-   */
-  getVertices() {
-    const base = this.getBaseVertices();
-    const rotated = applyRotation(base, this.getPosition(), this.getRotation());
-    const translated = applyTranslation(rotated, this.getPosition());
-
-    const final: number[] = [];
-    translated.forEach((v) => final.push(...v));
-
-    return final;
-  }
-
-  /**
    * Calculates the circle's vertices relative to the provided origin in world space.
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position

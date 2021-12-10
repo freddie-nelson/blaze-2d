@@ -3,6 +3,7 @@ import Object2D from "../object2d";
 import Renderer from "../renderer/renderer";
 import Texture from "../texture/texture";
 import Color from "../utils/color";
+import { applyRotation, applyTranslation } from "../utils/vectors";
 
 const defaultTexture = new Texture(new Color("gray"));
 
@@ -37,6 +38,22 @@ export default abstract class Shape extends Object2D {
    * @returns the shape's UV coords
    */
   abstract getUVCoords(): Float32Array;
+
+  /**
+   * Calculates the shape's vertices in local space.
+   *
+   * @returns The shape's vertices
+   */
+  getVertices() {
+    const base = this.getBaseVertices();
+    const translated = applyTranslation(base, this.getPosition());
+    const rotated = applyRotation(translated, this.getPosition(), this.getRotation());
+
+    const final: number[] = [];
+    rotated.forEach((v) => final.push(...v));
+
+    return final;
+  }
 
   /**
    * Calculates the shape's vertices relative to the provided origin in world space.

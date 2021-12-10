@@ -30,7 +30,7 @@ export default class PhysicsObject extends Object2D {
    *
    * This value should be between 0 and 1 for best results.
    */
-  restitution = 0.3;
+  restitution = 0;
 
   /**
    * Coefficient of static friction.
@@ -109,7 +109,7 @@ export default class PhysicsObject extends Object2D {
    * @param mass The mass of the object
    * @param restitution The restituion (bounciness) of the object
    */
-  constructor(mass = 1, restitution = 0.3) {
+  constructor(mass = 1, restitution = 0) {
     super();
 
     this.setMass(mass);

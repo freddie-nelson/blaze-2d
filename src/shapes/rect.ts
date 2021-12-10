@@ -40,24 +40,6 @@ export default class Rect extends Shape {
   }
 
   /**
-   * Calculates the rect's vertices in local space.
-   *
-   * @param translate Wether or not to apply the rectangle's position to the vertex positions.
-   *
-   * @returns The rects vertices
-   */
-  getVertices(translate = true) {
-    const base = this.getBaseVertices();
-    const rotated = applyRotation(base, this.getPosition(), this.getRotation());
-    const translated = !translate ? rotated : applyTranslation(rotated, this.getPosition());
-
-    const final: number[] = [];
-    translated.forEach((v) => final.push(...v));
-
-    return final;
-  }
-
-  /**
    * Calculates the rect's vertices relative to the provided origin in world space.
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position
