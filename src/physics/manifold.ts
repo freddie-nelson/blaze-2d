@@ -311,7 +311,15 @@ export default class Manifold {
       const massTangent = invMass + invInertiaTangentA + invInertiaTangentB;
       contact.massTangent = 1 / massTangent;
 
-      contact.bias = (-biasFactor / delta) * Math.min(0, contact.depth + allowedPenetration);
+      // calculate velocity bias for restitution
+      const contactVelocity = vec2.dot(contact.normal, calculateRelativeVelocity(this, contactA, contactB));
+      contact.bias = 0;
+      if (contactVelocity < -Physics.RESTITUTION_THRESHOLD) {
+        contact.bias = contactVelocity * -this.epsilon;
+        // console.log(contact.bias);
+      }
+
+      // contact.bias = (-biasFactor / delta) * Math.min(0, contact.depth + allowedPenetration);
 
       // apply accumulate impulse
       if (Physics.ACUMMULATE_IMPULSE) {

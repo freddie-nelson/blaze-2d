@@ -35,18 +35,6 @@ export default function solveImpulse(m: Manifold) {
     // do not resolve if velocities are seperating
     // if (contactVelocity > 0) return;
 
-    // calculate impulse scalar
-    // const contactACrossN = cross2D(contactA, contact.normal);
-    // const contactBCrossN = cross2D(contactB, contact.normal);
-    // const invMass =
-    //   m.a.getInverseMass() +
-    //   m.b.getInverseMass() +
-    //   contactACrossN ** 2 * m.a.getInverseInertia() +
-    //   contactBCrossN ** 2 * m.b.getInverseInertia();
-
-    // let impulseScalar = -(1 + m.epsilon) * contactVelocity;
-    // impulseScalar /= invMass;
-    // impulseScalar /= m.contactPoints.length;
     let deltaImpulseNormal = contact.massNormal * (-contactVelocity + contact.bias);
 
     if (Physics.ACUMMULATE_IMPULSE) {
@@ -66,30 +54,6 @@ export default function solveImpulse(m: Manifold) {
 
     // friction impulse
     relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
-
-    // calculate tangent velocity
-    // vec2.sub(
-    //   velTangent,
-    //   relativeVelocity,
-    //   vec2.scale(vec2.create(), contact.normal, vec2.dot(relativeVelocity, m.normal))
-    // );
-    // vec2.normalize(velTangent, velTangent);
-
-    // let tangentImpulseMag = -vec2.dot(relativeVelocity, velTangent);
-    // tangentImpulseMag /= invMass;
-    // tangentImpulseMag /= m.contactPoints.length;
-
-    // don't apply tiny friction impulses
-    // if (Math.abs(tangentImpulseMag) <= 0.0001) return;
-
-    // coulumb's law
-    // if (Math.abs(tangentImpulseMag) < impulseScalar * m.sf) {
-    //   vec2.scale(tangentImpulse, velTangent, tangentImpulseMag);
-    // } else {
-    //   vec2.scale(tangentImpulse, velTangent, -impulseScalar * m.df);
-    // }
-
-    // vec2.negate(reverseTangentImpulse, tangentImpulse);
 
     const tangent = cross2DWithScalar(vec2.create(), contact.normal, 1);
     const velTangent = vec2.dot(relativeVelocity, tangent);
@@ -119,34 +83,6 @@ export default function solveImpulse(m: Manifold) {
     m.b.applyImpulse(tangentImpulse, contactB);
   }
 }
-
-// export default function solveImpulse(m: Manifold) {
-//   const A = m.a;
-//   const B = m.b;
-
-//   const invMassSum = A.getInverseMass() + B.getInverseMass();
-
-//   for (const contact of m.contactPoints) {
-//     // calculate contact vectors
-//     const contactA = vec2.sub(vec2.create(), contact.point, m.a.getPosition());
-//     const contactB = vec2.sub(vec2.create(), contact.point, m.b.getPosition());
-
-//     let relV = vec2.sub(vec2.create(), B.velocity, A.velocity);
-//     const contactV = vec2.dot(relV, contact.normal);
-
-//     if (contactV > 0) return;
-
-//     // calculate impulse vector along the normal
-//     const impulseMagnitude = (-(1 + m.epsilon) * contactV) / invMassSum;
-//     const impulseDirection = contact.normal;
-
-//     const jn = vec2.scale(vec2.create(), impulseDirection, impulseMagnitude);
-
-//     // apply linear impulse
-//     vec2.scaleAndAdd(A.velocity, A.velocity, jn, -A.getInverseMass());
-//     vec2.scaleAndAdd(B.velocity, B.velocity, jn, B.getInverseMass());
-//   }
-// }
 
 // initialise vectors
 const angularCrossContactA = vec2.create();

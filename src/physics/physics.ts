@@ -54,11 +54,14 @@ const incTexture = new Texture(new Color(incRGBA));
  */
 export default class Physics implements System {
   // config
-  static POSITION_ITERATIONS = 8;
+  static CACHED_CONTACTS_TOLERANCE = 0.0005;
+  static RESTITUTION_THRESHOLD = 1;
+
   static VELOCITY_ITERATIONS = 8;
   static ACUMMULATE_IMPULSE = true;
   static WARM_IMPULSE = true;
-  static CACHED_CONTACTS_TOLERANCE = 0.0005;
+
+  static POSITION_ITERATIONS = 8;
   static POSITION_SLOP = 0.015;
   static POSITION_DAMPING = 1;
   static POSITION_WARMING = 0.9;
