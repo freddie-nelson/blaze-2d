@@ -51,6 +51,8 @@ const incTexture = new Texture(new Color(incRGBA));
  * Handles physics updates for all bodies in the system.
  *
  * As a general rule the physics system should be added to Blaze's fixed update loop.
+ *
+ * Raycasting can only check against objects in the phsyics engine's collisions space.
  */
 export default class Physics implements System {
   // config
@@ -96,6 +98,7 @@ export default class Physics implements System {
   update(delta: number) {
     // step bodies
     // order is very important
+    this.collisionsSpace.broadphase();
     this.collisionsSpace.obtainManifolds(delta);
 
     // integrate forces

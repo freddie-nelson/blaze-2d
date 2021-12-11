@@ -269,8 +269,8 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   const pos = WORLD.getCellFromPixel(pixelPos);
 
-  const maxSize = 3;
-  const minSize = 3;
+  const maxSize = 1;
+  const minSize = 1;
   const size = vec2.fromValues(randInt(minSize, maxSize), randInt(minSize, maxSize));
   const mass = randInt(1, 1) * size[0];
   const tex = shapeTexs[randInt(0, shapeTexs.length - 1)];

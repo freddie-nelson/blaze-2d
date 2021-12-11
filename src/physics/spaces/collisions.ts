@@ -1,6 +1,9 @@
 import { vec2 } from "gl-matrix";
+import AABB from "../aabb/aabb";
+import AABBTree from "../aabb/aabbTree";
 import { CollisionResult } from "../collider/collider";
 import CollisionObject from "../collisionObject";
+import CollisionPair from "../collisionPair";
 import Manifold from "../manifold";
 import ManifoldMap from "../manifoldMap";
 import { CollisionSolver } from "../solvers/solver";
@@ -28,9 +31,14 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   triggers = new ManifoldMap();
 
   /**
-   * Map used to store pairs of objects which have been checked for a collision.
+   * Array used to store pairs of objects which may be colliding.
    */
-  private collisionPairs: Map<CollisionObject, Map<CollisionObject, true>> = new Map();
+  private collisionPairs: CollisionPair[];
+
+  /**
+   * The {@link AABBTree} used for broadphase and raycasting.
+   */
+  aabbTree = new AABBTree();
 
   /**
    * Creates a {@link CollisionSpace} instance.
@@ -83,6 +91,17 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   }
 
   /**
+   * Performs the broadphase collision detection.
+   *
+   * The broadphase will update the {@link AABBTree} and then obtain possible collision pairs for the narrow phase.
+   */
+  broadphase() {
+    this.aabbTree.update();
+    this.collisionPairs = this.aabbTree.collectPairs();
+    // console.log(this.collisionPairs.length);
+  }
+
+  /**
    * Obtains all collision and trigger manifolds for the current frame.
    *
    * Manifolds are stored in `this.manifolds`
@@ -92,40 +111,32 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * @param delta Time since last frame
    */
   obtainManifolds(delta: number) {
-    this.collisionPairs.clear();
-
     // invalidate all manifolds
     this.collisions.killAllManifolds();
     this.triggers.killAllManifolds();
 
-    let checks = 0;
+    let collisions = 0;
 
-    // check every object against every other object for collisions
-    // collision checks are only performed between unique pairs
-    for (const A of this.objects) {
-      this.collisionPairs.set(A, new Map());
+    for (const pair of this.collisionPairs) {
+      const A = pair.a;
+      const B = pair.b;
 
-      for (const B of this.objects) {
-        // skip check if objects are the same or pair has already been checked
-        if (A === B || this.collisionPairs.get(B)?.get(A)) continue;
-        checks++;
+      // test collision
+      const res = A.testCollision(B);
+      if (res.hasCollision) {
+        collisions++;
+        const manifold = new Manifold(A, B, res, this.gravity, delta);
 
-        // mark pair as checked in collision map
-        this.collisionPairs.get(A).set(B, true);
-
-        // test collision
-        const res = A.testCollision(B);
-        if (res.hasCollision) {
-          const manifold = new Manifold(A, B, res, this.gravity, delta);
-
-          if (A.isTrigger || B.isTrigger) {
-            this.triggers.addManifold(A, B, manifold);
-          } else {
-            this.collisions.addManifold(A, B, manifold);
-          }
+        let timer = performance.now();
+        if (A.isTrigger || B.isTrigger) {
+          this.triggers.addManifold(A, B, manifold);
+        } else {
+          this.collisions.addManifold(A, B, manifold);
         }
       }
     }
+
+    // console.log(collisions);
 
     // remove dead manifolds
     this.collisions.removeDeadManifolds();
@@ -151,6 +162,16 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   }
 
   /**
+   * Adds an object to the space.
+   *
+   * @param obj The {@link CollisionObject} to add to the space
+   */
+  addObject(obj: CollisionObject) {
+    this.aabbTree.add(new AABB(obj, this.aabbTree.margin));
+    super.addObject(obj);
+  }
+
+  /**
    * Removes an object from the space and deletes any manifolds associated with it.
    *
    * @param obj The {@link CollisionObject} to remove from the space
@@ -158,6 +179,7 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   removeObject(obj: CollisionObject) {
     this.collisions.removeManifoldsInvolving(obj);
     this.triggers.removeManifoldsInvolving(obj);
+    this.aabbTree.remove(obj);
 
     return super.removeObject(obj);
   }

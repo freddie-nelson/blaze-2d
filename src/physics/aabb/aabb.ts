@@ -1,7 +1,7 @@
 import { vec2 } from "gl-matrix";
-import Shape from "../shapes/shape";
-import Collider from "./collider/collider";
-import CollisionObject from "./collisionObject";
+import Shape from "../../shapes/shape";
+import Collider from "../collider/collider";
+import CollisionObject from "../collisionObject";
 
 /**
  * Represents an axis aligned bounding box in 2D world space.
@@ -38,12 +38,13 @@ export default class AABB {
    * Creates a {@link AABB} that bounds the vertices of the given object's collider.
    *
    * @param obj {@link CollisionObject} to create AABB from
+   * @param margin A margin to add to the new min and max points
    */
-  constructor(obj: CollisionObject);
+  constructor(obj: CollisionObject, margin: number);
 
-  constructor(min: CollisionObject | vec2 | AABB, max?: vec2 | AABB, margin?: number) {
+  constructor(min: CollisionObject | vec2 | AABB, max?: vec2 | number | AABB, margin?: number) {
     if (min instanceof CollisionObject) {
-      this.setMinMaxFromCollisionObj(min);
+      this.setMinMaxFromCollisionObj(min, <number>max);
     } else if (typeof margin !== "undefined") {
       this.union(<AABB>min, <AABB>max, margin);
     } else {
@@ -56,8 +57,9 @@ export default class AABB {
    * Sets the AABB's min and max so that the AABB contains the object's collider.
    *
    * @param obj The {@link CollisionObject} to bound
+   * @param margin A margin to add to the new min and max points
    */
-  setMinMaxFromCollisionObj(obj: CollisionObject) {
+  setMinMaxFromCollisionObj(obj: CollisionObject, margin: number) {
     this.obj = obj;
 
     const c = obj.collider;
@@ -83,8 +85,8 @@ export default class AABB {
       }
     }
 
-    this.min = vec2.fromValues(minX, minY);
-    this.max = vec2.fromValues(maxX, maxY);
+    this.min = vec2.fromValues(minX - margin, minY - margin);
+    this.max = vec2.fromValues(maxX + margin, maxY + margin);
   }
 
   /**
@@ -102,6 +104,18 @@ export default class AABB {
 
     this.min = vec2.fromValues(minX - margin, minY - margin);
     this.max = vec2.fromValues(maxX + margin, maxY + margin);
+  }
+
+  /**
+   * Computes the area of the {@link AABB}.
+   *
+   * @returns The area of the {@link AABB}
+   */
+  area() {
+    const width = Math.abs(this.max[0] - this.min[0]);
+    const height = Math.abs(this.max[1] - this.min[1]);
+
+    return width * height;
   }
 
   /**
