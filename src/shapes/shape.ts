@@ -60,9 +60,10 @@ export default abstract class Shape extends Object2D {
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position
    * @param rotation An optional world space rotation to apply to the vertices
+   * @param returnVecs Wether or not to return the vertices as vec2s or raw numbers
    * @returns The shape's vertices relative to the provided origin in world space
    */
-  abstract getVerticesWorld(origin: vec2, rotation?: number): number[];
+  abstract getVerticesWorld(origin: vec2, rotation?: number, returnVecs?: boolean): number[] | vec2[];
 
   /**
    * Calculates the shape's vertices relative to the provided origin in world space.
@@ -70,9 +71,21 @@ export default abstract class Shape extends Object2D {
    * @param origin The origin to calculate the vertices relative to, should be a world position
    * @param scale The vector to scale the world space vertices by to obtain clip space values
    * @param rotation An optional rotation to apply to the vertices
+   * @param cameraRotation An optional global camera rotation to apply to the vertices
    * @returns The shape's vertices relative to the provided origin in clip space
    */
-  abstract getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number): number[];
+  getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number, cameraRotation?: number) {
+    let world = <vec2[]>this.getVerticesWorld(origin, rotation, true);
+    if (cameraRotation) world = applyRotation(world, vec2.create(), -cameraRotation);
+
+    const final: number[] = [];
+    world.forEach((v) => final.push(...v));
+
+    return final.map((v, i) => {
+      if (i % 2 === 0) return v * scale[0];
+      else return v * scale[1];
+    });
+  }
 
   /**
    * Calculates the base vertices of the shape.
@@ -90,4 +103,47 @@ export default abstract class Shape extends Object2D {
    * @returns The shape's vertex indices with the given offset added to each index
    */
   abstract getIndices(offset?: number): Uint16Array;
+
+  private cachedPoints = {
+    points: <vec2[]>[],
+    pos: vec2.fromValues(-Infinity, Infinity),
+    posSlop: 0.00001,
+    rotation: Infinity,
+    rotationSlop: 0.001,
+  };
+
+  private posDiff = vec2.create();
+
+  /**
+   * Calculates the bounding points of the {@link Shape} instance.
+   *
+   * **NOTE: The shape's vertices are recalculated every time this function is called.**
+   *
+   * @returns The bounding points of the box
+   */
+  getPoints() {
+    // return cached points if they are valid
+    if (
+      vec2.sqrLen(vec2.sub(this.posDiff, this.getPosition(), this.cachedPoints.pos)) <=
+        this.cachedPoints.posSlop &&
+      Math.abs(this.getRotation() - this.cachedPoints.rotation) <= this.cachedPoints.rotationSlop
+    ) {
+      // console.log("using cached points");
+      return this.cachedPoints.points;
+    }
+
+    const vertices = <number[]>this.getVerticesWorld(vec2.create());
+
+    const points: vec2[] = [];
+    for (let i = 1; i < vertices.length; i += 2) {
+      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
+    }
+
+    // cache points
+    this.cachedPoints.points = points;
+    vec2.copy(this.cachedPoints.pos, this.getPosition());
+    this.cachedPoints.rotation = this.getRotation();
+
+    return points;
+  }
 }

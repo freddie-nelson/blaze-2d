@@ -1,7 +1,6 @@
 import Blaze from "@blz/blaze";
 import Renderer from "@blz/renderer/renderer";
 import BatchRenderer from "@blz/renderer/batchRenderer";
-import World from "@blz/world";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
 import RectCollider from "@blz/physics/collider/rect";
@@ -22,12 +21,10 @@ import { addMouseListener, Mouse } from "@blz/mouse";
 import { addKeyListener } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
+import Scene from "@blz/scene";
 
 // constants
 const CANVAS = <HTMLCanvasElement>document.getElementById("canvas");
-
-const VIEWPORT_SIZE = vec2.fromValues(CANVAS.clientWidth, CANVAS.clientHeight);
-const CELL_SIZE = vec2.fromValues(40, 40);
 const BG_COLOR = new Color("skyblue");
 
 // setup engine
@@ -36,33 +33,9 @@ Blaze.setBgColor(BG_COLOR);
 Blaze.start();
 
 // setup systems
-const WORLD = new World(CELL_SIZE, VIEWPORT_SIZE);
+const WORLD = Blaze.getScene();
 const CAMERA = WORLD.getCamera();
-const VIEWPORT = CAMERA.viewport;
-
-const PHYSICS = new Physics();
-
-Blaze.addSystem(WORLD);
-Blaze.addSystem(PHYSICS, true);
-
-// setup renderer
-Renderer.useCamera(CAMERA);
-
-// setup debug menu
-Debug.world = WORLD;
-Blaze.toggleDebug();
-WORLD.debug = true;
-PHYSICS.debug = true;
-
-// lock canvas to window size
-window.addEventListener("resize", () => {
-  Renderer.resizeToCanvas();
-
-  VIEWPORT_SIZE[0] = CANVAS.width;
-  VIEWPORT_SIZE[1] = CANVAS.height;
-  VIEWPORT.setWidth(VIEWPORT_SIZE[0]);
-  VIEWPORT.setHeight(VIEWPORT_SIZE[1]);
-});
+// CAMERA.rotate(Math.PI / 4);
 
 // MAIN
 const randInt = (min = 0, max = 1) => {
@@ -137,7 +110,7 @@ floor.setInertia(0);
 floor.isStatic = true;
 
 WORLD.addEntity(floor);
-PHYSICS.addBody(floor);
+Physics.addBody(floor);
 
 // left wall
 const leftPos = vec2.fromValues(-FLOOR_WIDTH / 2, 0);
@@ -150,7 +123,7 @@ left.setInertia(0);
 left.isStatic = true;
 
 WORLD.addEntity(left);
-PHYSICS.addBody(left);
+Physics.addBody(left);
 
 // right wall
 const rightPos = vec2.fromValues(FLOOR_WIDTH / 2, 0);
@@ -163,7 +136,7 @@ right.setInertia(0);
 right.isStatic = true;
 
 WORLD.addEntity(right);
-PHYSICS.addBody(right);
+Physics.addBody(right);
 
 // menu
 const menu = document.createElement("div");
@@ -210,16 +183,16 @@ wallsToggle.onclick = (e) => {
   const checked = wallsToggle.checked;
   if (checked) {
     WORLD.addEntity(left);
-    PHYSICS.addBody(left);
+    Physics.addBody(left);
 
     WORLD.addEntity(right);
-    PHYSICS.addBody(right);
+    Physics.addBody(right);
   } else {
     WORLD.removeEntity(left);
-    PHYSICS.removeBody(left);
+    Physics.removeBody(left);
 
     WORLD.removeEntity(right);
-    PHYSICS.removeBody(right);
+    Physics.removeBody(right);
   }
 };
 wallsToggle.checked = true;
@@ -273,6 +246,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   const minSize = 1;
   const size = vec2.fromValues(randInt(minSize, maxSize), randInt(minSize, maxSize));
   const mass = randInt(1, 1) * size[0];
+  const inertia = mass;
   const tex = shapeTexs[randInt(0, shapeTexs.length - 1)];
 
   let shape: Shape;
@@ -292,6 +266,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   shape.texture = tex;
 
   const entity = new Entity(pos, collider, [shape], mass);
+  entity.setInertia(inertia * 0.1);
   // entity.restitution = 1;
   // entity.staticFriction = 1;
   // entity.dynamicFriction = 1;
@@ -304,7 +279,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   }
 
   WORLD.addEntity(entity);
-  PHYSICS.addBody(entity);
+  Physics.addBody(entity);
 
   bodyCount++;
   bodyCountPara.textContent = `Bodies: ${bodyCount}`;

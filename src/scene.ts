@@ -23,7 +23,7 @@ const debugTexture = new Texture(new Color(debugRGBA));
 /**
  * Represents the 2D world.
  */
-export default class World implements System {
+export default class Scene implements System {
   cellSize: vec2;
   useBatchRenderer = false;
 
@@ -34,14 +34,37 @@ export default class World implements System {
   debugTexture = debugTexture;
 
   /**
-   * Creates a {@link World} instance.
+   * Creates a {@link Scene} instance.
    *
    * @param cellSize The width and height of each world cell in pixels
    * @param cameraViewport The width and height of the camera's viewport in pixels
    */
-  constructor(cellSize: vec2, cameraViewport: vec2) {
+  constructor(cellSize: vec2, cameraViewport: vec2);
+
+  /**
+   * Creates a {@link Scene} instance with a dynamic viewport that resizes to the given canvas' dimensions.
+   *
+   * @param cellSize The width and height of each world cell in pixels
+   * @param canvas The canvas to resize the scene's camera's viewport to
+   */
+  constructor(cellSize: vec2, canvas: HTMLCanvasElement);
+
+  constructor(cellSize: vec2, cameraViewport: vec2 | HTMLCanvasElement) {
     this.cellSize = cellSize;
-    this.camera = new Camera(vec2.fromValues(0, 0), cameraViewport[0], cameraViewport[1]);
+
+    if (cameraViewport instanceof HTMLCanvasElement) {
+      const canvas = cameraViewport;
+      this.camera = new Camera(vec2.fromValues(0, 0), canvas.width, canvas.height);
+
+      // setup resize observer
+      const observer = new ResizeObserver((entries) => {
+        this.camera.viewport.setWidth(canvas.width);
+        this.camera.viewport.setHeight(canvas.height);
+      });
+      observer.observe(canvas);
+    } else {
+      this.camera = new Camera(vec2.fromValues(0, 0), cameraViewport[0], cameraViewport[1]);
+    }
   }
 
   /**
@@ -150,8 +173,10 @@ export default class World implements System {
     const world = vec2.fromValues(p[0] * pixelToWorld[0], p[1] * pixelToWorld[1]);
 
     // get world position inside current view
+
     const centre = this.camera.getPosition();
     vec2.add(world, world, centre);
+    vec2.rotate(world, world, centre, this.camera.getRotation());
 
     return world;
   }

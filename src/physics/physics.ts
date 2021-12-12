@@ -48,13 +48,11 @@ const incRGBA: RGBAColor = {
 const incTexture = new Texture(new Color(incRGBA));
 
 /**
- * Handles physics updates for all bodies in the system.
- *
- * As a general rule the physics system should be added to Blaze's fixed update loop.
+ * Handles physics for bodies added to the engine.
  *
  * Raycasting can only check against objects in the phsyics engine's collisions space.
  */
-export default class Physics implements System {
+export default abstract class Physics {
   // config
   static CACHED_CONTACTS_TOLERANCE = 0.0005;
   static RESTITUTION_THRESHOLD = 1;
@@ -63,24 +61,28 @@ export default class Physics implements System {
   static ACUMMULATE_IMPULSE = true;
   static WARM_IMPULSE = true;
 
-  static POSITION_ITERATIONS = 8;
+  static POSITION_ITERATIONS = 12;
   static POSITION_SLOP = 0.015;
   static POSITION_DAMPING = 1;
   static POSITION_WARMING = 0.9;
 
-  debug = false;
+  static EPA_TOLERANCE = 0.005;
+  static EPA_MAX_ITERATIONS = 16;
 
-  private gravity = vec2.fromValues(0, -9.8);
+  static debug = false;
+
+  private static gravity = vec2.fromValues(0, -9.8);
 
   // spaces
-  dynamicsSpace = new DynamicsSpace(this.gravity);
-  collisionsSpace = new CollisionsSpace(this.gravity);
+  static dynamicsSpace = new DynamicsSpace(this.gravity);
+  static collisionsSpace = new CollisionsSpace(this.gravity);
 
   /**
+   * Initialise the physics engine.
    *
    * @param gravity The gravitional force applied to objects in the system
    */
-  constructor(gravity?: vec2) {
+  static init(gravity?: vec2) {
     if (gravity) this.setGravity(gravity);
 
     // add default solvers
@@ -95,7 +97,7 @@ export default class Physics implements System {
     this.collisionsSpace.addSolver("position", applyPositionImpulse, 1);
   }
 
-  update(delta: number) {
+  static update(delta: number) {
     // step bodies
     // order is very important
     this.collisionsSpace.broadphase();
@@ -130,7 +132,7 @@ export default class Physics implements System {
     if (this.debug) this.drawDebug();
   }
 
-  drawDebug() {
+  static drawDebug() {
     for (const obj of this.dynamicsSpace.objects) {
       // draw entity bounding boxes (colliders)
       obj.collider.texture = debugTexture;
@@ -166,7 +168,7 @@ export default class Physics implements System {
    *
    * @param c The collision object to add
    */
-  addCollisionObj(c: CollisionObject) {
+  static addCollisionObj(c: CollisionObject) {
     this.collisionsSpace.addObject(c);
   }
 
@@ -175,7 +177,7 @@ export default class Physics implements System {
    *
    * @param obj The object to add
    */
-  addDynamicsObj(obj: RigidBody) {
+  static addDynamicsObj(obj: RigidBody) {
     this.dynamicsSpace.addObject(obj);
   }
 
@@ -184,7 +186,7 @@ export default class Physics implements System {
    *
    * @param body The body to add
    */
-  addBody(body: RigidBody) {
+  static addBody(body: RigidBody) {
     this.addCollisionObj(body);
     this.addDynamicsObj(body);
   }
@@ -194,7 +196,7 @@ export default class Physics implements System {
    *
    * @param c The collision object to remove
    */
-  removeCollisionObj(c: CollisionObject) {
+  static removeCollisionObj(c: CollisionObject) {
     this.collisionsSpace.removeObject(c);
   }
 
@@ -203,7 +205,7 @@ export default class Physics implements System {
    *
    * @param obj The object to remove
    */
-  removeDynamicsObj(obj: RigidBody) {
+  static removeDynamicsObj(obj: RigidBody) {
     this.dynamicsSpace.removeObject(obj);
   }
 
@@ -212,7 +214,7 @@ export default class Physics implements System {
    *
    * @param body The body to remove
    */
-  removeBody(body: RigidBody) {
+  static removeBody(body: RigidBody) {
     this.removeCollisionObj(body);
     this.removeDynamicsObj(body);
   }
@@ -222,7 +224,7 @@ export default class Physics implements System {
    *
    * @param gravity The new gravity to use
    */
-  setGravity(gravity: vec2) {
+  static setGravity(gravity: vec2) {
     this.gravity = vec2.clone(gravity);
     this.dynamicsSpace.gravity = vec2.clone(gravity);
     this.collisionsSpace.gravity = vec2.clone(gravity);
@@ -233,7 +235,7 @@ export default class Physics implements System {
    *
    * @returns The gravity in use
    */
-  getGravity() {
+  static getGravity() {
     return this.gravity;
   }
 }

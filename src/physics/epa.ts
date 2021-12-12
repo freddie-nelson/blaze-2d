@@ -1,8 +1,6 @@
 import { vec2 } from "gl-matrix";
 import Collider from "./collider/collider";
-
-const MAX_ITERATIONS = 32;
-const TOLERANCE = 0.001;
+import Physics from "./physics";
 
 /**
  * The collision normal and penetration depth computed by the EPA algorithm.
@@ -37,30 +35,32 @@ export default function EPA(polytope: vec2[], a: Collider, b: Collider): EPAResu
 
   const winding = calculateSimplexWinding(polytope);
 
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
+  for (let i = 0; i < Physics.EPA_MAX_ITERATIONS; i++) {
     const edge = findClosestEdge(polytope, winding);
     const support = a.supportPoint(b, edge.normal);
 
     // calculate distance of support along edge.normal
     const d = vec2.dot(support, edge.normal);
-    if (Math.abs(d - edge.dist) <= TOLERANCE) {
+    if (Math.abs(d - edge.dist) <= Physics.EPA_TOLERANCE) {
       // if the difference is less than the tolerance then we can
       // assume that we cannot expand the polytope any further and
       // we have our solution
       return {
         normal: edge.normal,
-        depth: d + TOLERANCE,
+        depth: d + Physics.EPA_TOLERANCE,
       };
     } else {
       polytope.splice(edge.index, 0, support);
     }
 
-    if (i === MAX_ITERATIONS - 1) {
+    if (i === Physics.EPA_MAX_ITERATIONS - 1) {
+      // console.log("EPA: Iteration limit hit.");
+
       // iteration limit hit
       // return current most accurate values
       return {
         normal: edge.normal,
-        depth: d + TOLERANCE,
+        depth: d + Physics.EPA_TOLERANCE,
       };
     }
   }
@@ -79,6 +79,9 @@ interface Edge {
   index: number;
 }
 
+const ab = vec2.create();
+const normal = vec2.create();
+
 /**
  * Finds the edge in the polytope which is closest to the origin.
  *
@@ -87,12 +90,10 @@ interface Edge {
  */
 function findClosestEdge(polytope: vec2[], winding: Winding): Edge {
   const edge: Edge = {
-    normal: vec2.create(),
+    normal,
     dist: Infinity,
     index: -1,
   };
-
-  const ab = vec2.create();
 
   for (let i = 0; i < polytope.length; i++) {
     // calculate next point index in polytope
@@ -105,11 +106,12 @@ function findClosestEdge(polytope: vec2[], winding: Winding): Edge {
     vec2.sub(ab, b, a);
 
     // get normal of edge towards origin
-    let normal: vec2;
     if (winding === Winding.CLOCKWISE) {
-      normal = vec2.fromValues(ab[1], -ab[0]);
+      normal[0] = ab[1];
+      normal[1] = -ab[0];
     } else {
-      normal = vec2.fromValues(-ab[1], ab[0]);
+      normal[0] = -ab[1];
+      normal[1] = ab[0];
     }
     vec2.normalize(normal, normal);
 
@@ -118,7 +120,7 @@ function findClosestEdge(polytope: vec2[], winding: Winding): Edge {
 
     // update closest edge if the new edge is closer to the origin
     if (dist < edge.dist) {
-      edge.normal = normal;
+      edge.normal = vec2.clone(normal);
       edge.dist = dist;
       edge.index = j;
     }

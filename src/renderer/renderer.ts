@@ -18,6 +18,7 @@ import Circle from "../shapes/circle";
 import Shape from "../shapes/shape";
 import { ZMap } from "../utils/types";
 import Triangle from "../shapes/triangle";
+import { applyRotation } from "../utils/vectors";
 
 interface RenderQueueItem {
   shape: Shape;
@@ -62,9 +63,10 @@ export default abstract class Renderer {
    *
    * Creates the webgl2 rendering context for the canvas and clears the webgl buffer.
    *
-   * @param canvas
-   *
    * @throws When browser does not support webgl 2.0
+   *
+   * @param canvas The canvas to grab webgl context from
+   * @param opts {@link WebGLContextAttributes} to pass to the `getContext` call
    */
   static init(canvas: HTMLCanvasElement, opts?: WebGLContextAttributes) {
     const gl = canvas.getContext("webgl2", opts);
@@ -72,6 +74,7 @@ export default abstract class Renderer {
 
     this.gl = gl;
     this.resizeToCanvas();
+    window.addEventListener("resize", () => this.resizeToCanvas());
 
     // transparency
     gl.enable(gl.BLEND);
@@ -213,9 +216,9 @@ export default abstract class Renderer {
     }
 
     // vertex positions
-    const renderPos = vec2.clone(position);
-    vec2.sub(renderPos, renderPos, this.camera.getPosition());
-    const vertices = shape.getVerticesClipSpace(renderPos, this.scale, rotation);
+    const renderPos = vec2.sub(vec2.create(), position, this.camera.getPosition());
+
+    const vertices = shape.getVerticesClipSpace(renderPos, this.scale, rotation, this.camera.getRotation());
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);

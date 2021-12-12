@@ -41,9 +41,10 @@ export default class Circle extends Shape {
    *
    * @param origin The origin to calculate the vertices relative to, should be a world position
    * @param rotation An optional world space rotation to apply to the vertices
+   * @param returnVecs Wether or not to return the vertices as vec2s or raw numbers
    * @returns The circle's vertices relative to the provided origin in world space
    */
-  getVerticesWorld(origin: vec2, rotation?: number) {
+  getVerticesWorld(origin: vec2, rotation?: number, returnVecs = false) {
     const base = this.getBaseVertices();
 
     const world = applyTranslation(base, origin);
@@ -61,27 +62,12 @@ export default class Circle extends Shape {
     const worldLocalRotatedLocalRot = applyRotation(worldLocalRotated, centre, this.getRotation());
     // const worldLocalTransRot = worldLocalTranslation;
 
+    if (returnVecs) return worldLocalRotatedLocalRot;
+
     const final: number[] = [];
     worldLocalRotatedLocalRot.forEach((v) => final.push(...v));
 
     return final;
-  }
-
-  /**
-   * Calculates the circle's vertices relative to the provided origin in world space.
-   *
-   * @param origin The origin to calculate the vertices relative to, should be a world position
-   * @param scale The vector to scale the world space vertices by to obtain clip space values
-   * @param rotation An optional rotation to apply to the vertices
-   * @returns The circle's vertices relative to the provided origin in clip space
-   */
-  getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number) {
-    const world = this.getVerticesWorld(origin, rotation);
-
-    return world.map((v, i) => {
-      if (i % 2 === 0) return v * scale[0];
-      else return v * scale[1];
-    });
   }
 
   /**

@@ -275,9 +275,6 @@ export default class Manifold {
    * @param delta The time since the last udpate
    */
   preStepImpulse(delta: number) {
-    const allowedPenetration = 0.03;
-    const biasFactor = 0.7;
-
     for (const contact of this.contactPoints) {
       const contactA = vec2.sub(vec2.create(), contact.point, this.a.getPosition());
       const contactB = vec2.sub(vec2.create(), contact.point, this.b.getPosition());

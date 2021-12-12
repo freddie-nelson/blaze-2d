@@ -1,6 +1,6 @@
 import { clear } from "./utils/gl";
 import Debug from "./debug";
-import { glMatrix } from "gl-matrix";
+import { glMatrix, vec2 } from "gl-matrix";
 import Color, { ColorLike } from "./utils/color";
 import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
@@ -8,6 +8,8 @@ import TextureLoader from "./texture/loader";
 import Renderer from "./renderer/renderer";
 import validateZIndex from "./utils/validators";
 import BatchRenderer from "./renderer/batchRenderer";
+import Physics from "./physics/physics";
+import Scene from "./scene";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -18,8 +20,6 @@ const defaultOpts: BlazeOptions = {
 };
 
 export default abstract class Blaze {
-  static debug: Debug;
-
   private static bgColor = new Color("#000");
 
   /**
@@ -63,6 +63,11 @@ export default abstract class Blaze {
   private static fixedDelta = 0;
 
   /**
+   * The game world.
+   */
+  private static scene: Scene;
+
+  /**
    * Initializes the engine and creates the renderer.
    *
    * @param canvas The canvas to use to create the renderer
@@ -71,6 +76,10 @@ export default abstract class Blaze {
   static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
+
+    Physics.init();
+
+    this.scene = new Scene(vec2.fromValues(40, 40), canvas);
 
     glMatrix.setMatrixArrayType(Array);
   }
@@ -95,6 +104,8 @@ export default abstract class Blaze {
    *
    * Update clears the {@link Renderer} with the set background color and calls `update` on any systems in `this.systems`.
    *
+   * Update also updates the engine's current {@link Scene}.
+   *
    * At the end of the update the {@link Renderer} queue is flushed, drawing anything that was queued for rendering during the frame.
    */
   static update() {
@@ -107,14 +118,14 @@ export default abstract class Blaze {
 
     Renderer.clear(this.bgColor);
 
+    this.scene.update(delta);
+
     for (const system of this.systems) {
       system.update(delta);
     }
 
     BatchRenderer.flush();
     Renderer.flush();
-
-    if (Debug.show) Debug.update(delta);
   }
 
   /**
@@ -126,6 +137,8 @@ export default abstract class Blaze {
    * To account for the possible variations in time between each update a seperate delta time value is calculated for the fixed update loop.
    *
    * Fixed update calls `update` on all systems in `this.fixedSystems`.
+   *
+   * Fixed update also steps the {@link Physics} engine.
    */
   static fixedUpdate() {
     setTimeout(() => this.fixedUpdate(), this.fixedTimeStep);
@@ -134,6 +147,8 @@ export default abstract class Blaze {
     const delta = Math.min((now - this.lastFixedUpdateTime) / 1000, this.maxFixedTimeStep / 1000);
     this.fixedDelta = delta;
     this.lastFixedUpdateTime = now;
+
+    Physics.update(delta);
 
     for (const system of this.fixedSystems) {
       system.update(delta);
@@ -195,6 +210,24 @@ export default abstract class Blaze {
     }
 
     return false;
+  }
+
+  /**
+   * Sets the engine's scene.
+   *
+   * @param scene The scene to use
+   */
+  static setScene(scene: Scene) {
+    this.scene = scene;
+  }
+
+  /**
+   * Gets the engine's scene.
+   *
+   * @returns The engine's scene
+   */
+  static getScene() {
+    return this.scene;
   }
 
   /**
@@ -385,13 +418,5 @@ export default abstract class Blaze {
    */
   static getThreadPool() {
     return this.threadPool;
-  }
-
-  /**
-   * Enables/disables the debug menu.
-   */
-  static toggleDebug() {
-    Debug.init();
-    Debug.toggle();
   }
 }

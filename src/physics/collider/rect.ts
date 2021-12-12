@@ -4,6 +4,8 @@ import Rect from "../../shapes/rect";
 import Collider, { CollisionResult } from "./collider";
 import EPA from "../epa";
 
+let time = 0;
+
 /**
  * Represents a rectangle collider in 2D world space with a position and dimensions.
  */
@@ -108,23 +110,5 @@ export default class RectCollider extends Rect implements Collider {
       left: points[max + 1 >= points.length ? 0 : max + 1],
       right: points[max - 1 < 0 ? points.length - 1 : max - 1],
     };
-  }
-
-  /**
-   * Calculates the bounding points of the {@link RectCollider} instance.
-   *
-   * **NOTE: The rect's vertices are recalculated everytime this function is called.**
-   *
-   * @returns The bounding points of the box
-   */
-  getPoints() {
-    const vertices = this.getVerticesWorld(vec2.create());
-
-    const points: vec2[] = [];
-    for (let i = 1; i < vertices.length; i += 2) {
-      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
-    }
-
-    return points;
   }
 }

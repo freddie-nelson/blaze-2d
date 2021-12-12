@@ -109,22 +109,4 @@ export default class TriangleCollider extends Triangle implements Collider {
       right: points[max - 1 < 0 ? points.length - 1 : max - 1],
     };
   }
-
-  /**
-   * Calculates the bounding points of the {@link TriangleCollider} instance.
-   *
-   * **NOTE: The triangle's vertices are recalculated everytime this function is called.**
-   *
-   * @returns The bounding points of the triangle
-   */
-  getPoints() {
-    const vertices = this.getVerticesWorld(vec2.create());
-
-    const points: vec2[] = [];
-    for (let i = 1; i < vertices.length; i += 2) {
-      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
-    }
-
-    return points;
-  }
 }

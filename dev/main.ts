@@ -5,7 +5,7 @@ import Texture from "../lib/src/texture/texture";
 import TextureAtlas from "../lib/src/texture/atlas";
 import Debug from "../lib/src/debug";
 import Color, { RGBAColor } from "../lib/src/utils/color";
-import World from "../lib/src/world";
+import World from "../lib/src/scene";
 import Physics from "../lib/src/physics/physics";
 import Entity from "../lib/src/entity";
 import RectCollider from "../lib/src/physics/collider/rect";

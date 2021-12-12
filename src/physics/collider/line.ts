@@ -105,22 +105,4 @@ export default class LineCollider extends Line implements Collider {
       rightIndex,
     };
   }
-
-  /**
-   * Calculates the bounding points of the {@link BoxCollider} instance.
-   *
-   * **NOTE: The box's vertices are recalculated everytime this function is called.**
-   *
-   * @returns The bounding points of the box
-   */
-  getPoints() {
-    const vertices = this.getVerticesWorld(vec2.create());
-
-    const points: vec2[] = [];
-    for (let i = 1; i < vertices.length; i += 2) {
-      points.push(vec2.fromValues(vertices[i - 1], vertices[i]));
-    }
-
-    return points;
-  }
 }
