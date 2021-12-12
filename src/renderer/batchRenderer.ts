@@ -286,9 +286,7 @@ export default abstract class BatchRenderer extends Renderer {
     let indicesOffset = 0;
 
     for (const r of renderable) {
-      const pos = vec2.sub(vec2.create(), r.pos, this.getCamera().getPosition());
-
-      const v = r.shape.getVerticesClipSpace(pos, this.scale, r.rot, this.getCamera().getRotation());
+      const v = r.shape.getVerticesClipSpace(r.pos, this.scale, r.rot, this.getCamera());
       const i = r.shape.getIndices(indicesOffset);
       indicesOffset += v.length / 2;
 

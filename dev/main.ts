@@ -5,7 +5,6 @@ import Texture from "../lib/src/texture/texture";
 import TextureAtlas from "../lib/src/texture/atlas";
 import Debug from "../lib/src/debug";
 import Color, { RGBAColor } from "../lib/src/utils/color";
-import World from "../lib/src/scene";
 import Physics from "../lib/src/physics/physics";
 import Entity from "../lib/src/entity";
 import RectCollider from "../lib/src/physics/collider/rect";
@@ -17,17 +16,18 @@ import { isMouseDown, Mouse } from "../lib/src/mouse";
 import { glMatrix, vec2 } from "gl-matrix";
 import BatchRenderer from "../lib/src/renderer/batchRenderer";
 import Circle from "../lib/src/shapes/circle";
+import Scene from "../lib/src/scene";
 
 BLZ.setBgColor("skyblue");
+BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
+BLZ.start();
 
 const cameraViewport = vec2.fromValues(window.innerWidth, window.innerHeight);
-const world = new World(vec2.fromValues(40, 40), cameraViewport);
-const physics = new Physics();
+const world = BLZ.getScene();
 
-BLZ.addSystem(physics);
-BLZ.addSystem(world);
+BLZ.setScene(world);
 
-const atlas = new TextureAtlas(8000);
+const atlas = new TextureAtlas(1000);
 
 const player = new Player(vec2.fromValues(0, 0), vec2.fromValues(2, 3), cameraViewport);
 player.setZIndex(5);
@@ -65,23 +65,11 @@ addKeyListener("ArrowLeft", (pressed) => {
   }
 });
 
-window.addEventListener("resize", () => {
-  Renderer.resizeToCanvas();
-  const canvas = Renderer.getGL().canvas;
-  world.getCamera().viewport.setWidth(canvas.width);
-  world.getCamera().viewport.setHeight(canvas.height);
-});
-
-BLZ.toggleDebug();
-// Debug.player = player;
-Debug.world = world;
-// world.debug = true;
-
 (async () => {
   const maxSize = 6;
   const area = 50;
   const rotationSpeed = 360 * 1;
-  const count = 100;
+  const count = 1;
 
   for (let i = 0; i < count; i++) {
     const size = vec2.fromValues(
@@ -92,8 +80,7 @@ Debug.world = world;
       vec2.fromValues(Math.random() * area - area / 2, Math.random() * area - area / 2),
       new RectCollider(size[0], size[1]),
       // [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
-      [new Rect(size[0], size[1], vec2.fromValues(0, 0))],
-      "test"
+      [new Rect(size[0], size[1], vec2.fromValues(0, 0))]
     );
     const rgba: RGBAColor = {
       r: Math.floor(Math.random() * 255),
@@ -116,12 +103,10 @@ Debug.world = world;
   }
 
   const size = vec2.fromValues(6, 6);
-  const test = new Entity(
-    vec2.fromValues(0, 0),
-    new RectCollider(size[0] * 2.5, size[0] * 2.5),
-    [new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)), new Rect(2, 6)],
-    "test"
-  );
+  const test = new Entity(vec2.fromValues(0, 0), new RectCollider(size[0] * 2.5, size[0] * 2.5), [
+    new Circle(size[0], vec2.fromValues(size[0] * 1.2, size[0] * 1.2)),
+    new Rect(2, 6),
+  ]);
   const rgba: RGBAColor = {
     r: Math.floor(Math.random() * 255),
     g: Math.floor(Math.random() * 255),
@@ -162,9 +147,6 @@ Debug.world = world;
 
     const pos = circle.getPosition();
     vec2.scaleAndAdd(pos, pos, vec2.fromValues(step, step), BLZ.getDelta());
-
-    e.collider.setWidth(circle.getWidth() * 1.8);
-    e.collider.setHeight(circle.getWidth() * 1.8);
   });
 
   const body = player.getPieces()[0];
@@ -175,7 +157,6 @@ Debug.world = world;
   BatchRenderer.atlas = atlas;
   await atlas.refreshAtlas();
   world.useBatchRenderer = true;
-  Debug.rendererToggle.checked = true;
 
   addKeyListener("KeyR", (pressed) => {
     if (pressed) {
@@ -185,18 +166,9 @@ Debug.world = world;
     }
   });
 
-  BLZ.addSystem({
-    update(delta: number) {
-      // test.getPieces()[0].rotate(((-90 * Math.PI) / 180) * delta);
-    },
-  });
-
   // console.log(atlas.getAllTextures());
   // document.body.appendChild(atlas.image);
   // console.log(atlas.imagePath);
-
-  BLZ.init(<HTMLCanvasElement>document.getElementById("canvas"));
-  BLZ.start();
 })();
 
 // const atlas = new TextureAtlas(1200);

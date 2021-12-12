@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Camera from "../camera/camera";
 import Object2D from "../object2d";
 import Renderer from "../renderer/renderer";
 import Texture from "../texture/texture";
@@ -71,12 +72,14 @@ export default abstract class Shape extends Object2D {
    * @param origin The origin to calculate the vertices relative to, should be a world position
    * @param scale The vector to scale the world space vertices by to obtain clip space values
    * @param rotation An optional rotation to apply to the vertices
-   * @param cameraRotation An optional global camera rotation to apply to the vertices
+   * @param camera An optional camera to get vertices relative to
    * @returns The shape's vertices relative to the provided origin in clip space
    */
-  getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number, cameraRotation?: number) {
-    let world = <vec2[]>this.getVerticesWorld(origin, rotation, true);
-    if (cameraRotation) world = applyRotation(world, vec2.create(), -cameraRotation);
+  getVerticesClipSpace(origin: vec2, scale: vec2, rotation?: number, camera?: Camera) {
+    const pos = camera ? vec2.sub(vec2.create(), origin, camera.getPosition()) : origin;
+    let world = <vec2[]>this.getVerticesWorld(pos, rotation, true);
+
+    if (camera) world = applyRotation(world, vec2.create(), camera.getRotation());
 
     const final: number[] = [];
     world.forEach((v) => final.push(...v));

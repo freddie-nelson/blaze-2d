@@ -9,6 +9,10 @@ import Viewport from "./viewport";
  */
 export default class Camera extends Object2D {
   viewport: Viewport;
+  private zoomLevel = 1;
+  minZoom = 0.1;
+  maxZoom = 3;
+
   lastPos = vec2.create();
 
   /**
@@ -50,5 +54,42 @@ export default class Camera extends Object2D {
 
     this.viewport.update(this.getPosition());
     vec2.copy(this.lastPos, this.getPosition());
+  }
+
+  /**
+   * Zooms the camera by the given amount.
+   *
+   * @param zoom The amount to zoom by
+   */
+  zoom(zoom: number) {
+    const newZoom = this.zoomLevel + zoom;
+    this.setZoom(newZoom);
+  }
+
+  /**
+   * Sets the zoom level of the camera.
+   *
+   * This will change the size of `this.viewport`.
+   *
+   * @param zoom The zoom level
+   */
+  setZoom(zoom: number) {
+    // clamp zoom
+    this.zoomLevel = Math.max(this.minZoom, Math.min(zoom, this.maxZoom));
+
+    const w = this.viewport.getOriginalWidth() / this.zoomLevel;
+    const h = this.viewport.getOriginalHeight() / this.zoomLevel;
+
+    this.viewport.setWidth(w);
+    this.viewport.setHeight(h);
+  }
+
+  /**
+   * Gets the zoom level of the camera.
+   *
+   * @returns The zoom level of the camera
+   */
+  getZoom() {
+    return this.zoomLevel;
   }
 }

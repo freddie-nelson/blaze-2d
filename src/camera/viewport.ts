@@ -5,6 +5,9 @@ import RectCollider from "../physics/collider/rect";
  * Represents a {@link Camera}'s viewable area and can be used to perform culling.
  */
 export default class Viewport {
+  private originalWidth: number;
+  private originalHeight: number;
+
   private width: number;
   private height: number;
   private centre: vec2;
@@ -19,6 +22,10 @@ export default class Viewport {
   constructor(centre: vec2, width: number, height: number) {
     this.width = width;
     this.height = height;
+
+    this.originalWidth = width;
+    this.originalHeight = height;
+
     this.update(centre);
   }
 
@@ -97,6 +104,24 @@ export default class Viewport {
    */
   getHeight() {
     return this.height;
+  }
+
+  /**
+   * Gets the width the viewport was given when constructed.
+   *
+   * @returns The viewport's original width
+   */
+  getOriginalWidth() {
+    return this.originalWidth;
+  }
+
+  /**
+   * Gets the height the viewport was given when constructed.
+   *
+   * @returns The viewport's original height
+   */
+  getOriginalHeight() {
+    return this.originalHeight;
   }
 
   /**

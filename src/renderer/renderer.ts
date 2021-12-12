@@ -216,9 +216,7 @@ export default abstract class Renderer {
     }
 
     // vertex positions
-    const renderPos = vec2.sub(vec2.create(), position, this.camera.getPosition());
-
-    const vertices = shape.getVerticesClipSpace(renderPos, this.scale, rotation, this.camera.getRotation());
+    const vertices = shape.getVerticesClipSpace(position, this.scale, rotation, this.camera);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);

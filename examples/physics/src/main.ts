@@ -1,5 +1,5 @@
 import Blaze from "@blz/blaze";
-import Renderer from "@blz/renderer/renderer";
+import EditorCameraControls from "@blz/dropins/camera/editorControls";
 import BatchRenderer from "@blz/renderer/batchRenderer";
 import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
@@ -14,14 +14,10 @@ import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
 import GradientTexture, { GradientDirection, GradientType } from "@blz/texture/gradient";
 import TextureAtlas from "@blz/texture/atlas";
-import TextureLoader from "@blz/texture/loader";
-import Debug from "@blz/debug";
-import testManifold from "@blz/physics/manifold.test";
 import { addMouseListener, Mouse } from "@blz/mouse";
 import { addKeyListener } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
-import Scene from "@blz/scene";
 
 // constants
 const CANVAS = <HTMLCanvasElement>document.getElementById("canvas");
@@ -32,10 +28,11 @@ Blaze.init(CANVAS);
 Blaze.setBgColor(BG_COLOR);
 Blaze.start();
 
-// setup systems
 const WORLD = Blaze.getScene();
 const CAMERA = WORLD.getCamera();
-// CAMERA.rotate(Math.PI / 4);
+const CAMERA_CONTROLS = new EditorCameraControls(CAMERA, CANVAS);
+
+// Physics.setGravity(vec2.create());
 
 // MAIN
 const randInt = (min = 0, max = 1) => {
@@ -46,7 +43,6 @@ const randInt = (min = 0, max = 1) => {
 const ATLAS = new TextureAtlas(2000);
 BatchRenderer.atlas = ATLAS;
 WORLD.useBatchRenderer = true;
-Debug.rendererToggle.checked = true;
 
 // textures
 const randGradient = () => {
@@ -138,81 +134,6 @@ right.isStatic = true;
 WORLD.addEntity(right);
 Physics.addBody(right);
 
-// menu
-const menu = document.createElement("div");
-menu.style.cssText = `
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  border-radius: .5rem;
-  background: white;
-`;
-
-const textCSS = `
-  font-family: Arial;
-  font-weight: bold;
-  font-size: 1.3rem;
-  color: gray;
-  margin: .2rem 0;
-`;
-
-const rotatePara = document.createElement("p");
-rotatePara.style.cssText = textCSS;
-rotatePara.textContent = "Press 'R' to randomize rotations.";
-
-const circlePara = document.createElement("p");
-circlePara.style.cssText = textCSS;
-circlePara.textContent = "Press 'C' to create circles.";
-
-const trianglePara = document.createElement("p");
-trianglePara.style.cssText = textCSS;
-trianglePara.textContent = "Press 'T' to create triangles.";
-
-let bodyCount = 1;
-const bodyCountPara = document.createElement("p");
-bodyCountPara.style.cssText = textCSS;
-bodyCountPara.textContent = `Bodies: ${bodyCount}`;
-
-const wallsToggle = document.createElement("input");
-wallsToggle.style.cssText = "margin-left: .5rem;";
-wallsToggle.type = "checkbox";
-wallsToggle.onclick = (e) => {
-  const checked = wallsToggle.checked;
-  if (checked) {
-    WORLD.addEntity(left);
-    Physics.addBody(left);
-
-    WORLD.addEntity(right);
-    Physics.addBody(right);
-  } else {
-    WORLD.removeEntity(left);
-    Physics.removeBody(left);
-
-    WORLD.removeEntity(right);
-    Physics.removeBody(right);
-  }
-};
-wallsToggle.checked = true;
-
-const wallsTogglePara = document.createElement("p");
-wallsTogglePara.style.cssText = textCSS;
-wallsTogglePara.textContent = "Toggle walls: ";
-
-const wallsToggleWrapper = document.createElement("div");
-wallsToggleWrapper.style.cssText = "display: flex; align-items: center;";
-wallsToggleWrapper.appendChild(wallsTogglePara);
-wallsToggleWrapper.appendChild(wallsToggle);
-
-menu.appendChild(bodyCountPara);
-menu.appendChild(rotatePara);
-menu.appendChild(circlePara);
-menu.appendChild(trianglePara);
-menu.appendChild(wallsToggleWrapper);
-document.body.appendChild(menu);
-
 // toggles
 let ROTATE = false;
 addKeyListener("KeyR", (pressed) => {
@@ -280,31 +201,4 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   WORLD.addEntity(entity);
   Physics.addBody(entity);
-
-  bodyCount++;
-  bodyCountPara.textContent = `Bodies: ${bodyCount}`;
-});
-
-// pan camera with arrow keys
-const panCamera = (pan: vec2) => {
-  CAMERA.moveRight(pan[0]);
-  CAMERA.moveUp(pan[1]);
-};
-
-const dist = 1;
-
-addKeyListener("ArrowRight", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(dist, 0));
-});
-
-addKeyListener("ArrowLeft", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(-dist, 0));
-});
-
-addKeyListener("ArrowUp", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(0, dist));
-});
-
-addKeyListener("ArrowDown", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(0, -dist));
 });

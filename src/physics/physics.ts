@@ -69,8 +69,6 @@ export default abstract class Physics {
   static EPA_TOLERANCE = 0.005;
   static EPA_MAX_ITERATIONS = 16;
 
-  static debug = false;
-
   private static gravity = vec2.fromValues(0, -9.8);
 
   // spaces
@@ -128,8 +126,6 @@ export default abstract class Physics {
 
     // fire collision and trigger events
     this.collisionsSpace.fireEvents();
-
-    if (this.debug) this.drawDebug();
   }
 
   static drawDebug() {

@@ -11,6 +11,7 @@ import Rect from "./shapes/rect";
 import { System } from "./system";
 import Texture from "./texture/texture";
 import Color, { RGBAColor } from "./utils/color";
+import Viewport from "./camera/viewport";
 
 const debugRGBA: RGBAColor = {
   r: 255,
@@ -58,8 +59,8 @@ export default class Scene implements System {
 
       // setup resize observer
       const observer = new ResizeObserver((entries) => {
-        this.camera.viewport.setWidth(canvas.width);
-        this.camera.viewport.setHeight(canvas.height);
+        this.camera.viewport = new Viewport(this.camera.getPosition(), canvas.width, canvas.height);
+        this.camera.setZoom(this.camera.getZoom());
       });
       observer.observe(canvas);
     } else {
@@ -75,8 +76,6 @@ export default class Scene implements System {
    * @param delta Time since last frame
    */
   update(delta: number) {
-    const worldToClipSpace = this.getWorldtoClipSpace();
-
     this.camera.update();
 
     // update entities
@@ -154,7 +153,10 @@ export default class Scene implements System {
    * @returns The number that multiplying a pixel space coordinate by provides the equivalent world space coordinate.
    */
   getPixelToWorldSpace() {
-    const v = vec2.fromValues(1 / this.cellSize[0], 1 / this.cellSize[1]);
+    const zoom = this.camera.getZoom();
+    const cellSize = vec2.scale(vec2.create(), this.cellSize, zoom);
+
+    const v = vec2.fromValues(1 / cellSize[0], 1 / cellSize[1]);
     return v;
   }
 
@@ -167,7 +169,10 @@ export default class Scene implements System {
    */
   getCellFromPixel(pixel: vec2) {
     const view = this.camera.viewport;
-    const p = vec2.fromValues(pixel[0] - view.getWidth() / 2, view.getHeight() / 2 - pixel[1]);
+    const vw = view.getOriginalWidth();
+    const vh = view.getOriginalHeight();
+
+    const p = vec2.fromValues(pixel[0] - vw / 2, vh / 2 - pixel[1]);
 
     const pixelToWorld = this.getPixelToWorldSpace();
     const world = vec2.fromValues(p[0] * pixelToWorld[0], p[1] * pixelToWorld[1]);
@@ -176,7 +181,7 @@ export default class Scene implements System {
 
     const centre = this.camera.getPosition();
     vec2.add(world, world, centre);
-    vec2.rotate(world, world, centre, this.camera.getRotation());
+    vec2.rotate(world, world, centre, -this.camera.getRotation());
 
     return world;
   }
