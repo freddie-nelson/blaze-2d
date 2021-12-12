@@ -204,6 +204,8 @@ export default class Manifold {
 
   private mergeManifold(m: Manifold, contacts: ContactPoint[]) {
     this.isDead = false;
+    this.a = m.a;
+    this.b = m.b;
     this.edges = m.edges;
     this.contactPoints = contacts;
     this.normal = m.normal;
