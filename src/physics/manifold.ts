@@ -1,12 +1,8 @@
 import { vec2 } from "gl-matrix";
-import Renderer from "../renderer/renderer";
-import Circle from "../shapes/circle";
-import Color from "../utils/color";
 import { cross2DWithScalar } from "../utils/vectors";
 import CircleCollider from "./collider/circle";
 import { CollisionResult } from "./collider/collider";
 import CollisionObject from "./collisionObject";
-import PHYSICS_CONF from "./config";
 import Physics from "./physics";
 import { calculateRelativeVelocity } from "./solvers/collision/impulse";
 

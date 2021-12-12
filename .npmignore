@@ -1,9 +1,0 @@
-.*
-**/tsconfig.json
-**/webpack.config.js
-node_modules
-src
-dev
-.VSCodeCounter
-lib/dev
-

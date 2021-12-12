@@ -1,8 +1,8 @@
 {
-  "name": "blaze-engine",
+  "name": "blaze-2d",
   "version": "0.0.1",
   "author": "Freddie Nelson <freddie0208@hotmail.com> (https://freddienelson.co.uk)",
-  "description": "A fast and simple WebGL 2 voxel game engine written in TypeScript",
+  "description": "A fast and simple WebGL 2 2D game engine written in TypeScript",
   "keywords": [
     "webgl",
     "webgl2",
@@ -17,17 +17,16 @@
   "homepage": "https://github.com/freddie-nelson/blaze",
   "repository": {
     "type": "git",
-    "url": "https://github.com/freddie-nelson/blaze"
+    "url": "git+https://github.com/freddie-nelson/blaze"
   },
   "bugs": {
     "email": "freddie0208@hotmail.com",
     "url": "https://github.com/freddie-nelson/blaze/issues"
   },
-  "main": "lib/blaze.js",
+  "main": "lib/bundle/blaze.js",
+  "types": "lib/src/blaze.d.ts",
   "files": [
     "lib",
-    "lib-esm",
-    "_bundles",
     "README.md",
     "LICENSE",
     "package.json"
@@ -35,9 +34,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "shx rm -rf lib",
-    "postbuild": "node ./replaceShaders.js && shx cp -R ./includes ./lib/includes",
-    "lib:build": "npm run clean && tsc && webpack && npm run postbuild",
-    "lib:dev": "npm run clean && tsc-watch --onSuccess 'npm run postbuild'",
+    "lib:build": "npm run clean && tsc && npm run lib:postbuild",
+    "lib:dev": "npm run clean && tsc-watch --onSuccess 'npm run lib:postbuild'",
+    "lib:postbuild": "node replaceShaders.js && node replaceCSS.js",
     "dev": "webpack watch --config dev/webpack.config.js",
     "dev:production": "npm run lib:dev & npm run dev \n wait; npm run dev:kill",
     "dev:kill": "kill %1",
@@ -46,15 +45,28 @@
     "docs:serve": "yarn docs:deps && mkdir -p docs/docs && cd ./docs && yarn start",
     "example:build": "node buildExample.js",
     "example:serve": "node runExample.js",
-    "example:all": "node buildAllExamples.js"
+    "example:all": "node buildAllExamples.js",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run lib:build",
+    "prepublishOnly": "npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "css-loader": "^6.5.1",
+    "eslint": "^8.4.1",
     "gl-matrix": "^3.4.3",
     "live-server": "^1.2.1",
     "nodemon": "^2.0.13",
+    "prettier": "^2.5.1",
     "raw-loader": "^4.0.2",
+    "sass": "^1.45.0",
+    "sass-loader": "^12.4.0",
     "shx": "^0.3.3",
+    "style-loader": "^3.3.1",
     "ts-loader": "^8.1.0",
     "ts-node": "^10.2.1",
     "tsc": "^2.0.3",

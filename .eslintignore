@@ -1,0 +1,5 @@
+node_modules
+lib
+**/webpack.config.js
+docs
+*.js

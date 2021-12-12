@@ -1,12 +1,6 @@
 import { BLZWorker, WorkerMessage } from "./worker";
 
-export type ThreadTaskData =
-  | ArrayBuffer
-  | Uint8Array
-  | Uint16Array
-  | Uint32Array
-  | Float32Array
-  | Float64Array;
+export type ThreadTaskData = ArrayBuffer | Uint8Array | Uint16Array | Uint32Array | Float32Array | Float64Array;
 
 export interface ThreadTaskDataObject {
   [index: string]: ThreadTaskData | ThreadTaskData[] | ThreadTaskDataObject;
@@ -44,10 +38,7 @@ export default class Thread {
    * Sets up the thread's worker and it's associated events.
    */
   private setupWorker() {
-    this.worker = new Worker(
-      new URL(process.env.NODE_ENV === "development" ? "worker.js" : "worker.ts", import.meta.url),
-      { type: "module" }
-    );
+    this.worker = new Worker(new URL("worker", import.meta.url), { type: "module" });
     this.worker.onmessage = (e) => this.handleMessage(e.data);
     this.worker.onerror = (e) => this.log(e);
     this.worker.onmessageerror = (e) => this.log(e);
@@ -77,7 +68,7 @@ export default class Thread {
    * @param skipQueue If true then the max queue size is ignored and the task is prepended to the front of the queue
    * @returns True when the task is ran or queued, false otherwise
    */
-  addTask(task: ThreadTask, skipQueue: boolean = false) {
+  addTask(task: ThreadTask, skipQueue = false) {
     if (skipQueue) {
       if (this.inUse) this.queue.unshift(task);
       else {

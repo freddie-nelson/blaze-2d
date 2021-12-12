@@ -1,5 +1,3 @@
-import { clear } from "./utils/gl";
-import Debug from "./debug";
 import { glMatrix, vec2 } from "gl-matrix";
 import Color, { ColorLike } from "./utils/color";
 import ThreadPool from "./threading/threadPool";
@@ -10,6 +8,8 @@ import validateZIndex from "./utils/validators";
 import BatchRenderer from "./renderer/batchRenderer";
 import Physics from "./physics/physics";
 import Scene from "./scene";
+
+import "./ui/styles/canvas.css";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -74,6 +74,8 @@ export default abstract class Blaze {
    * @param opts The options to use when setting up the engine
    */
   static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
+    canvas.id = "blaze-canvas";
+
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
 

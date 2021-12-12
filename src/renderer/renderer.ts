@@ -18,7 +18,6 @@ import Circle from "../shapes/circle";
 import Shape from "../shapes/shape";
 import { ZMap } from "../utils/types";
 import Triangle from "../shapes/triangle";
-import { applyRotation } from "../utils/vectors";
 
 interface RenderQueueItem {
   shape: Shape;

@@ -8,6 +8,7 @@
     "rootDir": "./",
     "outDir": "lib",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "declaration": true,
     "sourceMap": true

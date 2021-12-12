@@ -1,7 +1,6 @@
 import { vec2 } from "gl-matrix";
 import { cross2D, cross2DWithScalar } from "../../../utils/vectors";
 import CollisionObject from "../../collisionObject";
-import PHYSICS_CONF from "../../config";
 import Manifold from "../../manifold";
 import Physics from "../../physics";
 

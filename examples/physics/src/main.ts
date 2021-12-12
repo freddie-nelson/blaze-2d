@@ -32,8 +32,6 @@ const WORLD = Blaze.getScene();
 const CAMERA = WORLD.getCamera();
 const CAMERA_CONTROLS = new EditorCameraControls(CAMERA, CANVAS);
 
-// Physics.setGravity(vec2.create());
-
 // MAIN
 const randInt = (min = 0, max = 1) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -62,7 +60,7 @@ const randGradient = () => {
     GradientDirection.BOTTOM_TO_TOP,
     80,
     { offset: 0, color: new Color(startColor) },
-    { offset: 1, color: new Color(endColor) }
+    { offset: 1, color: new Color(endColor) },
   );
   tex.refresh();
 
