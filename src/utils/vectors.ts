@@ -33,6 +33,9 @@ export function applyTranslation(base: vec2[], translation: vec2) {
   });
 }
 
+const first = vec3.create();
+const second = vec3.create();
+
 /**
  * Calculates the triple product of three 2D vectors.
  *
@@ -49,18 +52,17 @@ export function applyTranslation(base: vec2[], translation: vec2) {
  * @param b Vector that the result will be in direction of
  * @param c Vector that the result will be perpendicular to
  */
-export function tripleProduct(a: vec2, b: vec2, c: vec2): vec2 {
+export function tripleProduct(out: vec2, a: vec2, b: vec2, c: vec2): vec2 {
   const A = vec3.fromValues(a[0], a[1], 0);
   const B = vec3.fromValues(b[0], b[1], 0);
   const C = vec3.fromValues(c[0], c[1], 0);
 
-  const first = vec3.create();
   vec3.cross(first, A, B);
-
-  const second = vec3.create();
   vec3.cross(second, first, C);
 
-  return vec2.fromValues(second[0], second[1]);
+  out[0] = second[0];
+  out[1] = second[1];
+  return out;
 }
 
 /**

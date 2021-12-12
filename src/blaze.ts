@@ -51,7 +51,9 @@ export default abstract class Blaze {
   private static fixedTimeStep = 1000 / 60;
 
   /**
-   * The maximum delta time passed to each fixed update system.
+   * The maximum fixed delta time step in ms.
+   *
+   * If the time since the last fixed update exceeds this amount then it will be clamped.
    */
   private static maxFixedTimeStep = 1000 / 50;
 
@@ -129,7 +131,7 @@ export default abstract class Blaze {
     setTimeout(() => this.fixedUpdate(), this.fixedTimeStep);
 
     const now = performance.now();
-    const delta = Math.min((now - this.lastFixedUpdateTime) / 1000, this.maxFixedTimeStep);
+    const delta = Math.min((now - this.lastFixedUpdateTime) / 1000, this.maxFixedTimeStep / 1000);
     this.fixedDelta = delta;
     this.lastFixedUpdateTime = now;
 

@@ -13,7 +13,7 @@ import AABBNode from "./aabbNode";
  */
 export default class AABBTree {
   root: AABBNode;
-  margin = 0.5;
+  margin = 0.1;
 
   pairs: CollisionPair[];
 

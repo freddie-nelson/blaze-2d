@@ -9,6 +9,8 @@ interface GJKResult {
   simplex?: vec2[];
 }
 
+const direction = vec2.create();
+
 /**
  * Performs GJK collision detection between two colliders.
  *
@@ -20,7 +22,6 @@ interface GJKResult {
  */
 export default function GJK(a: Collider, b: Collider): GJKResult {
   // find inital support point using b.position - a.position as direction
-  const direction = vec2.create();
   vec2.sub(direction, b.getPosition(), a.getPosition());
 
   // prevent direction of (0, 0) when positions are identical
@@ -82,6 +83,10 @@ function nextSimplex(simplex: vec2[], direction: vec2): boolean {
   }
 }
 
+const ab = vec2.create();
+const ao = vec2.create();
+const abPerp = vec2.create();
+
 /**
  * Determine wether or not a collision has occured when the simplex consists of 2 vertices.
  *
@@ -94,16 +99,14 @@ function line(simplex: vec2[], direction: vec2): boolean {
   const b = simplex[0];
 
   // vector ab is the line formed by the first two vertices
-  const ab = vec2.create();
   vec2.sub(ab, b, a);
 
   // vector ao is the line from the first vertex to the origin
-  const ao = vec2.create();
   vec2.scale(ao, a, -1);
 
   // use the triple cross product to calculate a direction perpendicular to line ab
   // in the direction of the origin
-  vec2.copy(direction, tripleProduct(ab, ao, ab));
+  vec2.copy(direction, tripleProduct(abPerp, ab, ao, ab));
 
   // correct direction for ab which cuts the origin?
   if (vec2.sqrLen(direction) === 0) {
@@ -112,6 +115,9 @@ function line(simplex: vec2[], direction: vec2): boolean {
 
   return false;
 }
+
+const ac = vec2.create();
+const acPerp = vec2.create();
 
 /**
  * Determine wether or not a collision has occured when the simplex consists of 3 vertices.
@@ -125,17 +131,14 @@ function triangle(simplex: vec2[], direction: vec2): boolean {
   const b = simplex[1];
   const c = simplex[0];
 
-  const ab = vec2.create();
   vec2.sub(ab, b, a);
 
-  const ac = vec2.create();
   vec2.sub(ac, c, a);
 
-  const ao = vec2.create();
   vec2.scale(ao, a, -1);
 
-  const abPerp = tripleProduct(ac, ab, ab);
-  const acPerp = tripleProduct(ab, ac, ac);
+  tripleProduct(abPerp, ac, ab, ab);
+  tripleProduct(acPerp, ab, ac, ac);
 
   if (sameDirection(abPerp, ao)) {
     // the origin is outside line ab
