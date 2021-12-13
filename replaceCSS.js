@@ -5,8 +5,8 @@ const fs = require("fs");
 const lib = path.resolve(__dirname, "lib/src");
 
 function fileID() {
-  const length = 5;
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 12;
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   let result = "";
 
   for (let i = 0; i < length; i++) {
@@ -18,7 +18,7 @@ function fileID() {
 
 function injectCSSString(file) {
   const cssSource = fs.readFileSync(file, "utf-8").replace(/\s/g, "");
-  const name = `${path.basename(file, path.extname(file))}_${fileID()}`;
+  const name = fileID();
 
   return `
   const ${name} = document.createElement("style");

@@ -1,0 +1,10 @@
+#blaze-editor {
+  --size: 24;
+
+  display: grid;
+  grid-template-columns: repeat(var(--size), calc(100vw / var(--size)));
+  grid-template-rows: repeat(24, calc(100vh / var(--size)));
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}

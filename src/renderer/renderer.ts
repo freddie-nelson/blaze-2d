@@ -73,7 +73,14 @@ export default abstract class Renderer {
 
     this.gl = gl;
     this.resizeToCanvas();
-    window.addEventListener("resize", () => this.resizeToCanvas());
+
+    // setup resize observer
+    const observer = new ResizeObserver((entries) => {
+      if (canvas.width === canvas.clientWidth && canvas.height === canvas.clientHeight) return;
+
+      this.resizeToCanvas();
+    });
+    observer.observe(canvas);
 
     // transparency
     gl.enable(gl.BLEND);

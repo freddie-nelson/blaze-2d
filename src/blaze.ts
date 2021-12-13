@@ -10,6 +10,7 @@ import Physics from "./physics/physics";
 import Scene from "./scene";
 
 import "./ui/styles/canvas.css";
+import Editor from "./editor/editor";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -68,6 +69,11 @@ export default abstract class Blaze {
   private static scene: Scene;
 
   /**
+   * The editor.
+   */
+  static editor: Editor;
+
+  /**
    * Initializes the engine and creates the renderer.
    *
    * @param canvas The canvas to use to create the renderer
@@ -81,7 +87,7 @@ export default abstract class Blaze {
 
     Physics.init();
 
-    this.scene = new Scene(vec2.fromValues(40, 40), canvas);
+    this.scene = new Scene(vec2.fromValues(40, 40));
 
     glMatrix.setMatrixArrayType(Array);
   }
@@ -128,6 +134,8 @@ export default abstract class Blaze {
 
     BatchRenderer.flush();
     Renderer.flush();
+
+    if (this.editor) this.editor.update();
   }
 
   /**

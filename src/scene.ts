@@ -43,22 +43,24 @@ export default class Scene implements System {
   constructor(cellSize: vec2, cameraViewport: vec2);
 
   /**
-   * Creates a {@link Scene} instance with a dynamic viewport that resizes to the given canvas' dimensions.
+   * Creates a {@link Scene} instance with a dynamic viewport that resizes to the  {@link Renderer}'s dimensions.
    *
    * @param cellSize The width and height of each world cell in pixels
-   * @param canvas The canvas to resize the scene's camera's viewport to
    */
-  constructor(cellSize: vec2, canvas: HTMLCanvasElement);
+  constructor(cellSize: vec2);
 
-  constructor(cellSize: vec2, cameraViewport: vec2 | HTMLCanvasElement) {
+  constructor(cellSize: vec2, cameraViewport?: vec2) {
     this.cellSize = cellSize;
 
-    if (cameraViewport instanceof HTMLCanvasElement) {
-      const canvas = cameraViewport;
+    if (!cameraViewport) {
+      const canvas = Renderer.getGL().canvas;
       this.camera = new Camera(vec2.fromValues(0, 0), canvas.width, canvas.height);
 
       // setup resize observer
       const observer = new ResizeObserver((entries) => {
+        if (canvas.width === this.camera.viewport.getWidth() && canvas.height === this.camera.viewport.getHeight())
+          return;
+
         this.camera.viewport = new Viewport(this.camera.getPosition(), canvas.width, canvas.height);
         this.camera.setZoom(this.camera.getZoom());
       });
@@ -82,9 +84,7 @@ export default class Scene implements System {
     for (const e of this.entities) {
       e.update(delta);
 
-      if (
-        this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())
-      ) {
+      if (this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())) {
       }
     }
 

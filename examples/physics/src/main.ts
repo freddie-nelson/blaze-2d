@@ -1,4 +1,5 @@
 import Blaze from "@blz/blaze";
+import Editor from "@blz/editor/editor";
 import EditorCameraControls from "@blz/dropins/camera/editorControls";
 import BatchRenderer from "@blz/renderer/batchRenderer";
 import Physics from "@blz/physics/physics";
@@ -27,6 +28,10 @@ const BG_COLOR = new Color("skyblue");
 Blaze.init(CANVAS);
 Blaze.setBgColor(BG_COLOR);
 Blaze.start();
+
+// setup editor
+const EDITOR = new Editor();
+Blaze.editor = EDITOR;
 
 const WORLD = Blaze.getScene();
 const CAMERA = WORLD.getCamera();
