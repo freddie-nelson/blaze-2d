@@ -8,9 +8,10 @@ import validateZIndex from "./utils/validators";
 import BatchRenderer from "./renderer/batchRenderer";
 import Editor from "./editor/editor";
 import Scene from "./scene";
-
-import "./ui/styles/canvas.css";
 import BlazeElement from "./ui/element";
+
+import "./ui/styles/root.css";
+import "./ui/styles/canvas.css";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -91,7 +92,7 @@ export default abstract class Blaze {
    * @param opts The options to use when setting up the engine
    */
   static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
-    canvas.id = "blaze-canvas";
+    canvas.id = "blzCanvas";
     this.canvas = new BlazeElement(canvas);
 
     Renderer.init(canvas, { antialias: opts.antialias });

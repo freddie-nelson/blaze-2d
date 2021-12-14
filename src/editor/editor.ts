@@ -1,6 +1,8 @@
 import { vec2 } from "gl-matrix";
 import { System } from "../system";
 import EditorPane from "./panes/pane";
+import PhysicsPane from "./panes/physicsPane";
+import RendererPane from "./panes/rendererPane";
 import ScenePane from "./panes/scenePane";
 
 import "./styles/editor.css";
@@ -31,7 +33,7 @@ export default class Editor implements System {
    * @param canvas The canvas used by {@link Blaze}, if none is provided then the editor will attempt to locate one.
    */
   constructor(canvas?: HTMLCanvasElement) {
-    if (!canvas) this.canvas = document.querySelector("canvas#blaze-canvas") || document.querySelector("canvas");
+    if (!canvas) this.canvas = document.querySelector("canvas#blzCanvas") || document.querySelector("canvas");
     else this.canvas = canvas;
 
     this.createUI();
@@ -57,7 +59,7 @@ export default class Editor implements System {
     // editor ui container
     // contains all elements in the ui
     this.editor = document.createElement("div");
-    this.editor.id = "blaze-editor";
+    this.editor.id = "blzEditor";
 
     // add panes
     this.panes.forEach((p) => {
@@ -85,6 +87,12 @@ export default class Editor implements System {
 
     const scenePane = new ScenePane(this.canvas, vec2.fromValues(5, 0), 14, 19);
     this.panes.push(scenePane);
+
+    const rendererPane = new RendererPane(vec2.fromValues(19, 0), 5, 12);
+    this.panes.push(rendererPane);
+
+    const physicsPane = new PhysicsPane(vec2.fromValues(19, 12), 5, 12);
+    this.panes.push(physicsPane);
   }
 
   /**

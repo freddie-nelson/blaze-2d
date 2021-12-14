@@ -1,0 +1,14 @@
+.blzTitlebar {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  height: 1.2rem;
+  font-weight: 500;
+  font-family: var(--blz-mono);
+  color: var(--blz-text);
+  background-color: var(--blz-accent);
+  padding: 0 0.3rem;
+  user-select: none;
+}

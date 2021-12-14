@@ -1,0 +1,13 @@
+:root {
+  /* colors */
+  --blz-bg: #1d1f2b;
+  --blz-bg-light: #2b2d42;
+  --blz-text: #edf2f4;
+  --blz-text-secondary: #cdd4df;
+  --blz-primary: #d90429;
+  --blz-accent: #589dd6;
+
+  /* fonts */
+  --blz-mono: "Courier New", Courier, monospace;
+  --blz-sans: Arial, Helvetica, sans-serif;
+}

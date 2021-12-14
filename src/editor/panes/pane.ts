@@ -1,12 +1,15 @@
 import { vec2 } from "gl-matrix";
+import BlazeElement from "../../ui/element";
+import BlazeTitlebar from "../../ui/titlebar";
 import { EDITOR_GRID_SIZE } from "../editor";
 
 import "../styles/editor-pane.css";
 
-export default class EditorPane {
-  element: HTMLDivElement;
+export default class EditorPane extends BlazeElement<HTMLDivElement> {
+  private titlebar: BlazeTitlebar;
 
   readonly id: string;
+  readonly domId: string;
 
   pos: vec2;
   width: number;
@@ -21,8 +24,6 @@ export default class EditorPane {
    * @param height The height of the pane in rows
    */
   constructor(id: string, pos: vec2, width: number, height: number) {
-    this.id = id;
-
     // validation
     if (pos[0] < 0 || pos[0] >= EDITOR_GRID_SIZE || pos[1] < 0 || pos[1] >= EDITOR_GRID_SIZE)
       throw new Error("EditorPane: Position must be between 0 and EDITOR_GRID_SIZE - 1.");
@@ -31,18 +32,35 @@ export default class EditorPane {
     if (height < 0 || height > EDITOR_GRID_SIZE)
       throw new Error("EditorPane: Height must be between 0 and EDITOR_GRID_SIZE.");
 
+    const element = document.createElement("div");
+    element.classList.add("blzEditorPane");
+    element.style.cssText = `grid-area: ${id};`;
+    super(element);
+
+    this.id = id;
+    this.domId = `blz${id}`;
+    this.element.id = this.domId;
+
     this.pos = pos;
     this.width = width;
     this.height = height;
 
-    this.element = document.createElement("div");
-    this.element.classList.add("blaze-editor-pane");
-    this.element.style.cssText = `grid-area: ${this.id};`;
-    this.element.id = id;
+    this.addTitlebar();
   }
 
   /**
    * Perform pane updates.
    */
   update() {}
+
+  addTitlebar() {
+    this.titlebar = new BlazeTitlebar(this.id);
+    this.element.appendChild(this.titlebar.element);
+  }
+
+  removeTitlebar() {
+    if (!this.titlebar) return;
+
+    this.titlebar.element.remove();
+  }
 }

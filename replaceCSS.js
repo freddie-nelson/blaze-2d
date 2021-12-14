@@ -17,7 +17,8 @@ function fileID() {
 }
 
 function injectCSSString(file) {
-  const cssSource = fs.readFileSync(file, "utf-8").replace(/\s/g, "");
+  // const cssSource = fs.readFileSync(file, "utf-8").replace(/\s/g, "");
+  const cssSource = fs.readFileSync(file, "utf-8");
   const name = fileID();
 
   return `
