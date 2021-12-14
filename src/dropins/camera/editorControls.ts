@@ -1,9 +1,7 @@
 import { vec2 } from "gl-matrix";
 import Blaze from "../../blaze";
 import Camera from "../../camera/camera";
-import { addKeyListener } from "../../keyboard";
-import { addMouseListener, Mouse } from "../../mouse";
-import Renderer from "../../renderer/renderer";
+import { Mouse } from "../../input/mouse";
 
 /**
  * Allows the camera to be panned, zoomed and rotated.
@@ -69,7 +67,7 @@ export default class EditorCameraControls {
 
     const curr = vec2.fromValues(e.clientX, this.canvas.height - e.clientY);
     const diff = vec2.sub(vec2.create(), this.last, curr);
-    vec2.mul(diff, diff, Blaze.getScene().getPixelToWorldSpace());
+    vec2.mul(diff, diff, Blaze.getScene().world.getPixelToWorldSpace());
     vec2.rotate(diff, diff, vec2.create(), -this.camera.getRotation());
 
     this.camera.translate(diff);

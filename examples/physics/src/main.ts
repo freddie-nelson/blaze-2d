@@ -2,7 +2,6 @@ import Blaze from "@blz/blaze";
 import Editor from "@blz/editor/editor";
 import EditorCameraControls from "@blz/dropins/camera/editorControls";
 import BatchRenderer from "@blz/renderer/batchRenderer";
-import Physics from "@blz/physics/physics";
 import Entity from "@blz/entity";
 import RectCollider from "@blz/physics/collider/rect";
 import TriangleCollider from "@blz/physics/collider/triangle";
@@ -15,17 +14,15 @@ import Shape from "@blz/shapes/shape";
 import Texture from "@blz/texture/texture";
 import GradientTexture, { GradientDirection, GradientType } from "@blz/texture/gradient";
 import TextureAtlas from "@blz/texture/atlas";
-import { addMouseListener, Mouse } from "@blz/mouse";
-import { addKeyListener } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
+import Renderer from "@blz/renderer/renderer";
+import { Mouse } from "@blz/mouse";
 
-// constants
-const CANVAS = <HTMLCanvasElement>document.getElementById("canvas");
 const BG_COLOR = new Color("skyblue");
 
 // setup engine
-Blaze.init(CANVAS);
+Blaze.init(<HTMLCanvasElement>document.getElementById("canvas"));
 Blaze.setBgColor(BG_COLOR);
 Blaze.start();
 
@@ -33,9 +30,12 @@ Blaze.start();
 const EDITOR = new Editor();
 Blaze.editor = EDITOR;
 
-const WORLD = Blaze.getScene();
+const CANVAS = Blaze.getCanvas();
+const SCENE = Blaze.getScene();
+const WORLD = SCENE.world;
+const PHYSICS = SCENE.physics;
 const CAMERA = WORLD.getCamera();
-const CAMERA_CONTROLS = new EditorCameraControls(CAMERA, CANVAS);
+const CAMERA_CONTROLS = new EditorCameraControls(CAMERA, CANVAS.element);
 
 // MAIN
 const randInt = (min = 0, max = 1) => {
@@ -109,7 +109,7 @@ floor.setInertia(0);
 floor.isStatic = true;
 
 WORLD.addEntity(floor);
-Physics.addBody(floor);
+PHYSICS.addBody(floor);
 
 // left wall
 const leftPos = vec2.fromValues(-FLOOR_WIDTH / 2, 0);
@@ -122,7 +122,7 @@ left.setInertia(0);
 left.isStatic = true;
 
 WORLD.addEntity(left);
-Physics.addBody(left);
+PHYSICS.addBody(left);
 
 // right wall
 const rightPos = vec2.fromValues(FLOOR_WIDTH / 2, 0);
@@ -135,16 +135,16 @@ right.setInertia(0);
 right.isStatic = true;
 
 WORLD.addEntity(right);
-Physics.addBody(right);
+PHYSICS.addBody(right);
 
 // toggles
 let ROTATE = false;
-addKeyListener("KeyR", (pressed) => {
+CANVAS.keys.addListener("KeyR", (pressed) => {
   ROTATE = pressed;
 });
 
 let TYPE = "rect";
-addKeyListener("KeyC", (pressed) => {
+CANVAS.keys.addListener("KeyC", (pressed) => {
   if (pressed) {
     TYPE = "circle";
   } else {
@@ -152,7 +152,7 @@ addKeyListener("KeyC", (pressed) => {
   }
 });
 
-addKeyListener("KeyT", (pressed) => {
+CANVAS.keys.addListener("KeyT", (pressed) => {
   if (pressed) {
     TYPE = "triangle";
   } else {
@@ -161,7 +161,7 @@ addKeyListener("KeyT", (pressed) => {
 });
 
 // generate random shapes on click
-addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
+CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (!pressed) return;
 
   const pos = WORLD.getCellFromPixel(pixelPos);
@@ -203,5 +203,5 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
   }
 
   WORLD.addEntity(entity);
-  Physics.addBody(entity);
+  PHYSICS.addBody(entity);
 });

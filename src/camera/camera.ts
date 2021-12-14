@@ -11,7 +11,7 @@ export default class Camera extends Object2D {
   viewport: Viewport;
   private zoomLevel = 1;
   minZoom = 0.1;
-  maxZoom = 3;
+  maxZoom = 10;
 
   lastPos = vec2.create();
 

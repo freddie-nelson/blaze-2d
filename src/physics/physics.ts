@@ -47,40 +47,61 @@ const incRGBA: RGBAColor = {
 };
 const incTexture = new Texture(new Color(incRGBA));
 
+export interface PhysicsConfig {
+  CACHED_CONTACTS_TOLERANCE: number;
+  RESTITUTION_THRESHOLD: number;
+
+  VELOCITY_ITERATIONS: number;
+  ACUMMULATE_IMPULSE: boolean;
+  WARM_IMPULSE: boolean;
+  POSITION_ITERATIONS: number;
+  POSITION_SLOP: number;
+  POSITION_DAMPING: number;
+  POSITION_WARMING: number;
+
+  EPA_TOLERANCE: number;
+  EPA_MAX_ITERATIONS: number;
+}
+
 /**
  * Handles physics for bodies added to the engine.
  *
  * Raycasting can only check against objects in the phsyics engine's collisions space.
+ *
+ * At the start of each `update` call the static `G_CONF` variable is set to the instances `CONFIG` variable.
+ * This allows for easy access to the physics config from other parts of the physics system.
  */
-export default abstract class Physics {
-  // config
-  static CACHED_CONTACTS_TOLERANCE = 0.0005;
-  static RESTITUTION_THRESHOLD = 1;
+export default class Physics {
+  static G_CONF: PhysicsConfig;
 
-  static VELOCITY_ITERATIONS = 8;
-  static ACUMMULATE_IMPULSE = true;
-  static WARM_IMPULSE = true;
+  CONFIG: PhysicsConfig = {
+    CACHED_CONTACTS_TOLERANCE: 0.0005,
+    RESTITUTION_THRESHOLD: 1,
 
-  static POSITION_ITERATIONS = 12;
-  static POSITION_SLOP = 0.015;
-  static POSITION_DAMPING = 1;
-  static POSITION_WARMING = 0.9;
+    VELOCITY_ITERATIONS: 8,
+    ACUMMULATE_IMPULSE: true,
+    WARM_IMPULSE: true,
+    POSITION_ITERATIONS: 12,
+    POSITION_SLOP: 0.015,
+    POSITION_DAMPING: 1,
+    POSITION_WARMING: 0.9,
 
-  static EPA_TOLERANCE = 0.005;
-  static EPA_MAX_ITERATIONS = 16;
+    EPA_TOLERANCE: 0.005,
+    EPA_MAX_ITERATIONS: 16,
+  };
 
-  private static gravity = vec2.fromValues(0, -9.8);
+  private gravity = vec2.fromValues(0, -9.8);
 
   // spaces
-  static dynamicsSpace = new DynamicsSpace(this.gravity);
-  static collisionsSpace = new CollisionsSpace(this.gravity);
+  dynamicsSpace = new DynamicsSpace(this.gravity);
+  collisionsSpace = new CollisionsSpace(this.gravity);
 
   /**
-   * Initialise the physics engine.
+   * Create an {@link Physics} instance.
    *
    * @param gravity The gravitional force applied to objects in the system
    */
-  static init(gravity?: vec2) {
+  constructor(gravity?: vec2) {
     if (gravity) this.setGravity(gravity);
 
     // add default solvers
@@ -89,13 +110,16 @@ export default abstract class Physics {
     this.dynamicsSpace.addSolver("reset", resetForce, 1);
 
     this.collisionsSpace.addSolver("preStepImpulse", preStepImpulse, 1);
-    this.collisionsSpace.addSolver("positionImpulse", solvePositionImpulse, Physics.POSITION_ITERATIONS);
+    this.collisionsSpace.addSolver("positionImpulse", solvePositionImpulse, this.CONFIG.POSITION_ITERATIONS);
 
-    this.collisionsSpace.addSolver("impulse", solveImpulse, Physics.VELOCITY_ITERATIONS);
+    this.collisionsSpace.addSolver("impulse", solveImpulse, this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.addSolver("position", applyPositionImpulse, 1);
   }
 
-  static update(delta: number) {
+  update(delta: number) {
+    // set physics config
+    Physics.G_CONF = this.CONFIG;
+
     // step bodies
     // order is very important
     this.collisionsSpace.broadphase();
@@ -108,11 +132,11 @@ export default abstract class Physics {
     this.collisionsSpace.solve("preStepImpulse", delta);
 
     // solve position impulse
-    this.collisionsSpace.setSolverIterations("positionImpulse", Physics.POSITION_ITERATIONS);
+    this.collisionsSpace.setSolverIterations("positionImpulse", this.CONFIG.POSITION_ITERATIONS);
     this.collisionsSpace.solve("positionImpulse", delta);
 
     // solve collisions
-    this.collisionsSpace.setSolverIterations("impulse", Physics.VELOCITY_ITERATIONS);
+    this.collisionsSpace.setSolverIterations("impulse", this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.solve("impulse", delta);
 
     // integrate velocities
@@ -128,7 +152,7 @@ export default abstract class Physics {
     this.collisionsSpace.fireEvents();
   }
 
-  static drawDebug() {
+  drawDebug() {
     for (const obj of this.dynamicsSpace.objects) {
       // draw entity bounding boxes (colliders)
       obj.collider.texture = debugTexture;
@@ -164,7 +188,7 @@ export default abstract class Physics {
    *
    * @param c The collision object to add
    */
-  static addCollisionObj(c: CollisionObject) {
+  addCollisionObj(c: CollisionObject) {
     this.collisionsSpace.addObject(c);
   }
 
@@ -173,7 +197,7 @@ export default abstract class Physics {
    *
    * @param obj The object to add
    */
-  static addDynamicsObj(obj: RigidBody) {
+  addDynamicsObj(obj: RigidBody) {
     this.dynamicsSpace.addObject(obj);
   }
 
@@ -182,7 +206,7 @@ export default abstract class Physics {
    *
    * @param body The body to add
    */
-  static addBody(body: RigidBody) {
+  addBody(body: RigidBody) {
     this.addCollisionObj(body);
     this.addDynamicsObj(body);
   }
@@ -192,7 +216,7 @@ export default abstract class Physics {
    *
    * @param c The collision object to remove
    */
-  static removeCollisionObj(c: CollisionObject) {
+  removeCollisionObj(c: CollisionObject) {
     this.collisionsSpace.removeObject(c);
   }
 
@@ -201,7 +225,7 @@ export default abstract class Physics {
    *
    * @param obj The object to remove
    */
-  static removeDynamicsObj(obj: RigidBody) {
+  removeDynamicsObj(obj: RigidBody) {
     this.dynamicsSpace.removeObject(obj);
   }
 
@@ -210,7 +234,7 @@ export default abstract class Physics {
    *
    * @param body The body to remove
    */
-  static removeBody(body: RigidBody) {
+  removeBody(body: RigidBody) {
     this.removeCollisionObj(body);
     this.removeDynamicsObj(body);
   }
@@ -220,7 +244,7 @@ export default abstract class Physics {
    *
    * @param gravity The new gravity to use
    */
-  static setGravity(gravity: vec2) {
+  setGravity(gravity: vec2) {
     this.gravity = vec2.clone(gravity);
     this.dynamicsSpace.gravity = vec2.clone(gravity);
     this.collisionsSpace.gravity = vec2.clone(gravity);
@@ -231,7 +255,7 @@ export default abstract class Physics {
    *
    * @returns The gravity in use
    */
-  static getGravity() {
+  getGravity() {
     return this.gravity;
   }
 }

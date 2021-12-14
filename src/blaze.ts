@@ -1,4 +1,4 @@
-import { glMatrix, vec2 } from "gl-matrix";
+import { glMatrix } from "gl-matrix";
 import Color, { ColorLike } from "./utils/color";
 import ThreadPool from "./threading/threadPool";
 import { System } from "./system";
@@ -6,11 +6,11 @@ import TextureLoader from "./texture/loader";
 import Renderer from "./renderer/renderer";
 import validateZIndex from "./utils/validators";
 import BatchRenderer from "./renderer/batchRenderer";
-import Physics from "./physics/physics";
+import Editor from "./editor/editor";
 import Scene from "./scene";
 
 import "./ui/styles/canvas.css";
-import Editor from "./editor/editor";
+import BlazeElement from "./ui/element";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -20,7 +20,18 @@ const defaultOpts: BlazeOptions = {
   antialias: true,
 };
 
+/**
+ * Represents the Blaze engine.
+ */
 export default abstract class Blaze {
+  /**
+   * The webgl canvas used by blaze.
+   */
+  private static canvas: BlazeElement<HTMLCanvasElement>;
+
+  /**
+   * The color used to clear the {@link Renderer}.
+   */
   private static bgColor = new Color("#000");
 
   /**
@@ -64,7 +75,7 @@ export default abstract class Blaze {
   private static fixedDelta = 0;
 
   /**
-   * The game world.
+   * The current {@link Scene}.
    */
   private static scene: Scene;
 
@@ -81,13 +92,12 @@ export default abstract class Blaze {
    */
   static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
     canvas.id = "blaze-canvas";
+    this.canvas = new BlazeElement(canvas);
 
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
 
-    Physics.init();
-
-    this.scene = new Scene(vec2.fromValues(40, 40));
+    this.scene = new Scene();
 
     glMatrix.setMatrixArrayType(Array);
   }
@@ -126,7 +136,7 @@ export default abstract class Blaze {
 
     Renderer.clear(this.bgColor);
 
-    this.scene.update(delta);
+    this.scene?.world.update(delta);
 
     for (const system of this.systems) {
       system.update(delta);
@@ -158,7 +168,7 @@ export default abstract class Blaze {
     this.fixedDelta = delta;
     this.lastFixedUpdateTime = now;
 
-    Physics.update(delta);
+    this.scene?.physics.update(delta);
 
     for (const system of this.fixedSystems) {
       system.update(delta);
@@ -223,11 +233,22 @@ export default abstract class Blaze {
   }
 
   /**
+   * Gets the canvas used by blaze.
+   *
+   * @returns The {@link BlazeElement} for blaze's canvas
+   */
+  static getCanvas() {
+    return this.canvas;
+  }
+
+  /**
    * Sets the engine's scene.
    *
    * @param scene The scene to use
    */
   static setScene(scene: Scene) {
+    if (!(scene instanceof Scene)) throw new Error("Blaze: scene must be an instance of Scene.");
+
     this.scene = scene;
   }
 
@@ -239,71 +260,6 @@ export default abstract class Blaze {
   static getScene() {
     return this.scene;
   }
-
-  /**
-   * Gets the engine's current chunk controller.
-   *
-   * @returns The engine's current chunk controller or undefined
-   */
-  // getChunkController(): ChunkController {
-  //   return <ChunkController>this.systems[this.systems.findIndex((s) => s instanceof ChunkController)];
-  // }
-
-  // /**
-  //  * Sets the engine's chunk controller from a {@link ChunkController} instance.
-  //  *
-  //  * @param c The {@link ChunkController} instance to set the engine's chunk controller to
-  //  * @returns The set {@link ChunkController} instance
-  //  */
-  // setChunkController(c: ChunkController): ChunkController;
-
-  // /**
-  //  * Sets the engine's chunk controller from a {@link ChunkControllerOptions} object.
-  //  *
-  //  * @param opts The options to use when instantiating the chunk controller
-  //  * @returns The set {@link ChunkController} instance
-  //  */
-  // setChunkController(opts: ChunkControllerOptions): ChunkController;
-
-  // setChunkController(c: ChunkController | ChunkControllerOptions) {
-  //   if (c instanceof ChunkController) {
-  //     this.chunkController = c;
-  //   } else {
-  //     this.chunkController = new ChunkController(c, this.threadPool);
-  //   }
-
-  //   return this.chunkController;
-  // }
-
-  // /**
-  //  * Sets the tilesheet to be used on the engine's current chunk controller.
-  //  *
-  //  * A tilesheet must match the layout: [TOP OF TILE], [SIDES OF TILE], [BOTTOM OF TILE], (repeat)
-  //  *
-  //  * For an example of a valid tilesheet [see here](https://raw.githubusercontent.com/freddie-nelson/blaze/master/dev/tilesheet.png)
-  //  *
-  //  * @param path A path or url to the tilesheet bitmap image (Supports `.jpg`, `.jpeg`, `.png`)
-  //  * @param tileSize The width and height of each individual tile in the tilesheet
-  //  * @param numOfTiles The number of different tiles in the tilesheet
-  //  * @returns The set {@link Tilesheet} instance
-  //  *
-  //  * @throws If the engine's chunk controller has not been set
-  //  */
-  // setTilesheet(path: string, tileSize: number, numOfTiles: number) {
-  //   if (!this.chunkController)
-  //     throw new Error("You must init the chunk controller before setting a tilesheet.");
-
-  //   this.chunkController.setTilesheet(new Tilesheet(this.gl, path, tileSize, numOfTiles));
-  // }
-
-  // /**
-  //  * Returns the engine's current tilesheet, if it exists.
-  //  *
-  //  * @returns The {@link Tilesheet} instance or undefined
-  //  */
-  // getTilesheet(): Tilesheet {
-  //   return this.chunkController.getTilesheet();
-  // }
 
   /**
    * Sets the clear color to be used when clearing the webgl buffer, mimics having a bg color.

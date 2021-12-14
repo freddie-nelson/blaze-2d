@@ -8,7 +8,6 @@ import Viewport from "./camera/viewport";
 import { vec2 } from "gl-matrix";
 import RectCollider from "./physics/collider/rect";
 import Rect from "./shapes/rect";
-import { isKeyPressed } from "./keyboard";
 
 export interface PlayerKeyMap {
   forward?: string;
@@ -48,7 +47,7 @@ export default class Player extends Entity {
     pos: vec2 = vec2.fromValues(0, 0),
     dimensions: vec2 = vec2.fromValues(2, 3),
     cameraViewport: vec2,
-    keys: PlayerKeyMap = defaultKeys
+    keys: PlayerKeyMap = defaultKeys,
   ) {
     super(pos, new RectCollider(dimensions[0], dimensions[1], pos), [
       new Rect(dimensions[0], dimensions[1], vec2.fromValues(0, 0)),
@@ -70,18 +69,18 @@ export default class Player extends Entity {
     super.update(delta);
 
     const speed = 0.5;
-    if (isKeyPressed("KeyD")) {
-      this.moveRight(speed);
-    }
-    if (isKeyPressed("KeyA")) {
-      this.moveRight(-speed);
-    }
-    if (isKeyPressed("KeyW")) {
-      this.moveUp(speed);
-    }
-    if (isKeyPressed("KeyS")) {
-      this.moveUp(-speed);
-    }
+    // if (isKeyPressed("KeyD")) {
+    //   this.moveRight(speed);
+    // }
+    // if (isKeyPressed("KeyA")) {
+    //   this.moveRight(-speed);
+    // }
+    // if (isKeyPressed("KeyW")) {
+    //   this.moveUp(speed);
+    // }
+    // if (isKeyPressed("KeyS")) {
+    //   this.moveUp(-speed);
+    // }
 
     this.camera.setPosition(this.getPosition());
   }

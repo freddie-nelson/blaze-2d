@@ -1,5 +1,5 @@
 import { glMatrix, vec2 } from "gl-matrix";
-import { setKey } from "../../keyboard";
+import Blaze from "../../blaze";
 import Player from "../../player";
 
 /**
@@ -43,6 +43,8 @@ export function createVirtualJoystick(element: HTMLElement, player: Player) {
   joystick.appendChild(stick);
 
   element.appendChild(joystick);
+
+  const setKey = Blaze.getCanvas().keys.setKey;
 
   const calculateMovementKeys = (angle: number) => {
     const bleed = 30;

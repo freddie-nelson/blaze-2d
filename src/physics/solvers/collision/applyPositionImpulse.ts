@@ -40,7 +40,7 @@ export default function applyPositionImpulse(m: Manifold) {
       vec2.zero(positionImpulse);
       // console.log("position impulse zero");
     } else {
-      vec2.scale(positionImpulse, positionImpulse, Physics.POSITION_WARMING);
+      vec2.scale(positionImpulse, positionImpulse, Physics.G_CONF.POSITION_WARMING);
       // console.log("position impulse warmed");
     }
   }

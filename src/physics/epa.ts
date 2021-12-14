@@ -35,32 +35,32 @@ export default function EPA(polytope: vec2[], a: Collider, b: Collider): EPAResu
 
   const winding = calculateSimplexWinding(polytope);
 
-  for (let i = 0; i < Physics.EPA_MAX_ITERATIONS; i++) {
+  for (let i = 0; i < Physics.G_CONF.EPA_MAX_ITERATIONS; i++) {
     const edge = findClosestEdge(polytope, winding);
     const support = a.supportPoint(b, edge.normal);
 
     // calculate distance of support along edge.normal
     const d = vec2.dot(support, edge.normal);
-    if (Math.abs(d - edge.dist) <= Physics.EPA_TOLERANCE) {
+    if (Math.abs(d - edge.dist) <= Physics.G_CONF.EPA_TOLERANCE) {
       // if the difference is less than the tolerance then we can
       // assume that we cannot expand the polytope any further and
       // we have our solution
       return {
         normal: edge.normal,
-        depth: d + Physics.EPA_TOLERANCE,
+        depth: d + Physics.G_CONF.EPA_TOLERANCE,
       };
     } else {
       polytope.splice(edge.index, 0, support);
     }
 
-    if (i === Physics.EPA_MAX_ITERATIONS - 1) {
+    if (i === Physics.G_CONF.EPA_MAX_ITERATIONS - 1) {
       // console.log("EPA: Iteration limit hit.");
 
       // iteration limit hit
       // return current most accurate values
       return {
         normal: edge.normal,
-        depth: d + Physics.EPA_TOLERANCE,
+        depth: d + Physics.G_CONF.EPA_TOLERANCE,
       };
     }
   }

@@ -1,7 +1,7 @@
 import { vec2 } from "gl-matrix";
-import Blaze from "../blaze";
 import { System } from "../system";
-import EditorPane from "./editorPane";
+import EditorPane from "./panes/pane";
+import ScenePane from "./panes/scenePane";
 
 import "./styles/editor.css";
 
@@ -40,7 +40,9 @@ export default class Editor implements System {
   /**
    * Update the editor.
    */
-  update() {}
+  update() {
+    this.panes.forEach((p) => p.update());
+  }
 
   /**
    * Create and inject the editor's UI.
@@ -80,16 +82,9 @@ export default class Editor implements System {
    */
   defaultLayout() {
     this.panes.length = 0;
-    this.addCanvasPane();
-  }
 
-  /**
-   * Adds the canvas pane in it's default position.
-   */
-  private addCanvasPane() {
-    const pane = new EditorPane("canvas", vec2.fromValues(5, 0), 14, 19);
-    pane.element.appendChild(this.canvas);
-    this.panes.push(pane);
+    const scenePane = new ScenePane(this.canvas, vec2.fromValues(5, 0), 14, 19);
+    this.panes.push(scenePane);
   }
 
   /**

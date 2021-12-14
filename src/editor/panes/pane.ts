@@ -1,7 +1,7 @@
 import { vec2 } from "gl-matrix";
-import { EDITOR_GRID_SIZE } from "./editor";
+import { EDITOR_GRID_SIZE } from "../editor";
 
-import "./styles/editor-pane.css";
+import "../styles/editor-pane.css";
 
 export default class EditorPane {
   element: HTMLDivElement;
@@ -40,4 +40,9 @@ export default class EditorPane {
     this.element.style.cssText = `grid-area: ${this.id};`;
     this.element.id = id;
   }
+
+  /**
+   * Perform pane updates.
+   */
+  update() {}
 }

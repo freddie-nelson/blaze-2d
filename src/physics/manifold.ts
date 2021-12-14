@@ -3,7 +3,7 @@ import { cross2DWithScalar } from "../utils/vectors";
 import CircleCollider from "./collider/circle";
 import { CollisionResult } from "./collider/collider";
 import CollisionObject from "./collisionObject";
-import Physics from "./physics";
+import Physics, { PhysicsConfig } from "./physics";
 import { calculateRelativeVelocity } from "./solvers/collision/impulse";
 
 interface Edge {
@@ -99,13 +99,7 @@ export default class Manifold {
    * @param gravity The collision world's gravity vector
    * @param delta The time since the last update
    */
-  constructor(
-    a: CollisionObject,
-    b: CollisionObject,
-    collision: CollisionResult,
-    gravity: vec2,
-    delta: number
-  ) {
+  constructor(a: CollisionObject, b: CollisionObject, collision: CollisionResult, gravity: vec2, delta: number) {
     this.a = a;
     this.b = b;
     this.depth = collision.depth;
@@ -184,7 +178,7 @@ export default class Manifold {
       }
 
       const oc = oldContacts[match];
-      if (Physics.WARM_IMPULSE) {
+      if (Physics.G_CONF.WARM_IMPULSE) {
         nc.impulseNormal = oc.impulseNormal;
         nc.impulseTangent = oc.impulseTangent;
         nc.impulseNormalPosition = oc.impulseNormalPosition;
@@ -216,7 +210,7 @@ export default class Manifold {
   private compareContacts(c1: ContactPoint, c2: ContactPoint) {
     const d = vec2.sqrDist(c1.point, c2.point);
     // console.log(d, Manifold.CACHED_CONTACTS_TOLERANCE, d < Manifold.CACHED_CONTACTS_TOLERANCE);
-    return d <= Physics.CACHED_CONTACTS_TOLERANCE;
+    return d <= Physics.G_CONF.CACHED_CONTACTS_TOLERANCE;
   }
 
   /**
@@ -229,7 +223,7 @@ export default class Manifold {
     const aPos = vec2.add(
       vec2.create(),
       this.positionImpulse.a,
-      vec2.add(vec2.create(), this.b.getPosition(), this.penetration)
+      vec2.add(vec2.create(), this.b.getPosition(), this.penetration),
     );
     const bPos = vec2.add(vec2.create(), this.b.getPosition(), this.positionImpulse.b);
 
@@ -237,21 +231,21 @@ export default class Manifold {
     const bToA = vec2.sub(vec2.create(), aPos, bPos);
     const separation = vec2.dot(bToA, this.normal);
 
-    let positionImpulse = (separation - Physics.POSITION_SLOP) * delta;
+    let positionImpulse = (separation - Physics.G_CONF.POSITION_SLOP) * delta;
     // if (positionImpulse > 0.1) console.log(positionImpulse, delta);
 
     // split position impulse between a and b based on mass ratio
     const invMass = this.a.getInverseMass() + this.b.getInverseMass();
     if (invMass === 0) return;
 
-    const share = Physics.POSITION_DAMPING / invMass;
+    const share = Physics.G_CONF.POSITION_DAMPING / invMass;
 
     if (!this.a.isStatic)
       vec2.scaleAndAdd(
         this.positionImpulse.a,
         this.positionImpulse.a,
         this.normal,
-        -positionImpulse * share * this.a.getInverseMass()
+        -positionImpulse * share * this.a.getInverseMass(),
       );
 
     if (!this.b.isStatic)
@@ -259,7 +253,7 @@ export default class Manifold {
         this.positionImpulse.b,
         this.positionImpulse.b,
         this.normal,
-        positionImpulse * share * this.b.getInverseMass()
+        positionImpulse * share * this.b.getInverseMass(),
       );
   }
 
@@ -309,7 +303,7 @@ export default class Manifold {
       // calculate velocity bias for restitution
       const contactVelocity = vec2.dot(contact.normal, calculateRelativeVelocity(this, contactA, contactB));
       contact.bias = 0;
-      if (contactVelocity < -Physics.RESTITUTION_THRESHOLD) {
+      if (contactVelocity < -Physics.G_CONF.RESTITUTION_THRESHOLD) {
         contact.bias = contactVelocity * -this.epsilon;
         // console.log(contact.bias);
       }
@@ -317,7 +311,7 @@ export default class Manifold {
       // contact.bias = (-biasFactor / delta) * Math.min(0, contact.depth + allowedPenetration);
 
       // apply accumulate impulse
-      if (Physics.ACUMMULATE_IMPULSE) {
+      if (Physics.G_CONF.ACUMMULATE_IMPULSE) {
         const impulseNormal = vec2.scale(vec2.create(), contact.normal, contact.impulseNormal);
         const impulseTangent = vec2.scale(vec2.create(), tangent, contact.impulseTangent);
         const impulse = vec2.add(vec2.create(), impulseNormal, impulseTangent);
@@ -382,7 +376,7 @@ export default class Manifold {
       { point: inc.p0, depth: this.depth, normal: this.normal },
       { point: inc.p1, depth: this.depth, normal: this.normal },
       refv,
-      o1
+      o1,
     );
     if (cp.length < 2) return [];
 

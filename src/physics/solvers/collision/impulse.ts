@@ -36,7 +36,7 @@ export default function solveImpulse(m: Manifold) {
 
     let deltaImpulseNormal = contact.massNormal * (-contactVelocity + contact.bias);
 
-    if (Physics.ACUMMULATE_IMPULSE) {
+    if (Physics.G_CONF.ACUMMULATE_IMPULSE) {
       // clamp the accumulated impulse
       const old = contact.impulseNormal;
       contact.impulseNormal = Math.max(old + deltaImpulseNormal, 0);
@@ -58,16 +58,13 @@ export default function solveImpulse(m: Manifold) {
     const velTangent = vec2.dot(relativeVelocity, tangent);
     let deltaImpulseTangent = contact.massTangent * -velTangent;
 
-    if (Physics.ACUMMULATE_IMPULSE) {
+    if (Physics.G_CONF.ACUMMULATE_IMPULSE) {
       // compute friction impulse
       const maxImpulseTangent = m.df * contact.impulseNormal;
 
       // clamp friction
       const old = contact.impulseTangent;
-      contact.impulseTangent = Math.max(
-        -maxImpulseTangent,
-        Math.min(maxImpulseTangent, old + deltaImpulseTangent)
-      );
+      contact.impulseTangent = Math.max(-maxImpulseTangent, Math.min(maxImpulseTangent, old + deltaImpulseTangent));
       deltaImpulseTangent = contact.impulseTangent - old;
     } else {
       const maxImpulseTangent = m.df * deltaImpulseNormal;
