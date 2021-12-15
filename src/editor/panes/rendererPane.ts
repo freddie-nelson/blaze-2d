@@ -9,7 +9,7 @@ export default class RendererPane extends EditorPane {
    * @param width The width of the pane in columns
    * @param height The height of the pane in rows
    */
-  constructor(pos: vec2, width: number, height: number) {
+  constructor(pos?: vec2, width?: number, height?: number) {
     super("renderer", pos, width, height);
   }
 }

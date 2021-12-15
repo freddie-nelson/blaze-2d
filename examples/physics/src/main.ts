@@ -16,7 +16,6 @@ import GradientTexture, { GradientDirection, GradientType } from "@blz/texture/g
 import TextureAtlas from "@blz/texture/atlas";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
-import Renderer from "@blz/renderer/renderer";
 import { Mouse } from "@blz/input/mouse";
 
 const BG_COLOR = new Color("skyblue");

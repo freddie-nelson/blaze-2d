@@ -1,12 +1,12 @@
 import { vec2 } from "gl-matrix";
 import BlazeElement from "../../ui/element";
-import BlazeTitlebar from "../../ui/titlebar";
+import BlazeTitleBar from "../../ui/titleBar";
 import { EDITOR_GRID_SIZE } from "../editor";
 
 import "../styles/editor-pane.css";
 
 export default class EditorPane extends BlazeElement<HTMLDivElement> {
-  private titlebar: BlazeTitlebar;
+  protected titlebar: BlazeTitleBar;
 
   readonly id: string;
   readonly domId: string;
@@ -23,7 +23,7 @@ export default class EditorPane extends BlazeElement<HTMLDivElement> {
    * @param width The width of the pane in columns
    * @param height The height of the pane in rows
    */
-  constructor(id: string, pos: vec2, width: number, height: number) {
+  constructor(id: string, pos = vec2.create(), width = 1, height = 1) {
     // validation
     if (pos[0] < 0 || pos[0] >= EDITOR_GRID_SIZE || pos[1] < 0 || pos[1] >= EDITOR_GRID_SIZE)
       throw new Error("EditorPane: Position must be between 0 and EDITOR_GRID_SIZE - 1.");
@@ -53,11 +53,19 @@ export default class EditorPane extends BlazeElement<HTMLDivElement> {
    */
   update() {}
 
+  /**
+   * Create and append a {@link BlazeTitleBar} to the pane.
+   */
   addTitlebar() {
-    this.titlebar = new BlazeTitlebar(this.id);
+    this.removeTitlebar();
+
+    this.titlebar = new BlazeTitleBar(this.id);
     this.element.appendChild(this.titlebar.element);
   }
 
+  /**
+   * Remove the pane's titlebar if it exists.
+   */
   removeTitlebar() {
     if (!this.titlebar) return;
 
