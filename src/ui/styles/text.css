@@ -1,0 +1,16 @@
+.blzText {
+  font-family: var(--blz-mono);
+  color: var(--blz-text);
+}
+
+.blzText--primary {
+  color: var(--blz-text);
+}
+
+.blzText--secondary {
+  color: var(--blz-text-secondary);
+}
+
+.blzText--highlight {
+  color: var(--blz-primary);
+}
