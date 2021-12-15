@@ -1,0 +1,18 @@
+.blzTabBar {
+  background-color: var(--blz-bg-light);
+  justify-content: flex-start;
+  gap: 0 0.3rem;
+}
+
+.blzTabBar p {
+  background-color: var(--blz-accent);
+  cursor: pointer;
+  align-self: flex-end;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.1rem 0.1rem 0 0;
+  flex-grow: 1;
+}
+
+.blzTabBar .active {
+  background-color: var(--blz-primary);
+}

@@ -166,8 +166,12 @@ export default abstract class Renderer {
    * Renders all items currently in the render queue and clears the queue.
    *
    * Should be called at the end of each frame.
+   *
+   * If there is no camera specified in {@link Renderer} then nothing will be rendered.
    */
   static flush() {
+    if (!this.camera) return;
+
     const queue = this.queue;
     const min = queue.min || 0;
     const max = queue.max || Blaze.getZLevels();

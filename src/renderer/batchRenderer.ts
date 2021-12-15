@@ -51,8 +51,12 @@ export default abstract class BatchRenderer extends Renderer {
    * Renders all items currently in the batch render queue and clears the queue.
    *
    * Should be called at the end of each frame.
+   *
+   * If there is no camera specified in {@link Renderer} then nothing will be rendered.
    */
   static flush() {
+    if (!this.getCamera()) return;
+
     const queue = this.batchQueue;
     const min = queue.min || 0;
     const max = queue.max || Blaze.getZLevels();
@@ -116,9 +120,7 @@ export default abstract class BatchRenderer extends Renderer {
    */
   private static queueRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
     const renderable =
-      rects[0] instanceof Rect
-        ? this.getRenderableRectsFromRects(<Rect[]>rects)
-        : (rects as Renderable<Rect>[]);
+      rects[0] instanceof Rect ? this.getRenderableRectsFromRects(<Rect[]>rects) : (rects as Renderable<Rect>[]);
 
     this.addRenderablesToQueue(renderable, zIndex, "rect");
   }
@@ -168,9 +170,7 @@ export default abstract class BatchRenderer extends Renderer {
    */
   private static renderRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
     const renderable =
-      rects[0] instanceof Rect
-        ? this.getRenderableRectsFromRects(<Rect[]>rects)
-        : (rects as Renderable<Rect>[]);
+      rects[0] instanceof Rect ? this.getRenderableRectsFromRects(<Rect[]>rects) : (rects as Renderable<Rect>[]);
 
     const geometry = this.getGeometryFromRenderables(renderable);
 
