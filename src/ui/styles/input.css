@@ -1,0 +1,19 @@
+.blzInput {
+  display: flex;
+  flex-direction: column;
+  margin: 0.4rem 0;
+}
+
+.blzInput input {
+  font-family: var(--blz-mono);
+  color: var(--blz-text-secondary);
+  background-color: var(--blz-bg-light);
+  border: 0.15rem solid var(--blz-bg-extra-light);
+  border-radius: 0.2rem;
+  outline: none;
+  padding: 0.2rem 0.4rem;
+}
+
+.blzInput input:focus {
+  color: var(--blz-text);
+}

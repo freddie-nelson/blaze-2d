@@ -16,6 +16,8 @@ export default class BlazeElement<T extends HTMLElement> {
    */
   constructor(element: T) {
     this.element = element;
+    this.element.classList.add("blzElement");
+
     this.mouse = new MouseHandler(element);
     this.keys = new KeyboardHandler(element);
   }

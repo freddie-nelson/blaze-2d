@@ -111,7 +111,7 @@ export default class EditorCameraControls {
 
       this.canvas.removeEventListener("wheel", this.onWheel);
 
-      document.body.removeEventListener("keydown", this.onKeydown);
+      this.canvas.removeEventListener("keydown", this.onKeydown);
     }
 
     // attach events to new canvas
@@ -122,7 +122,7 @@ export default class EditorCameraControls {
 
     this.canvas.addEventListener("wheel", this.onWheel);
 
-    document.body.addEventListener("keydown", this.onKeydown);
+    this.canvas.addEventListener("keydown", this.onKeydown);
   }
 
   /**

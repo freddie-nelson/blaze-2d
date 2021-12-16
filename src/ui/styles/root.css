@@ -2,12 +2,20 @@
   /* colors */
   --blz-bg: #1d1f2b;
   --blz-bg-light: #2e3046;
+  --blz-bg-extra-light: #474963;
   --blz-text: #edf2f4;
   --blz-text-secondary: #cdd4df;
   --blz-primary: #2f83e2;
   --blz-accent: #589dd6;
 
+  --blz-selection: #e22f9d;
+
   /* fonts */
   --blz-mono: "Courier New", Courier, monospace;
   --blz-sans: Arial, Helvetica, sans-serif;
+}
+
+.blzElement::selection,
+.blzElement *::selection {
+  background-color: var(--blz-selection);
 }
