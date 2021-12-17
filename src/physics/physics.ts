@@ -16,9 +16,9 @@ import solvePositionImpulse from "./solvers/collision/positionImpulse";
 import applyPositionImpulse from "./solvers/collision/applyPositionImpulse";
 
 const debugRGBA: RGBAColor = {
-  r: 255,
-  g: 0,
-  b: 0,
+  r: 0,
+  g: 220,
+  b: 255,
   a: 0.2,
 };
 const debugTexture = new Texture(new Color(debugRGBA));
@@ -97,6 +97,16 @@ export default class Physics {
   collisionsSpace = new CollisionsSpace(this.gravity);
 
   /**
+   * The amount of time in ms that the last physics step took.
+   */
+  physicsTime = 0;
+
+  /**
+   * Enable/disable debug tools.
+   */
+  debug = false;
+
+  /**
    * Create an {@link Physics} instance.
    *
    * @param gravity The gravitional force applied to objects in the system
@@ -117,6 +127,8 @@ export default class Physics {
   }
 
   update(delta: number) {
+    this.physicsTime = performance.now();
+
     // set physics config
     Physics.G_CONF = this.CONFIG;
 
@@ -150,10 +162,16 @@ export default class Physics {
 
     // fire collision and trigger events
     this.collisionsSpace.fireEvents();
+
+    // debug
+    if (this.debug) this.drawDebug();
+
+    // calculate physics time
+    this.physicsTime = performance.now() - this.physicsTime;
   }
 
   drawDebug() {
-    for (const obj of this.dynamicsSpace.objects) {
+    for (const obj of this.collisionsSpace.objects) {
       // draw entity bounding boxes (colliders)
       obj.collider.texture = debugTexture;
       obj.collider.render();

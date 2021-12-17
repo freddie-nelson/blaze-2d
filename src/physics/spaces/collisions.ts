@@ -33,7 +33,7 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   /**
    * Array used to store pairs of objects which may be colliding.
    */
-  private collisionPairs: CollisionPair[];
+  collisionPairs: CollisionPair[];
 
   /**
    * The {@link AABBTree} used for broadphase and raycasting.
@@ -115,8 +115,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
     this.collisions.killAllManifolds();
     this.triggers.killAllManifolds();
 
-    let collisions = 0;
-
     for (const pair of this.collisionPairs) {
       const A = pair.a;
       const B = pair.b;
@@ -124,7 +122,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
       // test collision
       const res = A.testCollision(B);
       if (res.hasCollision) {
-        collisions++;
         const manifold = new Manifold(A, B, res, this.gravity, delta);
 
         let timer = performance.now();
@@ -135,8 +132,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
         }
       }
     }
-
-    // console.log(collisions);
 
     // remove dead manifolds
     this.collisions.removeDeadManifolds();

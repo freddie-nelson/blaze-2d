@@ -232,4 +232,28 @@ export default class AABBTree {
     // update parent AABB
     parent.updateAABB(this.margin);
   }
+
+  /**
+   * Calculates and returns the height of the root node. (the height of the tree)
+   */
+  getHeight(): number;
+
+  /**
+   * Calculates the height of the given node.
+   *
+   * @param node The node to start at
+   */
+  getHeight(node: AABBNode): number;
+
+  getHeight(node?: AABBNode): number {
+    if (!node) {
+      return this.getHeight(this.root);
+    }
+
+    if (node.isLeaf()) return 0;
+
+    const leftHeight = this.getHeight(node.left);
+    const rightHeight = this.getHeight(node.right);
+    return Math.max(leftHeight, rightHeight) + 1;
+  }
 }
