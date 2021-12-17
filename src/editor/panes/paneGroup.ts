@@ -4,8 +4,8 @@ import EditorPane from "./pane";
 
 export default class EditorPaneGroup extends EditorPane {
   titlebar: BlazeTabBar;
-  private panes: EditorPane[] = [];
-  private currentPane: EditorPane;
+  protected panes: EditorPane[] = [];
+  protected currentPane: EditorPane;
 
   /**
    * Creates an {@link EditorPaneGroup}.
@@ -17,6 +17,13 @@ export default class EditorPaneGroup extends EditorPane {
    */
   constructor(id: string, pos: vec2, width: number, height: number) {
     super(id, pos, width, height);
+  }
+
+  /**
+   * Updates all pane's in the group.
+   */
+  update() {
+    this.panes.forEach((p) => p.update());
   }
 
   /**

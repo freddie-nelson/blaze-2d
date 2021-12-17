@@ -94,7 +94,7 @@ export default class World implements System {
   renderEntities() {
     const worldToClipSpace = this.getWorldtoClipSpace();
 
-    Renderer.setMode("TRIANGLES");
+    // Renderer.setMode("TRIANGLES");
     Renderer.useCamera(this.camera);
     Renderer.setScale(worldToClipSpace);
 

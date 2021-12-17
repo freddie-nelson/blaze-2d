@@ -31,7 +31,7 @@ interface RenderQueueItem {
 export default abstract class Renderer {
   private static gl: WebGL2RenderingContext;
   private static resolutionScale = 1;
-  private static mode: "TRIANGLES" | "LINES" = "TRIANGLES";
+  private static mode: "TRIANGLES" | "LINES" | "POINTS" = "TRIANGLES";
   private static camera: Camera;
 
   /**
@@ -39,7 +39,7 @@ export default abstract class Renderer {
    */
   protected static scale = vec2.fromValues(1, 1);
 
-  private static queue: ZMap<RenderQueueItem[]> = {};
+  protected static queue: ZMap<RenderQueueItem[]> = {};
 
   // buffers
   static positionBuffer: WebGLBuffer;
@@ -56,6 +56,11 @@ export default abstract class Renderer {
 
   static triangleProgram: WebGLProgram;
   static triangleProgramInfo: ShaderProgramInfo;
+
+  // stats
+  static renderTime = 0;
+  static drawCalls = 0;
+  static shapes = { rect: 0, circle: 0, triangle: 0 };
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -172,6 +177,13 @@ export default abstract class Renderer {
   static flush() {
     if (!this.camera) return;
 
+    // reset stats
+    this.renderTime = performance.now();
+    this.drawCalls = 0;
+    this.shapes.rect = 0;
+    this.shapes.circle = 0;
+    this.shapes.triangle = 0;
+
     const queue = this.queue;
     const min = queue.min || 0;
     const max = queue.max || Blaze.getZLevels();
@@ -185,6 +197,9 @@ export default abstract class Renderer {
 
       delete queue[z];
     }
+
+    // calculate render time
+    this.renderTime = performance.now() - this.renderTime;
   }
 
   /**
@@ -219,10 +234,13 @@ export default abstract class Renderer {
     let programInfo: ShaderProgramInfo;
     if (shape instanceof Rect) {
       programInfo = this.rectProgramInfo;
+      this.shapes.rect++;
     } else if (shape instanceof Circle) {
       programInfo = this.circleProgramInfo;
+      this.shapes.circle++;
     } else if (shape instanceof Triangle) {
       programInfo = this.triangleProgramInfo;
+      this.shapes.triangle++;
     }
 
     // vertex positions
@@ -268,6 +286,7 @@ export default abstract class Renderer {
     }
 
     gl.drawElements(gl[this.mode], indices.length, gl.UNSIGNED_SHORT, 0);
+    this.drawCalls++;
   }
 
   /**
@@ -305,13 +324,14 @@ export default abstract class Renderer {
   /**
    * Sets the mode the renderer will use for drawing.
    *
-   * @throws When the provided mode is not TRIANGLES or LINES
+   * @throws When the provided mode is not TRIANGLES, LINES or POINTS
    *
    * @param mode The mode to use
    */
-  static setMode(mode: "TRIANGLES" | "LINES") {
+  static setMode(mode: "TRIANGLES" | "LINES" | "POINTS") {
     const m = mode.toUpperCase();
-    if (m !== "TRIANGLES" && m !== "LINES") throw new Error("Renderer: Mode can only be TRIANGLES or LINES.");
+    if (m !== "TRIANGLES" && m !== "LINES" && m !== "POINTS")
+      throw new Error("Renderer: Mode can only be TRIANGLES, LINES or POINTS.");
 
     this.mode = m;
   }
@@ -359,5 +379,14 @@ export default abstract class Renderer {
    */
   static getScale() {
     return this.scale;
+  }
+
+  /**
+   * Gets the render queue.
+   *
+   * @returns the render queue
+   */
+  static getQueue() {
+    return this.queue;
   }
 }

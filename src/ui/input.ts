@@ -14,6 +14,11 @@ export default class BlazeInput extends BlazeElement<HTMLDivElement> {
   private label: BlazeText<HTMLParagraphElement>;
 
   /**
+   * Callback that is fired whenever the input's value changes.
+   */
+  onInput: (value: string) => void;
+
+  /**
    * Create a {@link BlazeInput}.
    *
    * @param name The input's `name` attribute
@@ -37,6 +42,8 @@ export default class BlazeInput extends BlazeElement<HTMLDivElement> {
 
     this.input.addEventListener("input", () => {
       this.value = this.input.value;
+
+      if (this.onInput) this.onInput(this.value);
     });
   }
 
@@ -48,6 +55,8 @@ export default class BlazeInput extends BlazeElement<HTMLDivElement> {
   setValue(value: string) {
     this.value = value;
     this.input.value = value;
+
+    if (this.onInput) this.onInput(this.value);
   }
 
   /**
