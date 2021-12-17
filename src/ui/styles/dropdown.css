@@ -1,0 +1,20 @@
+.blzDropdown {
+  display: flex;
+  flex-direction: column;
+  margin: 0.4rem 0;
+}
+
+.blzDropdown select {
+  position: relative;
+  font-family: var(--blz-mono);
+  color: var(--blz-text-secondary);
+  background-color: var(--blz-bg-light);
+  border: 0.15rem solid var(--blz-bg-extra-light);
+  border-radius: 0.2rem;
+  outline: none;
+  padding: 0.2rem 0.1rem;
+}
+
+.blzDropdown select:focus {
+  color: var(--blz-text);
+}

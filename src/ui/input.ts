@@ -34,6 +34,10 @@ export default class BlazeInput extends BlazeElement<HTMLDivElement> {
     this.name = name;
     this.placeholder = placeholder;
     this.size = size;
+
+    this.input.addEventListener("input", () => {
+      this.value = this.input.value;
+    });
   }
 
   /**
