@@ -53,11 +53,11 @@ export default class BlazeText<T extends HTMLParagraphElement | HTMLHeadingEleme
       // when heading constructor
       this.size = <number>size;
       this.bold = <boolean>bold;
-      this.style = typeof style !== "undefined" ? <TextStyle>style : TextStyle.PRIMARY;
+      this.style = style !== undefined ? <TextStyle>style : TextStyle.PRIMARY;
     } else {
       this.size = level;
       this.bold = <boolean>size;
-      this.style = typeof bold !== "undefined" ? <TextStyle>bold : TextStyle.PRIMARY;
+      this.style = bold !== undefined ? <TextStyle>bold : TextStyle.PRIMARY;
     }
 
     this.applyStyles();

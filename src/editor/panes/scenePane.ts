@@ -15,6 +15,13 @@ export default class ScenePane extends EditorPane {
   constructor(canvas: HTMLCanvasElement, pos: vec2, width: number, height: number) {
     super("scene", pos, width, height);
 
-    this.element.appendChild(canvas);
+    this.element.style.display = "flex";
+    this.element.style.flexDirection = "column";
+
+    const canvasContainer = document.createElement("div");
+    canvasContainer.classList.add("blzCanvasContainer");
+    canvasContainer.appendChild(canvas);
+
+    this.element.appendChild(canvasContainer);
   }
 }

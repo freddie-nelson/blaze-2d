@@ -47,10 +47,13 @@ export default class World implements System {
 
       // setup resize observer
       const observer = new ResizeObserver((entries) => {
-        if (canvas.width === this.camera.viewport.getWidth() && canvas.height === this.camera.viewport.getHeight())
+        if (
+          canvas.clientWidth === this.camera.viewport.getWidth() &&
+          canvas.clientHeight === this.camera.viewport.getHeight()
+        )
           return;
 
-        this.camera.viewport = new Viewport(this.camera.getPosition(), canvas.width, canvas.height);
+        this.camera.viewport = new Viewport(this.camera.getPosition(), canvas.clientWidth, canvas.clientHeight);
         this.camera.setZoom(this.camera.getZoom());
       });
       observer.observe(canvas);

@@ -1,5 +1,14 @@
 #blzCanvas {
+  box-sizing: content-box;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: block;
   width: 100%;
   height: 100%;
   outline: none;
+}
+
+.blzCanvasContainer {
+  flex-grow: 1;
 }

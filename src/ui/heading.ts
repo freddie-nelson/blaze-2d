@@ -13,10 +13,10 @@ export default class BlazeHeading extends BlazeText<HTMLHeadingElement> {
   constructor(text: string, level = 1, size?: number) {
     if (level < 1 || level > 6) throw new Error("BlazeHeading: level must be between 1 and 6.");
 
-    super(text, level, typeof size === "undefined" ? 0 : size, true);
+    super(text, level, size === undefined ? 0 : size, true);
 
     this.element.classList.add("blzHeading");
-    if (typeof size === "undefined") {
+    if (size === undefined) {
       this.size = undefined;
       this.applyStyles();
     }

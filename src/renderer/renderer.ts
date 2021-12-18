@@ -81,7 +81,15 @@ export default abstract class Renderer {
 
     // setup resize observer
     const observer = new ResizeObserver((entries) => {
-      if (canvas.width === canvas.clientWidth && canvas.height === canvas.clientHeight) return;
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.ceil(rect.width);
+      const height = Math.ceil(rect.height);
+
+      if (canvas.width === width && canvas.height === height) return;
+
+      // fixes infinite resize loop
+      // https://stackoverflow.com/questions/4288253/html5-canvas-100-width-height-of-viewport
+      if (canvas.style.display !== "block") canvas.style.display = "block";
 
       this.resizeToCanvas();
     });
@@ -158,9 +166,14 @@ export default abstract class Renderer {
    */
   static resizeToCanvas() {
     const gl = this.gl;
-    gl.canvas.width = (gl.canvas as HTMLCanvasElement).clientWidth * this.resolutionScale;
-    gl.canvas.height = (gl.canvas as HTMLCanvasElement).clientHeight * this.resolutionScale;
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    const canvas = gl.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+
+    canvas.width = width * this.resolutionScale;
+    canvas.height = height * this.resolutionScale;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
   static clear(clearColor: Color) {

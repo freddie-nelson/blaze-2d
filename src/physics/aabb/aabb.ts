@@ -45,7 +45,7 @@ export default class AABB {
   constructor(min: CollisionObject | vec2 | AABB, max?: vec2 | number | AABB, margin?: number) {
     if (min instanceof CollisionObject) {
       this.setMinMaxFromCollisionObj(min, <number>max);
-    } else if (typeof margin !== "undefined") {
+    } else if (margin !== undefined) {
       this.union(<AABB>min, <AABB>max, margin);
     } else {
       this.min = <vec2>min;
@@ -124,9 +124,7 @@ export default class AABB {
    * @param b The {@link AABB} to check for intersection against
    */
   intersects(b: AABB) {
-    return (
-      this.max[0] > b.min[0] && this.min[0] < b.max[0] && this.max[1] > b.min[1] && this.min[1] < b.max[1]
-    );
+    return this.max[0] > b.min[0] && this.min[0] < b.max[0] && this.max[1] > b.min[1] && this.min[1] < b.max[1];
   }
 
   /**
@@ -135,8 +133,6 @@ export default class AABB {
    * @param b The {@link AABB} to check
    */
   contains(b: AABB) {
-    return (
-      this.min[0] <= b.min[0] && this.max[0] >= b.max[0] && this.min[1] <= b.min[1] && this.max[1] >= b.max[1]
-    );
+    return this.min[0] <= b.min[0] && this.max[0] >= b.max[0] && this.min[1] <= b.min[1] && this.max[1] >= b.max[1];
   }
 }
