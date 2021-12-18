@@ -14,3 +14,15 @@
 .blzText--highlight {
   color: var(--blz-primary);
 }
+
+.blzText--success {
+  color: var(--blz-success);
+}
+
+.blzText--error {
+  color: var(--blz-error);
+}
+
+.blzText--warning {
+  color: var(--blz-warning);
+}

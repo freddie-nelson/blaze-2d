@@ -7,6 +7,9 @@ export enum TextStyle {
   PRIMARY,
   SECONDARY,
   HIGHLIGHT,
+  SUCCESS,
+  ERROR,
+  WARNING,
 }
 
 export default class BlazeText<T extends HTMLParagraphElement | HTMLHeadingElement> extends BlazeElement<
@@ -84,6 +87,15 @@ export default class BlazeText<T extends HTMLParagraphElement | HTMLHeadingEleme
         break;
       case TextStyle.HIGHLIGHT:
         this.element.classList.add("blzText--highlight");
+        break;
+      case TextStyle.SUCCESS:
+        this.element.classList.add("blzText--success");
+        break;
+      case TextStyle.ERROR:
+        this.element.classList.add("blzText--error");
+        break;
+      case TextStyle.WARNING:
+        this.element.classList.add("blzText--warning");
         break;
       default:
         break;

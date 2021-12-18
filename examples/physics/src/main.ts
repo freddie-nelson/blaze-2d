@@ -17,6 +17,7 @@ import TextureAtlas from "@blz/texture/atlas";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
 import { Mouse } from "@blz/input/mouse";
+import Logger from "@blz/logger";
 
 const BG_COLOR = new Color("skyblue");
 
@@ -203,4 +204,6 @@ CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   WORLD.addEntity(entity);
   PHYSICS.addBody(entity);
+
+  Logger.log("Script", `Created entity at [${pos[0]}, ${pos[1]}].`);
 });

@@ -11,4 +11,5 @@
   background-color: var(--blz-accent);
   padding: 0 0.3rem;
   user-select: none;
+  flex-shrink: 0;
 }

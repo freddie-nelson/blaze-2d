@@ -8,6 +8,10 @@
   --blz-primary: #2f83e2;
   --blz-accent: #589dd6;
 
+  --blz-success: #28a745;
+  --blz-error: #dc3545;
+  --blz-warning: #ffc107;
+
   --blz-selection: #e22f9d;
 
   /* fonts */
@@ -24,4 +28,16 @@
 .blzElement::selection,
 .blzElement *::selection {
   background-color: var(--blz-selection);
+}
+
+.blzElement::-webkit-scrollbar,
+.blzElement *::-webkit-scrollbar {
+  background-color: var(--blz-bg-light);
+  width: 0.65rem;
+}
+
+.blzElement::-webkit-scrollbar-thumb,
+.blzElement *::-webkit-scrollbar-thumb {
+  background-color: var(--blz-bg-extra-light);
+  border-radius: 0.6rem;
 }
