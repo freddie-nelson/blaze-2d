@@ -1,4 +1,5 @@
 import { mat4, vec2 } from "gl-matrix";
+import Logger from "./logger";
 
 /**
  * A generic interface to represent any 3D object's neighbours in a grid.
@@ -172,8 +173,8 @@ export default class Object2D {
    * @param event The event to fire
    * @param e The data to pass to each event listener
    */
-  fireEvent(event: string, e: any) {
-    if (!this.listeners[event]) throw new Error(`Object2D: '${event}' is not a supported event.`);
+  fireEvent(event: string, e: any): void {
+    if (!this.listeners[event]) return void Logger.error("Object2D", `'${event}' is not a supported event.`);
 
     for (const l of this.listeners[event]) {
       l(e, this);

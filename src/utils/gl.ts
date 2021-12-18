@@ -1,3 +1,4 @@
+import Logger from "../logger";
 import { TextureUnit } from "../texture/texture";
 import Color from "./color";
 
@@ -46,11 +47,7 @@ export function createShader(gl: WebGL2RenderingContext, type: number, source: s
  * @param fragmentShader The fragment shader of the program
  * @returns The created program or undefined if there was an error when creating the program
  */
-export function createProgram(
-  gl: WebGL2RenderingContext,
-  vertexShader: WebGLShader,
-  fragmentShader: WebGLShader
-) {
+export function createProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
   const program = gl.createProgram();
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
@@ -102,7 +99,7 @@ export function clear(gl: WebGL2RenderingContext, color: Color = new Color("#000
  */
 export function loadTexture(gl: WebGL2RenderingContext, textureUnit: TextureUnit) {
   const texture = textureUnit.texture;
-  if (!texture) throw new Error("GL: No texture in unit provided to loadTexture.");
+  if (!texture) return void Logger.error("GL", "No texture in unit provided to loadTexture.");
 
   gl.activeTexture(textureUnit.unit);
 

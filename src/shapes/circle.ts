@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import Renderer from "../renderer/renderer";
 import { applyRotation, applyTranslation } from "../utils/vectors";
 import Shape from "./shape";
@@ -134,8 +135,8 @@ export default class Circle extends Shape {
    *
    * @param radius The circle's new radius
    */
-  setRadius(radius: number) {
-    if (radius < 0) throw new Error("Circle: Radius cannot be < 0.");
+  setRadius(radius: number): void {
+    if (radius < 0) return void Logger.error("Circle", "Radius cannot be < 0.");
 
     this.radius = radius;
   }

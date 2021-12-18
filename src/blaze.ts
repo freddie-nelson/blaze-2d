@@ -12,6 +12,7 @@ import BlazeElement from "./ui/element";
 
 import "./ui/styles/root.css";
 import "./ui/styles/canvas.css";
+import Logger from "./logger";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -247,8 +248,8 @@ export default abstract class Blaze {
    *
    * @param scene The scene to use
    */
-  static setScene(scene: Scene) {
-    if (!(scene instanceof Scene)) throw new Error("Blaze: scene must be an instance of Scene.");
+  static setScene(scene: Scene): void {
+    if (!(scene instanceof Scene)) return void Logger.error("Blaze", "scene must be an instance of Scene.");
 
     this.scene = scene;
   }
@@ -304,9 +305,9 @@ export default abstract class Blaze {
    *
    * @param zLevels The number to set zLevels to
    */
-  static setZLevels(zLevels: number) {
+  static setZLevels(zLevels: number): void {
     const valid = validateZIndex(zLevels);
-    if (valid !== true) throw new Error(valid);
+    if (valid !== true) return void Logger.error("Blaze", valid);
 
     this.zLevels = zLevels;
   }

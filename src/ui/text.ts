@@ -1,3 +1,4 @@
+import Logger from "../logger";
 import BlazeElement from "./element";
 
 import "./styles/text.css";
@@ -41,7 +42,7 @@ export default class BlazeText<T extends HTMLParagraphElement | HTMLHeadingEleme
     let element = document.createElement("p");
     if (typeof size === "number") {
       // when heading constructor
-      if (level < 1 || level > 6) throw new Error("BlazeText: level must be between 1 and 6.");
+      if (level < 1 || level > 6) throw Logger.error("BlazeText", "level must be between 1 and 6.");
       element = <HTMLHeadingElement>document.createElement(`h${level}`);
     }
 

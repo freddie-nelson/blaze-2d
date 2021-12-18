@@ -1,12 +1,8 @@
+import Logger from "../logger";
 import { ThreadTaskData, ThreadTaskDataObject } from "./thread";
 
 export interface WorkerMessage {
-  task:
-    | "chunk-generation"
-    | "init-chunk-generator"
-    | "chunk-geometry"
-    | "init-geometry-generator"
-    | "completed";
+  task: "chunk-generation" | "init-chunk-generator" | "chunk-geometry" | "init-geometry-generator" | "completed";
   data?: ThreadTaskData | ThreadTaskData[] | ThreadTaskDataObject;
 }
 
@@ -47,14 +43,14 @@ class BlazeWorker {
     ctx.postMessage({ task: "completed", data });
   }
 
-  handleMessage(msg: WorkerMessage) {
+  handleMessage(msg: WorkerMessage): void {
     switch (msg.task) {
       case "init-chunk-generator":
       case "init-geometry-generator":
       case "chunk-generation":
       case "chunk-geometry":
         if (msg.data) this.handleTask(msg);
-        else throw new Error("Worker: Message must include data for chunk-generation and chunk-geometry.");
+        else return void Logger.error("Worker", "Message must include data for chunk-generation and chunk-geometry.");
         break;
       default:
         break;

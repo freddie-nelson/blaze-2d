@@ -1,6 +1,7 @@
 import BlazeText from "./text";
 
 import "./styles/heading.css";
+import Logger from "../logger";
 
 export default class BlazeHeading extends BlazeText<HTMLHeadingElement> {
   /**
@@ -11,7 +12,7 @@ export default class BlazeHeading extends BlazeText<HTMLHeadingElement> {
    * @param size The heading's font size in `rem` units, if none is given then size will be `auto`
    */
   constructor(text: string, level = 1, size?: number) {
-    if (level < 1 || level > 6) throw new Error("BlazeHeading: level must be between 1 and 6.");
+    if (level < 1 || level > 6) throw Logger.error("BlazeHeading", "level must be between 1 and 6.");
 
     super(text, level, size === undefined ? 0 : size, true);
 

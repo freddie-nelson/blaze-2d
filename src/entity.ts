@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "./logger";
 import Collider from "./physics/collider/collider";
 import RigidBody from "./physics/rigidbody";
 import Shape from "./shapes/shape";
@@ -93,7 +94,7 @@ export default class Entity extends RigidBody {
    */
   setZIndex(zIndex: number) {
     const valid = validateZIndex(zIndex);
-    if (valid !== true) throw new Error(valid);
+    if (valid !== true) Logger.error("Entity", valid);
 
     this.zIndex = zIndex;
   }

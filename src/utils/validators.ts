@@ -7,8 +7,8 @@
  * @returns true when valid or a string containing the reason for being invalid
  */
 export default function validateZIndex(zIndex: number): true | string {
-  if (zIndex < 0) return "Validator: zIndex cannot be less than 0.";
-  else if (Math.floor(zIndex) !== zIndex) return "Validator: zIndex must be an integer.";
+  if (zIndex < 0) return "zIndex cannot be less than 0.";
+  else if (Math.floor(zIndex) !== zIndex) return "zIndex must be an integer.";
 
   return true;
 }

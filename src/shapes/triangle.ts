@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import Renderer from "../renderer/renderer";
 import { applyRotation, applyTranslation } from "../utils/vectors";
 import Shape from "./shape";
@@ -34,8 +35,8 @@ export default class Triangle extends Shape {
     if (position) this.setPosition(position);
     if (rotation) this.setRotation(rotation);
 
-    this.width = width;
-    this.height = height;
+    this.setWidth(width);
+    this.setHeight(height);
   }
 
   /**
@@ -58,7 +59,7 @@ export default class Triangle extends Shape {
     const tcbc = vec2.sub(
       vec2.create(),
       vec2.fromValues(worldLocalRotated[2][0], worldLocalRotated[0][1]),
-      worldLocalRotated[2]
+      worldLocalRotated[2],
     );
 
     // centre of the triangle after translations
@@ -127,8 +128,8 @@ export default class Triangle extends Shape {
    *
    * @param width The triangle's new width
    */
-  setWidth(width: number) {
-    if (width < 0) throw new Error("Triangle: Width cannot be < 0.");
+  setWidth(width: number): void {
+    if (width < 0) return void Logger.error("Triangle", "Width cannot be < 0.");
 
     this.width = width;
   }
@@ -149,8 +150,8 @@ export default class Triangle extends Shape {
    *
    * @param height The triangle's new height
    */
-  setHeight(height: number) {
-    if (height < 0) throw new Error("Triangle: Width cannot be < 0.");
+  setHeight(height: number): void {
+    if (height < 0) return void Logger.error("Triangle", "Height cannot be < 0.");
 
     this.height = height;
   }

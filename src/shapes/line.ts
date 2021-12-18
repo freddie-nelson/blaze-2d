@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import { midpoint } from "../utils/vectors";
 import Rect from "./rect";
 
@@ -45,7 +46,7 @@ export default class Line extends Rect {
   private createFromStartEnd(start: vec2, end: vec2, weight: number) {
     this.start = vec2.clone(start);
     this.end = vec2.clone(end);
-    this.weight = weight;
+    this.setWeight(weight);
 
     const mid = midpoint(vec2.create(), start, end);
     const rot = Math.atan2(end[1] - start[1], end[0] - start[0]);
@@ -75,8 +76,8 @@ export default class Line extends Rect {
    *
    * @param weight The new weight of the line
    */
-  setWeight(weight: number) {
-    if (weight < 0) throw new Error("Line: Weight cannot be < 0.");
+  setWeight(weight: number): void {
+    if (weight < 0) return void Logger.error("Line", "Weight cannot be < 0.");
 
     this.weight = weight;
     this.setHeight(weight);

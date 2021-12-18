@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import Renderer from "../renderer/renderer";
 import { applyRotation, applyTranslation } from "../utils/vectors";
 import Shape from "./shape";
@@ -35,8 +36,8 @@ export default class Rect extends Shape {
     if (position) this.setPosition(position);
     if (rotation) this.setRotation(rotation);
 
-    this.width = width;
-    this.height = height;
+    this.setWidth(width);
+    this.setHeight(height);
   }
 
   /**
@@ -125,8 +126,8 @@ export default class Rect extends Shape {
    *
    * @param width The rectangle's new width
    */
-  setWidth(width: number) {
-    if (width < 0) throw new Error("Rect: Width cannot be < 0.");
+  setWidth(width: number): void {
+    if (width < 0) return void Logger.error("Rect", "Width cannot be < 0.");
 
     this.width = width;
   }
@@ -147,8 +148,8 @@ export default class Rect extends Shape {
    *
    * @param height The rectangle's new height
    */
-  setHeight(height: number) {
-    if (height < 0) throw new Error("Rect: Width cannot be < 0.");
+  setHeight(height: number): void {
+    if (height < 0) return void Logger.error("Rect", "Width cannot be < 0.");
 
     this.height = height;
   }

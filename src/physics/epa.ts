@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import Collider from "./collider/collider";
 import Physics from "./physics";
 
@@ -28,7 +29,7 @@ interface EPAResult {
  * @returns A {@link EPAResult} object containing the results of the EPA algorithm
  */
 export default function EPA(polytope: vec2[], a: Collider, b: Collider): EPAResult {
-  if (polytope.length < 3) throw new Error("EPA: Initial polytope must have atleast 3 vertices.");
+  if (polytope.length < 3) throw Logger.error("EPA", "Initial polytope must have atleast 3 vertices.");
 
   // console.log([...polytope]);
   // console.log(polytope);

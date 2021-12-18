@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import RectCollider from "../physics/collider/rect";
 
 /**
@@ -69,8 +70,8 @@ export default class Viewport {
    *
    * @param width The viewport's new width
    */
-  setWidth(width: number) {
-    if (width <= 0) throw new Error("Viewport: Width cannot be <= 0.");
+  setWidth(width: number): void {
+    if (width <= 0) return void Logger.error("Viewport", "Width cannot be <= 0.");
 
     this.width = width;
   }
@@ -91,8 +92,8 @@ export default class Viewport {
    *
    * @param height The viewport's new height
    */
-  setHeight(height: number) {
-    if (height <= 0) throw new Error("Viewport: Height cannot be <= 0.");
+  setHeight(height: number): void {
+    if (height <= 0) return void Logger.error("Viewport", "Height cannot be <= 0.");
 
     this.height = height;
   }

@@ -1,3 +1,4 @@
+import Logger from "../logger";
 import { loadTexture } from "../utils/gl";
 import TextureAtlas from "./atlas";
 import Texture, { TextureUnit } from "./texture";
@@ -40,7 +41,7 @@ export default abstract class TextureLoader {
    */
   private static checkReady() {
     if (!this.ready)
-      throw new Error("TextureLoader: TextureLoader.init must be called before the loader can be used.");
+      throw Logger.error("TextureLoader", "TextureLoader.init must be called before the loader can be used.");
   }
 
   /**

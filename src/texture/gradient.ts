@@ -1,3 +1,4 @@
+import Logger from "../logger";
 import Color from "../utils/color";
 import Texture from "./texture";
 
@@ -51,7 +52,7 @@ export default class GradientTexture extends Texture {
   constructor(type: GradientType, dir: GradientDirection, resolution: number, ...stops: ColorStop[]) {
     super();
 
-    if (stops.length === 0) throw new Error("GradientTexture: Must have at least one color in stops array.");
+    if (stops.length === 0) throw Logger.error("GradientTexture", "Must have at least one color stop.");
     this.color = stops[0].color;
 
     this.type = type;
@@ -138,7 +139,7 @@ export default class GradientTexture extends Texture {
           0,
           this.resolution / 2,
           this.resolution / 2,
-          this.resolution
+          this.resolution,
         );
       default:
         break;

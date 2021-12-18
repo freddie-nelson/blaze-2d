@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../../logger";
 import BlazeElement from "../../ui/element";
 import BlazeTitleBar from "../../ui/titleBar";
 import { EDITOR_GRID_SIZE } from "../editor";
@@ -26,11 +27,11 @@ export default class EditorPane extends BlazeElement<HTMLDivElement> {
   constructor(id: string, pos = vec2.create(), width = 1, height = 1) {
     // validation
     if (pos[0] < 0 || pos[0] >= EDITOR_GRID_SIZE || pos[1] < 0 || pos[1] >= EDITOR_GRID_SIZE)
-      throw new Error("EditorPane: Position must be between 0 and EDITOR_GRID_SIZE - 1.");
+      throw Logger.error("EditorPane", "Position must be between 0 and EDITOR_GRID_SIZE - 1.");
     if (width < 0 || width > EDITOR_GRID_SIZE)
-      throw new Error("EditorPane: Width must be between 0 and EDITOR_GRID_SIZE.");
+      throw Logger.error("EditorPane", "Width must be between 0 and EDITOR_GRID_SIZE.");
     if (height < 0 || height > EDITOR_GRID_SIZE)
-      throw new Error("EditorPane: Height must be between 0 and EDITOR_GRID_SIZE.");
+      throw Logger.error("EditorPane", "Height must be between 0 and EDITOR_GRID_SIZE.");
 
     const element = document.createElement("div");
     element.classList.add("blzEditorPane");

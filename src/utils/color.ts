@@ -1,3 +1,5 @@
+import Logger from "../logger";
+
 /**
  * Stores the color values for a RGBA color.
  */
@@ -40,7 +42,7 @@ export default class Color {
       if (valid) this.parseHTML(color);
     }
 
-    if (!valid) throw new Error(`Color: '${color}' is not a valid color representation.`);
+    if (!valid) throw Logger.error("Color", `'${color}' is not a valid color representation.`);
   }
 
   /**
@@ -131,7 +133,7 @@ export default class Color {
    * @throws When an invalid hex color is provided
    */
   hexToRgba(hex: string): RGBAColor {
-    if (!this.validateHEX(hex)) throw new Error("Color: Invalid hex color provided to hexToRgba.");
+    if (!this.validateHEX(hex)) return void Logger.error("Color", "Invalid hex color provided in hexToRgba.");
 
     let fixed = hex.substr(1);
     if (fixed.length === 3) fixed += fixed + "FF";
@@ -159,7 +161,7 @@ export default class Color {
    * @throws When an invalid rgba color is provided
    */
   rgbaToHex(rgba: RGBAColor): string {
-    if (!this.validateRGBA(rgba)) throw new Error("Color: Invalid rgba color provided to rgbaToHex.");
+    if (!this.validateRGBA(rgba)) return void Logger.error("Color", "Invalid rgba color provided in rgbaToHex.");
 
     const rHex = rgba.r.toString(16).padStart(2, "0");
     const bHex = rgba.g.toString(16).padStart(2, "0");
@@ -180,15 +182,10 @@ export default class Color {
    *
    * @throws When an invalid rgba color is provided
    */
-  rgbaToWebGL(rgba: RGBAColor) {
-    if (!this.validateRGBA(rgba)) throw new Error("Color: Invalid rgba color provided to rgbaToWebGL.");
+  rgbaToWebGL(rgba: RGBAColor): number[] {
+    if (!this.validateRGBA(rgba)) return void Logger.error("Color", "Invalid rgba color provided in rgbaToWebGL.");
 
-    return [
-      this.rgba.r / 255,
-      this.rgba.g / 255,
-      this.rgba.b / 255,
-      this.rgba.a !== undefined ? this.rgba.a : 1,
-    ];
+    return [this.rgba.r / 255, this.rgba.g / 255, this.rgba.b / 255, this.rgba.a !== undefined ? this.rgba.a : 1];
   }
 
   html: { [index: string]: string } = {

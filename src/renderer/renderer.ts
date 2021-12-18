@@ -18,6 +18,7 @@ import Circle from "../shapes/circle";
 import Shape from "../shapes/shape";
 import { ZMap } from "../utils/types";
 import Triangle from "../shapes/triangle";
+import Logger from "../logger";
 
 interface RenderQueueItem {
   shape: Shape;
@@ -74,7 +75,7 @@ export default abstract class Renderer {
    */
   static init(canvas: HTMLCanvasElement, opts?: WebGLContextAttributes) {
     const gl = canvas.getContext("webgl2", opts);
-    if (!gl) throw new Error("Your browser does not support WebGL 2.0");
+    if (!gl) throw Logger.error("Renderer", "Your browser does not support WebGL 2.0");
 
     this.gl = gl;
     this.resizeToCanvas();
@@ -318,8 +319,8 @@ export default abstract class Renderer {
    *
    * @param resolutionScale The new resolution scale to use
    */
-  static setResolutionScale(resolutionScale: number) {
-    if (resolutionScale <= 0) throw new Error("Blaze: Resolution scale must be a number greater than 0.");
+  static setResolutionScale(resolutionScale: number): void {
+    if (resolutionScale <= 0) return void Logger.error("Blaze: Resolution scale must be a number greater than 0.");
 
     this.resolutionScale = resolutionScale;
     this.resizeToCanvas();
@@ -341,10 +342,10 @@ export default abstract class Renderer {
    *
    * @param mode The mode to use
    */
-  static setMode(mode: "TRIANGLES" | "LINES" | "POINTS") {
+  static setMode(mode: "TRIANGLES" | "LINES" | "POINTS"): void {
     const m = mode.toUpperCase();
     if (m !== "TRIANGLES" && m !== "LINES" && m !== "POINTS")
-      throw new Error("Renderer: Mode can only be TRIANGLES, LINES or POINTS.");
+      return void Logger.error("Renderer", "Mode can only be TRIANGLES, LINES or POINTS.");
 
     this.mode = m;
   }

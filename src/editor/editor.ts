@@ -1,5 +1,6 @@
 import { vec2 } from "gl-matrix";
 import { System } from "../system";
+import ConsolePane from "./panes/consolePane";
 import EditorPane from "./panes/pane";
 import EditorPaneGroup from "./panes/paneGroup";
 import PhysicsPane from "./panes/physicsPane";
@@ -86,7 +87,7 @@ export default class Editor implements System {
   defaultLayout() {
     this.panes.length = 0;
 
-    const scenePane = new ScenePane(this.canvas, vec2.fromValues(5, 0), 14, 19);
+    const scenePane = new ScenePane(this.canvas, vec2.fromValues(5, 0), 14, 18);
     this.panes.push(scenePane);
 
     const rendererPane = new RendererPane();
@@ -96,6 +97,9 @@ export default class Editor implements System {
     rightGroup.addPane(rendererPane);
     rightGroup.addPane(physicsPane);
     this.panes.push(rightGroup);
+
+    const consolePane = new ConsolePane(vec2.fromValues(5, 18), 14, 6);
+    this.panes.push(consolePane);
   }
 
   /**
@@ -140,6 +144,8 @@ export default class Editor implements System {
       const startCol = p.pos[0];
 
       for (let row = startRow; row < endRow; row++) {
+        if (!layout[row]) continue;
+
         layout[row].splice(startCol, p.width, ...Array(p.width).fill(p.id));
       }
     }
