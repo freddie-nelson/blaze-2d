@@ -26,7 +26,12 @@ export default class PhysicsPane extends EditorPane {
   fps = new BlazeStat("FPS", 0, 1, false, TextStyle.HIGHLIGHT);
   physicsTime = new BlazeStat("Physics Time", 0, 1, false, TextStyle.HIGHLIGHT);
 
+  dynamicsTime = new BlazeStat("Dynamics Time", 0, 1, false, TextStyle.HIGHLIGHT);
   dynamicsBodies = new BlazeStat("Bodies", 0, 1, false, TextStyle.SECONDARY);
+
+  broadphaseTime = new BlazeStat("Broadphase Time", 0, 1, false, TextStyle.HIGHLIGHT);
+  narrowphaseTime = new BlazeStat("Narrowphase Time", 0, 1, false, TextStyle.HIGHLIGHT);
+  solveTime = new BlazeStat("Solving Time", 0, 1, false, TextStyle.HIGHLIGHT);
 
   collisionBodies = new BlazeStat("Bodies", 0, 1, false, TextStyle.SECONDARY);
   aabbTreeHeight = new BlazeStat("AABB Tree Height", 0, 1, false, TextStyle.SECONDARY);
@@ -98,9 +103,13 @@ export default class PhysicsPane extends EditorPane {
     this.collisionsHeading.element.style.marginTop = "1.6ch";
 
     this.element.appendChild(this.dynamicsHeading.element);
+    this.element.appendChild(this.dynamicsTime.element);
     this.element.appendChild(this.dynamicsBodies.element);
 
     this.element.appendChild(this.collisionsHeading.element);
+    this.element.appendChild(this.broadphaseTime.element);
+    this.element.appendChild(this.narrowphaseTime.element);
+    this.element.appendChild(this.solveTime.element);
     this.element.appendChild(this.collisionBodies.element);
     this.element.appendChild(this.aabbTreeHeight.element);
     this.element.appendChild(this.collisionPairs.element);
@@ -116,7 +125,12 @@ export default class PhysicsPane extends EditorPane {
     this.fps.setValue(Number((1 / Blaze.getDelta()).toFixed(1)));
     this.physicsTime.setValue(Number(physics.physicsTime.toFixed(2)));
 
+    this.dynamicsTime.setValue(Number(physics.dynamicsTime.toFixed(2)));
     this.dynamicsBodies.setValue(physics.dynamicsSpace.objects.length);
+
+    this.broadphaseTime.setValue(Number(physics.broadphaseTime.toFixed(2)));
+    this.narrowphaseTime.setValue(Number(physics.narrowphaseTime.toFixed(2)));
+    this.solveTime.setValue(Number(physics.collisionSolveTime.toFixed(2)));
 
     this.collisionBodies.setValue(physics.collisionsSpace.objects.length);
     this.aabbTreeHeight.setValue(physics.collisionsSpace.aabbTree.getHeight());

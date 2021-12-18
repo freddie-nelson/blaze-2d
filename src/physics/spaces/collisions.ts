@@ -98,7 +98,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
   broadphase() {
     this.aabbTree.update();
     this.collisionPairs = this.aabbTree.collectPairs();
-    // console.log(this.collisionPairs.length);
   }
 
   /**

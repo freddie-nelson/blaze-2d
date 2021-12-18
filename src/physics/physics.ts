@@ -81,7 +81,7 @@ export default class Physics {
     VELOCITY_ITERATIONS: 8,
     ACUMMULATE_IMPULSE: true,
     WARM_IMPULSE: true,
-    POSITION_ITERATIONS: 12,
+    POSITION_ITERATIONS: 6,
     POSITION_SLOP: 0.015,
     POSITION_DAMPING: 1,
     POSITION_WARMING: 0.9,
@@ -100,6 +100,26 @@ export default class Physics {
    * The amount of time in ms that the last physics step took.
    */
   physicsTime = 0;
+
+  /**
+   * The time in ms that the last broadphase collision detection step took.
+   */
+  broadphaseTime = 0;
+
+  /**
+   * The time in ms that the last narrowphase collision detection step took.
+   */
+  narrowphaseTime = 0;
+
+  /**
+   * The time in ms that the last collision solving steps took.
+   */
+  collisionSolveTime = 0;
+
+  /**
+   * The time in ms that the last dynamics solving steps took.
+   */
+  dynamicsTime = 0;
 
   /**
    * Enable/disable debug tools.
@@ -134,11 +154,23 @@ export default class Physics {
 
     // step bodies
     // order is very important
+
+    // broadphase
+    this.broadphaseTime = performance.now();
     this.collisionsSpace.broadphase();
+    this.broadphaseTime = performance.now() - this.broadphaseTime;
+
+    // narrow pahse
+    this.narrowphaseTime = performance.now();
     this.collisionsSpace.obtainManifolds(delta);
+    this.narrowphaseTime = performance.now() - this.narrowphaseTime;
 
     // integrate forces
+    const forceTimer = performance.now();
     this.dynamicsSpace.solve("forces", delta);
+    this.dynamicsTime = performance.now() - forceTimer;
+
+    this.collisionSolveTime = performance.now();
 
     // pre steps
     this.collisionsSpace.solve("preStepImpulse", delta);
@@ -151,11 +183,17 @@ export default class Physics {
     this.collisionsSpace.setSolverIterations("impulse", this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.solve("impulse", delta);
 
+    this.collisionSolveTime = performance.now() - this.collisionSolveTime;
+
     // integrate velocities
+    const velocityTimer = performance.now();
     this.dynamicsSpace.solve("velocity", delta);
+    this.dynamicsTime += performance.now() - velocityTimer;
 
     // apply position impulse
+    const positionTimer = performance.now();
     this.collisionsSpace.solve("position", delta);
+    this.collisionSolveTime += performance.now() - positionTimer;
 
     // clear forces
     this.dynamicsSpace.solve("reset", delta);
