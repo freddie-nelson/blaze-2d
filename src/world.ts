@@ -13,6 +13,8 @@ import Texture from "./texture/texture";
 import Color, { RGBAColor } from "./utils/color";
 import Viewport from "./camera/viewport";
 
+export type EntityListener = (event: "add" | "remove", entity: Entity, index: number, entities: Entity[]) => void;
+
 /**
  * Represents the 2D world.
  */
@@ -22,6 +24,11 @@ export default class World implements System {
 
   private camera: Camera;
   private entities: Entity[] = [];
+
+  /**
+   * Callbacks which are fired whenever an entity is added or removed.
+   */
+  private entityListeners: EntityListener[] = [];
 
   /**
    * Creates a {@link World} instance.
@@ -186,23 +193,54 @@ export default class World implements System {
    * Adds an entity to the world.
    *
    * @param entity The entity to add
+   * @param fireListeners Wether or not to execute the world's entity listeners
    */
-  addEntity(entity: Entity) {
+  addEntity(entity: Entity, fireListeners = true) {
     this.entities.push(entity);
+    if (fireListeners) this.callEntityListeners("add", entity, this.entities.length - 1);
   }
 
   /**
    * Removes an entity from the world.
    *
    * @param entity The entity to remove
+   * @param fireListeners Wether or not to execute the world's entity listeners
    * @returns Wether or not the entity was removed
    */
-  removeEntity(entity: Entity) {
+  removeEntity(entity: Entity, fireListeners = true) {
     const i = this.entities.findIndex((e) => e === entity);
     if (i === -1) return false;
 
     this.entities.splice(i, 1);
+    if (fireListeners) this.callEntityListeners("remove", entity, i);
     return true;
+  }
+
+  private callEntityListeners(event: "add" | "remove", entity: Entity, index: number) {
+    for (const l of this.entityListeners) {
+      l(event, entity, index, this.entities);
+    }
+  }
+
+  /**
+   * Adds a callback which will be called whenever an entity is added or removed from the world.
+   *
+   * @param listener The listener to add
+   */
+  addEntityListener(listener: EntityListener) {
+    this.entityListeners.push(listener);
+  }
+
+  /**
+   * Removes an {@link EntityListener} from the world.
+   *
+   * @param listener The listener to remove
+   */
+  removeEntityListener(listener: EntityListener) {
+    const index = this.entityListeners.findIndex((l) => l === listener);
+    if (index === -1) return;
+
+    this.entityListeners.splice(index, 1);
   }
 
   /**

@@ -6,6 +6,7 @@ import EditorPaneGroup from "./panes/paneGroup";
 import PhysicsPane from "./panes/physicsPane";
 import RendererPane from "./panes/rendererPane";
 import ScenePane from "./panes/scenePane";
+import WorldPane from "./panes/worldPane";
 
 import "./styles/editor.css";
 
@@ -89,6 +90,9 @@ export default class Editor implements System {
 
     const scenePane = new ScenePane(this.canvas, vec2.fromValues(5, 0), 14, 18);
     this.panes.push(scenePane);
+
+    const worldPane = new WorldPane(vec2.fromValues(0, 0), 5, 24);
+    this.panes.push(worldPane);
 
     const rendererPane = new RendererPane();
     const physicsPane = new PhysicsPane();
