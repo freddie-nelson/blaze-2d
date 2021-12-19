@@ -6,13 +6,14 @@ import Renderer from "../../renderer/renderer";
 import BlazeDropdown from "../../ui/dropdown";
 import BlazeHeading from "../../ui/heading";
 import BlazeInput from "../../ui/input";
+import BlazeList from "../../ui/list";
 import BlazeStat from "../../ui/stat";
 import BlazeText, { TextStyle } from "../../ui/text";
 import EditorPane from "./pane";
 
 export default class ConsolePane extends EditorPane {
   // elements
-  private messages = document.createElement("div");
+  private messages = new BlazeList();
 
   /**
    * Creates a {@link ConsolePane}.
@@ -27,12 +28,8 @@ export default class ConsolePane extends EditorPane {
     this.element.style.display = "flex";
     this.element.style.flexDirection = "column";
 
-    this.messages.style.display = "flex";
-    this.messages.style.flexDirection = "column";
-    this.messages.style.padding = ".5rem";
-    this.messages.style.overflowY = "scroll";
-    this.messages.style.flexGrow = "1";
-    this.element.appendChild(this.messages);
+    this.messages.element.style.flexGrow = "1";
+    this.element.appendChild(this.messages.element);
 
     Logger.addListener((type, str) => this.addMessage(type, str));
   }
@@ -65,12 +62,7 @@ export default class ConsolePane extends EditorPane {
 
     const msg = new BlazeText(str, 0.8, bold, style);
     msg.element.style.marginBottom = "0.15rem";
-    this.messages.appendChild(msg.element);
 
-    if (
-      this.messages.scrollHeight - this.messages.scrollTop <=
-      this.messages.clientHeight + msg.element.clientHeight * 6
-    )
-      this.messages.scrollTo(0, this.messages.scrollHeight);
+    this.messages.addItems(msg);
   }
 }
