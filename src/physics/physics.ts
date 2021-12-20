@@ -58,6 +58,7 @@ export interface PhysicsConfig {
   POSITION_SLOP: number;
   POSITION_DAMPING: number;
   POSITION_WARMING: number;
+  POSITION_SCALE: number;
 
   EPA_TOLERANCE: number;
   EPA_MAX_ITERATIONS: number;
@@ -81,10 +82,11 @@ export default class Physics {
     VELOCITY_ITERATIONS: 8,
     ACUMMULATE_IMPULSE: true,
     WARM_IMPULSE: true,
-    POSITION_ITERATIONS: 6,
+    POSITION_ITERATIONS: 4,
     POSITION_SLOP: 0.015,
-    POSITION_DAMPING: 1,
-    POSITION_WARMING: 0.9,
+    POSITION_DAMPING: 0.9,
+    POSITION_WARMING: 0.8,
+    POSITION_SCALE: 0.08,
 
     EPA_TOLERANCE: 0.005,
     EPA_MAX_ITERATIONS: 16,

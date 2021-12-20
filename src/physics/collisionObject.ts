@@ -14,6 +14,11 @@ export default class CollisionObject extends PhysicsObject {
   collider: Collider;
 
   /**
+   * The number of contact points the object is colliding at.
+   */
+  totalContacts = 0;
+
+  /**
    * Wether or not to clone the object's position and rotation to it's collider.
    */
   stickyCollider = true;

@@ -1,3 +1,4 @@
+import Logger from "../logger";
 import CollisionObject from "./collisionObject";
 import Manifold from "./manifold";
 
@@ -52,10 +53,7 @@ export default class ManifoldMap {
    * @param b An object in the key
    * @returns The manifold key or undefined
    */
-  getManifoldKey(
-    a: CollisionObject,
-    b: CollisionObject
-  ): { top: CollisionObject; key: CollisionObject } | undefined {
+  getManifoldKey(a: CollisionObject, b: CollisionObject): { top: CollisionObject; key: CollisionObject } | undefined {
     let top = this.map.get(a);
     let usedA = true;
     if (!top) {
@@ -87,6 +85,7 @@ export default class ManifoldMap {
 
       old.update(m);
       if (old.isDead) {
+        // Logger.log("manifoldMap", "dead map");
         this.removeManifold(a, b);
       } else return;
     }
@@ -162,7 +161,7 @@ export default class ManifoldMap {
     for (const map of maps) {
       const inners = map.values();
       for (const inner of inners) {
-        inner.isDead = true;
+        inner.kill();
       }
     }
   }

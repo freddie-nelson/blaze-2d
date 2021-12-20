@@ -117,6 +117,9 @@ export default class Manifold {
 
     this.contactPoints = this.calculateContactPoints();
 
+    this.a.totalContacts += this.contactPoints.length;
+    this.b.totalContacts += this.contactPoints.length;
+
     // add missing properties to contacts
     for (const contact of this.contactPoints) {
       contact.bias = 0;
@@ -158,7 +161,7 @@ export default class Manifold {
     const mergedContacts: ContactPoint[] = [];
 
     // if we have different number of contacts drop manifold
-    if (newContacts.length !== oldContacts.length) return (this.isDead = true);
+    if (newContacts.length !== oldContacts.length) return this.kill();
 
     // merge contacts
     for (let i = 0; i < newContacts.length; i++) {
@@ -188,11 +191,17 @@ export default class Manifold {
       mergedContacts.push(nc);
     }
 
-    if (mergedContacts.length !== oldContacts.length) return (this.isDead = true);
+    if (mergedContacts.length !== oldContacts.length) return this.kill();
 
     this.mergeManifold(m, mergedContacts);
   }
 
+  /**
+   * Merge this manifold with the given manifold and contact points.
+   *
+   * @param m The manifold to merge with
+   * @param contacts The manifold's new contact points
+   */
   private mergeManifold(m: Manifold, contacts: ContactPoint[]) {
     this.isDead = false;
     this.a = m.a;
@@ -208,6 +217,13 @@ export default class Manifold {
     this.positionImpulse = m.positionImpulse;
   }
 
+  /**
+   * Compares two contact points using a distance heuristic to determine wether they should be considered the same contact.
+   *
+   * @param c1 A contact point
+   * @param c2 A contact point
+   * @returns If the 2 contact points match
+   */
   private compareContacts(c1: ContactPoint, c2: ContactPoint) {
     const d = vec2.sqrDist(c1.point, c2.point);
     // console.log(d, Manifold.CACHED_CONTACTS_TOLERANCE, d < Manifold.CACHED_CONTACTS_TOLERANCE);
@@ -215,7 +231,20 @@ export default class Manifold {
   }
 
   /**
+   * Marks the manifold as dead and decrements the objects involved's `totalContacts` counts.
+   */
+  kill() {
+    if (this.isDead) return;
+
+    this.isDead = true;
+    this.a.totalContacts -= this.contactPoints.length;
+    this.b.totalContacts -= this.contactPoints.length;
+  }
+
+  /**
    * Calculates the position impulse for objects `a` and `b` in the manifold.
+   *
+   * @see [MatterJS Position Solving](https://github.com/liabru/matter-js/blob/master/src/collision/Resolver.js)
    *
    * @param delta The time since the last update
    */
@@ -232,21 +261,20 @@ export default class Manifold {
     const bToA = vec2.sub(vec2.create(), aPos, bPos);
     const separation = vec2.dot(bToA, this.normal);
 
-    let positionImpulse = (separation - Physics.G_CONF.POSITION_SLOP) * delta;
+    let positionImpulse = (separation - Physics.G_CONF.POSITION_SLOP) * Physics.G_CONF.POSITION_SCALE;
     // if (positionImpulse > 0.1) console.log(positionImpulse, delta);
 
-    // split position impulse between a and b based on mass ratio
-    const invMass = this.a.getInverseMass() + this.b.getInverseMass();
-    if (invMass === 0) return;
+    // console.log(this.a.totalContacts, this.b.totalContacts);
 
-    const share = Physics.G_CONF.POSITION_DAMPING / invMass;
+    if (this.a.isStatic || this.b.isStatic) positionImpulse *= 2;
 
+    // apply position impulse to a and b based on total contacts
     if (!this.a.isStatic)
       vec2.scaleAndAdd(
         this.positionImpulse.a,
         this.positionImpulse.a,
         this.normal,
-        -positionImpulse * share * this.a.getInverseMass(),
+        -positionImpulse * (Physics.G_CONF.POSITION_DAMPING / this.a.totalContacts),
       );
 
     if (!this.b.isStatic)
@@ -254,7 +282,7 @@ export default class Manifold {
         this.positionImpulse.b,
         this.positionImpulse.b,
         this.normal,
-        positionImpulse * share * this.b.getInverseMass(),
+        positionImpulse * (Physics.G_CONF.POSITION_DAMPING / this.b.totalContacts),
       );
   }
 
