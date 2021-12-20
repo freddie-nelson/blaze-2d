@@ -12,6 +12,8 @@ export default class AABB {
   min: vec2;
   max: vec2;
 
+  margin: number;
+
   /**
    * A {@link CollisionObject} that is bound by the {@link AABB}.
    */
@@ -60,6 +62,7 @@ export default class AABB {
    * @param margin A margin to add to the new min and max points
    */
   setMinMaxFromCollisionObj(obj: CollisionObject, margin: number) {
+    this.margin = margin;
     this.obj = obj;
 
     const c = obj.collider;
@@ -102,6 +105,7 @@ export default class AABB {
     const minY = a.min[1] < b.min[1] ? a.min[1] : b.min[1];
     const maxY = a.max[1] > b.max[1] ? a.max[1] : b.max[1];
 
+    this.margin = margin;
     this.min = vec2.fromValues(minX - margin, minY - margin);
     this.max = vec2.fromValues(maxX + margin, maxY + margin);
   }

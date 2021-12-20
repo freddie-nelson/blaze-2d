@@ -115,8 +115,17 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
     this.triggers.killAllManifolds();
 
     for (const pair of this.collisionPairs) {
-      const A = pair.a;
-      const B = pair.b;
+      let A = pair.a;
+      let B = pair.b;
+
+      // swap A and B if a manifold already exists for this pair of objects
+      // this increases the possibility of contact point caching
+      const key = this.collisions.getManifoldKey(A, B) || this.triggers.getManifoldKey(A, B);
+      if (key && key.top === B) {
+        A = pair.b;
+        B = pair.a;
+        // console.log("swap");
+      }
 
       // test collision
       const res = A.testCollision(B);
@@ -161,7 +170,10 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
    * @param obj The {@link CollisionObject} to add to the space
    */
   addObject(obj: CollisionObject) {
-    this.aabbTree.add(new AABB(obj, this.aabbTree.margin));
+    const vel = obj.velocity;
+    const margin = Math.max(Math.abs(vel[0]), Math.abs(vel[1]));
+    this.aabbTree.add(new AABB(obj, margin));
+
     super.addObject(obj);
   }
 

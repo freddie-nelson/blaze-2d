@@ -5,10 +5,8 @@ import Manifold from "../../manifold";
 import Physics from "../../physics";
 
 // initialise needed vectors
-const contactA = vec2.create();
-const contactB = vec2.create();
 const impulse = vec2.create();
-const velTangent = vec2.create();
+const negImpulse = vec2.create();
 const tangentImpulse = vec2.create();
 const reverseTangentImpulse = vec2.create();
 
@@ -23,8 +21,8 @@ export default function solveImpulse(m: Manifold) {
 
   for (const contact of m.contactPoints) {
     // calculate contact vectors
-    vec2.sub(contactA, contact.point, m.a.getPosition());
-    vec2.sub(contactB, contact.point, m.b.getPosition());
+    let contactA = contact.contactA;
+    let contactB = contact.contactB;
 
     let relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
 
@@ -48,14 +46,13 @@ export default function solveImpulse(m: Manifold) {
     // apply impulse
     vec2.scale(impulse, contact.normal, deltaImpulseNormal);
 
-    m.a.applyImpulse(vec2.negate(vec2.create(), impulse), contactA);
+    m.a.applyImpulse(vec2.negate(negImpulse, impulse), contactA);
     m.b.applyImpulse(impulse, contactB);
 
     // friction impulse
     relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
 
-    const tangent = cross2DWithScalar(vec2.create(), contact.normal, 1);
-    const velTangent = vec2.dot(relativeVelocity, tangent);
+    const velTangent = vec2.dot(relativeVelocity, contact.tangent);
     let deltaImpulseTangent = contact.massTangent * -velTangent;
 
     if (Physics.G_CONF.ACUMMULATE_IMPULSE) {
@@ -72,7 +69,7 @@ export default function solveImpulse(m: Manifold) {
     }
 
     // apply friction impulse
-    vec2.scale(tangentImpulse, tangent, deltaImpulseTangent);
+    vec2.scale(tangentImpulse, contact.tangent, deltaImpulseTangent);
     vec2.negate(reverseTangentImpulse, tangentImpulse);
 
     m.a.applyImpulse(reverseTangentImpulse, contactA);

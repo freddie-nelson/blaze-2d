@@ -21,6 +21,7 @@ export interface ContactPoint {
 
   contactA?: vec2;
   contactB?: vec2;
+  tangent?: vec2;
   massNormal?: number;
   massTangent?: number;
   bias?: number;
@@ -286,6 +287,7 @@ export default class Manifold {
       contact.massNormal = 1 / massNormal;
 
       const tangent = cross2DWithScalar(vec2.create(), contact.normal, 1);
+      contact.tangent = tangent;
 
       // compute distance along tangent for contacts
       const distAlongTangentA = vec2.dot(contactA, tangent);

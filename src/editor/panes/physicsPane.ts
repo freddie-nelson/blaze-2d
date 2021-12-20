@@ -35,6 +35,7 @@ export default class PhysicsPane extends EditorPane {
 
   collisionBodies = new BlazeStat("Bodies", 0, 1, false, TextStyle.SECONDARY);
   aabbTreeHeight = new BlazeStat("AABB Tree Height", 0, 1, false, TextStyle.SECONDARY);
+  aabbTreeInsertions = new BlazeStat("AABB Insertions", 0, 1, false, TextStyle.SECONDARY);
   collisionPairs = new BlazeStat("Collision Pairs", 0, 1, false, TextStyle.SECONDARY);
   actualCollisions = new BlazeStat("Actual Collisions", 0, 1, false, TextStyle.SECONDARY);
 
@@ -112,6 +113,7 @@ export default class PhysicsPane extends EditorPane {
     this.element.appendChild(this.solveTime.element);
     this.element.appendChild(this.collisionBodies.element);
     this.element.appendChild(this.aabbTreeHeight.element);
+    this.element.appendChild(this.aabbTreeInsertions.element);
     this.element.appendChild(this.collisionPairs.element);
     this.element.appendChild(this.actualCollisions.element);
   }
@@ -134,6 +136,7 @@ export default class PhysicsPane extends EditorPane {
 
     this.collisionBodies.setValue(physics.collisionsSpace.objects.length);
     this.aabbTreeHeight.setValue(physics.collisionsSpace.aabbTree.getHeight());
+    this.aabbTreeInsertions.setValue(physics.collisionsSpace.aabbTree.insertionsLastUpdate);
     this.collisionPairs.setValue(physics.collisionsSpace.collisionPairs.length);
     this.actualCollisions.setValue(
       physics.collisionsSpace.collisionManifolds.length + physics.collisionsSpace.triggerManifolds.length,

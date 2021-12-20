@@ -1,3 +1,5 @@
+import { vec2 } from "gl-matrix";
+import Logger from "../../logger";
 import CollisionObject from "../collisionObject";
 import CollisionPair from "../collisionPair";
 import AABB from "./aabb";
@@ -15,7 +17,17 @@ export default class AABBTree {
   root: AABBNode;
   margin = 0.1;
 
+  leafMarginScale = 0.2;
+  leafMarginSlop = 0.05;
+  leafMarginMin = 0.02;
+  leafMarginMax = 10;
+
   pairs: CollisionPair[];
+
+  /**
+   * The number of nodes which had to be reinserted in the last tree update.
+   */
+  insertionsLastUpdate = 0;
 
   constructor() {}
 
@@ -38,14 +50,21 @@ export default class AABBTree {
       const node = stack.pop();
 
       if (node.isLeaf()) {
+        const margin = this.updateAABBMargin(node);
+
         const fat = node.aabb;
         const tight = new AABB(fat.obj, 0);
 
-        if (!fat.contains(tight)) invalidNodes.push(node);
+        if (!fat.contains(tight)) {
+          if (!margin) this.updateAABBMargin(node, true);
+          invalidNodes.push(node);
+        }
       } else {
         stack.push(node.left, node.right);
       }
     }
+
+    this.insertionsLastUpdate = 0;
 
     // re-insert invalid nodes
     for (const node of invalidNodes) {
@@ -53,9 +72,34 @@ export default class AABBTree {
       this.removeNode(node);
 
       // re-insert node
-      node.updateAABB(this.margin);
       this.addNode(node, this.root);
+      this.insertionsLastUpdate++;
     }
+  }
+
+  /**
+   * Updates a leaf node's aabb's margin based on the aabb's bound {@link CollisionObject}.
+   *
+   * @param leaf The leaf node to update
+   * @param force Force the margin to be updated even when there is an insufficient margin difference
+   * @returns The new margin or false if the margin wasn't updated.
+   */
+  private updateAABBMargin(leaf: AABBNode, force = false) {
+    const vel = leaf.aabb.obj.velocity;
+    const newMargin = Math.max(
+      Math.min(Math.max(Math.abs(vel[0]), Math.abs(vel[1])) * this.leafMarginScale, this.leafMarginMax),
+      this.leafMarginMin,
+    );
+
+    if (force || Math.abs(newMargin - leaf.aabb.margin) > this.leafMarginSlop) {
+      // console.log("margin update");
+      // Logger.log("aabbTree", `Margin updated [old: ${node.aabb.margin}] [new: ${newMargin}]`);
+      // console.log(newMargin);
+      leaf.updateAABB(newMargin);
+      return newMargin;
+    }
+
+    return false;
   }
 
   /**
