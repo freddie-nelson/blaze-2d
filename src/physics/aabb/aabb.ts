@@ -127,8 +127,21 @@ export default class AABB {
    *
    * @param b The {@link AABB} to check for intersection against
    */
-  intersects(b: AABB) {
-    return this.max[0] > b.min[0] && this.min[0] < b.max[0] && this.max[1] > b.min[1] && this.min[1] < b.max[1];
+  intersects(b: AABB): boolean;
+
+  /**
+   * Determines wether or not the given point intersects with this {@link AABB}.
+   *
+   * @param point The point to check for intersection
+   */
+  intersects(point: vec2): boolean;
+
+  intersects(b: AABB | vec2) {
+    if (b instanceof AABB) {
+      return this.max[0] > b.min[0] && this.min[0] < b.max[0] && this.max[1] > b.min[1] && this.min[1] < b.max[1];
+    } else {
+      return this.max[0] >= b[0] && this.min[0] <= b[0] && this.max[1] >= b[1] && this.min[1] <= b[1];
+    }
   }
 
   /**

@@ -37,6 +37,8 @@ export default class AABBTree {
   update() {
     if (!this.root) return;
 
+    // console.log(this.root);
+
     if (this.root.isLeaf()) {
       this.root.updateAABB(this.margin);
       return;
@@ -71,7 +73,10 @@ export default class AABBTree {
       // remove node
       this.removeNode(node);
 
+      // if (this.root === node) console.log(node)
+
       // re-insert node
+      console.log(this.root);
       this.addNode(node, this.root);
       this.insertionsLastUpdate++;
     }
@@ -183,6 +188,30 @@ export default class AABBTree {
   }
 
   /**
+   * Picks aabbs in the tree.
+   *
+   * @param point The point to pick {@link AABB}s at.
+   */
+  pick(point: vec2): AABB[] {
+    if (!this.root) return [];
+
+    const picked: AABB[] = [];
+    const stack = [this.root];
+
+    while (stack.length > 0) {
+      const node = stack.pop();
+
+      if (node.isLeaf()) {
+        if (node.aabb.intersects(point)) picked.push(node.aabb);
+      } else {
+        stack.push(node.left, node.right);
+      }
+    }
+
+    return picked;
+  }
+
+  /**
    * Inserts an aabb into the tree.
    *
    * @param aabb The {@link AABB} to insert
@@ -229,14 +258,20 @@ export default class AABBTree {
    */
   private removeNode(node: AABBNode) {
     const parent = node.parent;
-    if (!parent) {
+    if (node === this.root) {
       this.root = undefined;
       return;
     }
 
-    const n = node.sibling();
-    if (!parent.parent) this.root = n;
-    else parent.parent.replaceChild(parent, n);
+    const sibling = node.sibling();
+    if (!parent.parent) {
+      this.root = sibling;
+      sibling.parent = undefined;
+    } else {
+      parent.parent.replaceChild(parent, sibling);
+    }
+
+    node.parent = undefined;
   }
 
   /**
@@ -290,6 +325,8 @@ export default class AABBTree {
   getHeight(node: AABBNode): number;
 
   getHeight(node?: AABBNode): number {
+    if (!this.root) return 0;
+
     if (!node) {
       return this.getHeight(this.root);
     }

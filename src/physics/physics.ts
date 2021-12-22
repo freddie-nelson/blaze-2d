@@ -14,6 +14,8 @@ import Circle from "../shapes/circle";
 import preStepImpulse from "./solvers/collision/preStepImpulse";
 import solvePositionImpulse from "./solvers/collision/positionImpulse";
 import applyPositionImpulse from "./solvers/collision/applyPositionImpulse";
+import CircleCollider from "./collider/circle";
+import GJK from "./gjk";
 
 const debugRGBA: RGBAColor = {
   r: 0,
@@ -239,6 +241,30 @@ export default class Physics {
       //   circle2.render();
       // }
     }
+  }
+
+  /**
+   * Point pick objects.
+   *
+   * **NOTE: Picking only checks objects in the {@link CollisionsSpace}.**
+   *
+   * @param point The point to pick objects at
+   */
+  pick(point: vec2): CollisionObject[] {
+    const picked: CollisionObject[] = [];
+    const aabbs = this.collisionsSpace.aabbTree.pick(point);
+
+    const pointCollider = new CircleCollider(0.000001, point);
+
+    for (const aabb of aabbs) {
+      const obj = aabb.obj;
+      if (!obj) continue;
+
+      const res = GJK(obj.collider, pointCollider);
+      if (res.collision) picked.push(obj);
+    }
+
+    return picked;
   }
 
   /**
