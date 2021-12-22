@@ -11,51 +11,25 @@ import GradientTexture, { GradientDirection, GradientType } from "@blz/texture/g
 import Texture from "@blz/texture/texture";
 import TextureAtlas from "@blz/texture/atlas";
 import TextureLoader from "@blz/texture/loader";
-import Debug from "@blz/debug";
-import { addMouseListener, Mouse } from "@blz/mouse";
-import { addKeyListener, isKeyPressed } from "@blz/keyboard";
 import Color, { RGBAColor } from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
 import Entity from "@blz/entity";
 import RectCollider from "@blz/physics/collider/rect";
-
-// constants
-const CANVAS = <HTMLCanvasElement>document.getElementById("canvas");
-
-const VIEWPORT_SIZE = vec2.fromValues(CANVAS.clientWidth, CANVAS.clientHeight);
-const CELL_SIZE = vec2.fromValues(40, 40);
-const BG_COLOR = new Color("skyblue");
+import { Mouse } from "@blz/input/mouse";
+import Editor from "@blz/editor/editor";
 
 // setup engine
-Blaze.init(CANVAS);
-Blaze.setBgColor(BG_COLOR);
+Blaze.init(document.querySelector("canvas"));
+Blaze.setBgColor(new Color("skyblue"));
 Blaze.start();
 
-// setup systems
-const WORLD = new World(CELL_SIZE, VIEWPORT_SIZE);
-const CAMERA = WORLD.getCamera();
-const VIEWPORT = CAMERA.viewport;
+const CANVAS = Blaze.getCanvas();
+const SCENE = Blaze.getScene();
+const WORLD = SCENE.world;
+const PHYSICS = SCENE.physics;
 
-const PHYSICS = new Physics();
-
-Blaze.addSystem(WORLD);
-Blaze.addSystem(PHYSICS, true);
-
-// setup debug menu
-Debug.world = WORLD;
-Blaze.toggleDebug();
-WORLD.debug = true;
-PHYSICS.debug = true;
-
-// lock canvas to window size
-window.addEventListener("resize", () => {
-  Renderer.resizeToCanvas();
-
-  VIEWPORT_SIZE[0] = CANVAS.width;
-  VIEWPORT_SIZE[1] = CANVAS.height;
-  VIEWPORT.setWidth(VIEWPORT_SIZE[0]);
-  VIEWPORT.setHeight(VIEWPORT_SIZE[1]);
-});
+const EDITOR = new Editor();
+Blaze.editor = EDITOR;
 
 // MAIN
 const randInt = (min = 0, max = 1) => {
@@ -66,7 +40,6 @@ const randInt = (min = 0, max = 1) => {
 const ATLAS = new TextureAtlas(2000);
 BatchRenderer.atlas = ATLAS;
 WORLD.useBatchRenderer = true;
-Debug.rendererToggle.checked = true;
 
 // textures
 const lineTex = new Texture(new Color("black"));
@@ -120,11 +93,11 @@ let line: Line;
 let collider: LineCollider;
 let entity: Entity;
 
-addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
+CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (pressed) {
     const start = WORLD.getCellFromPixel(pixelPos);
 
-    if (isKeyPressed("KeyC")) {
+    if (CANVAS.keys.isPressed("KeyC")) {
       const circle = new Circle(1, vec2.create());
       circle.texture = lineTex;
 
@@ -154,7 +127,7 @@ addMouseListener(Mouse.LEFT, (pressed, pixelPos) => {
 });
 
 // live update line end
-addMouseListener(Mouse.MOVE, (pressed, pixelPos) => {
+CANVAS.mouse.addListener(Mouse.MOVE, (pressed, pixelPos) => {
   if (!line) return;
 
   line.setEnd(WORLD.getCellFromPixel(pixelPos));
@@ -163,28 +136,4 @@ addMouseListener(Mouse.MOVE, (pressed, pixelPos) => {
   // move entity to line's world position and line to (0, 0) local position inside entity
   entity.setPosition(line.getPosition());
   line.setPosition(vec2.create());
-});
-
-// pan camera with arrow keys
-const panCamera = (pan: vec2) => {
-  CAMERA.moveRight(pan[0]);
-  CAMERA.moveUp(pan[1]);
-};
-
-const dist = 1;
-
-addKeyListener("ArrowRight", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(dist, 0));
-});
-
-addKeyListener("ArrowLeft", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(-dist, 0));
-});
-
-addKeyListener("ArrowUp", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(0, dist));
-});
-
-addKeyListener("ArrowDown", (pressed) => {
-  if (pressed) panCamera(vec2.fromValues(0, -dist));
 });
