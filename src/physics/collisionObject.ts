@@ -24,7 +24,7 @@ export default class CollisionObject extends PhysicsObject {
   stickyCollider = true;
 
   /**
-   * Wether or not the object is static, static objects cannot move.
+   * Wether or not the object is static, static objects do not move during collisions.
    */
   isStatic = false;
 

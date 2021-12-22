@@ -10,6 +10,11 @@ import CollisionObject from "./collisionObject";
  */
 export default class RigidBody extends CollisionObject {
   /**
+   * Wether the body has dynamics or not.
+   */
+  isDynamic = true;
+
+  /**
    * Creates a {@link RigidBody} with a collider, mass and restitution (bounciness).
    *
    * @param collider The collider of the object

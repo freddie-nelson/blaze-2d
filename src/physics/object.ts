@@ -84,12 +84,12 @@ export default class PhysicsObject extends Object2D {
    *
    * When set to 0 the object's inertia is effectively infinite.
    */
-  private inertia = 5;
+  private inertia = 1;
 
   /**
    * The inverse of the object's inertia (1 / inertia).
    */
-  private inverseInertia = 0.2;
+  private inverseInertia = 1;
 
   /**
    * The damping applied to the object's angular velocity every physics update.
@@ -113,6 +113,7 @@ export default class PhysicsObject extends Object2D {
     super();
 
     this.setMass(mass);
+
     this.restitution = restitution;
 
     this.setupEvents();
@@ -171,6 +172,8 @@ export default class PhysicsObject extends Object2D {
   setMass(mass: number) {
     this.mass = mass;
     this.inverseMass = mass === 0 ? 0 : 1 / mass;
+
+    if (mass === 0) this.setInertia(0);
   }
 
   /**
