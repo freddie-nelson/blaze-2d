@@ -89,12 +89,14 @@ CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
 
     picked.getPieces()[0].texture = pickedTex;
     picked.setMass(0);
+    picked.isStatic = true;
     vec2.zero(picked.velocity);
     picked.angularVelocity = 0;
   } else if (picked) {
     picked.getPieces()[0].texture = rectTex;
     picked.setMass(1);
     picked.setInertia(1);
+    picked.isStatic = false;
     picked = undefined;
   }
 });

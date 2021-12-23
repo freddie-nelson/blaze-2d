@@ -2,6 +2,7 @@ import { vec2 } from "gl-matrix";
 import Logger from "../../logger";
 import CollisionObject from "../collisionObject";
 import CollisionPair from "../collisionPair";
+import Ray from "../ray";
 import AABB from "./aabb";
 import AABBNode from "./aabbNode";
 
@@ -191,6 +192,7 @@ export default class AABBTree {
    * Picks aabbs in the tree.
    *
    * @param point The point to pick {@link AABB}s at.
+   * @returns The picked aabbs
    */
   pick(point: vec2): AABB[] {
     if (!this.root) return [];
@@ -209,6 +211,32 @@ export default class AABBTree {
     }
 
     return picked;
+  }
+
+  /**
+   * Raycasts against aabbs in the tree.
+   *
+   * @param ray The ray to cast.
+   */
+  raycast(ray: Ray): AABB[] {
+    if (!this.root) return [];
+
+    const result: AABB[] = [];
+    const stack = [this.root];
+
+    while (stack.length > 0) {
+      const node = stack.pop();
+
+      if (node.aabb.intersects(ray)) {
+        if (node.isLeaf()) {
+          result.push(node.aabb);
+        } else {
+          stack.push(node.left, node.right);
+        }
+      }
+    }
+
+    return result;
   }
 
   /**

@@ -28,8 +28,8 @@ const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
 const PHYSICS = SCENE.physics;
 
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 // MAIN
 const randInt = (min = 0, max = 1) => {

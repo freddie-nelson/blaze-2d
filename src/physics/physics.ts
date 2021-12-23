@@ -16,6 +16,7 @@ import solvePositionImpulse from "./solvers/collision/positionImpulse";
 import applyPositionImpulse from "./solvers/collision/applyPositionImpulse";
 import CircleCollider from "./collider/circle";
 import GJK from "./gjk";
+import Ray from "./ray";
 
 const debugRGBA: RGBAColor = {
   r: 0,
@@ -50,6 +51,7 @@ const incRGBA: RGBAColor = {
 const incTexture = new Texture(new Color(incRGBA));
 
 export interface PhysicsConfig {
+  POINT_SIZE: number;
   CACHED_CONTACTS_TOLERANCE: number;
   RESTITUTION_THRESHOLD: number;
 
@@ -66,6 +68,24 @@ export interface PhysicsConfig {
   EPA_MAX_ITERATIONS: number;
 }
 
+const defaultConfig: PhysicsConfig = {
+  POINT_SIZE: 0.000001,
+  CACHED_CONTACTS_TOLERANCE: 0.0005,
+  RESTITUTION_THRESHOLD: 1,
+
+  VELOCITY_ITERATIONS: 8,
+  ACUMMULATE_IMPULSE: true,
+  WARM_IMPULSE: true,
+  POSITION_ITERATIONS: 4,
+  POSITION_SLOP: 0.015,
+  POSITION_DAMPING: 0.9,
+  POSITION_WARMING: 0.8,
+  POSITION_SCALE: 0.35,
+
+  EPA_TOLERANCE: 0.005,
+  EPA_MAX_ITERATIONS: 16,
+};
+
 /**
  * Handles physics for bodies added to the engine.
  *
@@ -75,24 +95,9 @@ export interface PhysicsConfig {
  * This allows for easy access to the physics config from other parts of the physics system.
  */
 export default class Physics {
-  static G_CONF: PhysicsConfig;
+  static G_CONF = { ...defaultConfig };
 
-  CONFIG: PhysicsConfig = {
-    CACHED_CONTACTS_TOLERANCE: 0.0005,
-    RESTITUTION_THRESHOLD: 1,
-
-    VELOCITY_ITERATIONS: 8,
-    ACUMMULATE_IMPULSE: true,
-    WARM_IMPULSE: true,
-    POSITION_ITERATIONS: 4,
-    POSITION_SLOP: 0.015,
-    POSITION_DAMPING: 0.9,
-    POSITION_WARMING: 0.8,
-    POSITION_SCALE: 0.08,
-
-    EPA_TOLERANCE: 0.005,
-    EPA_MAX_ITERATIONS: 16,
-  };
+  CONFIG = { ...defaultConfig };
 
   private gravity = vec2.fromValues(0, -9.8);
 
@@ -254,7 +259,7 @@ export default class Physics {
     const picked: CollisionObject[] = [];
     const aabbs = this.collisionsSpace.aabbTree.pick(point);
 
-    const pointCollider = new CircleCollider(0.000001, point);
+    const pointCollider = new CircleCollider(this.CONFIG.POINT_SIZE, point);
 
     for (const aabb of aabbs) {
       const obj = aabb.obj;
@@ -265,6 +270,28 @@ export default class Physics {
     }
 
     return picked;
+  }
+
+  /**
+   * raycast objects.
+   *
+   * **NOTE: Raycast only checks objects in the {@link CollisionsSpace}.**
+   *
+   * @param ray The ray to cast
+   */
+  raycast(ray: Ray): CollisionObject[] {
+    const result: CollisionObject[] = [];
+    const aabbs = this.collisionsSpace.aabbTree.raycast(ray);
+
+    for (const aabb of aabbs) {
+      const obj = aabb.obj;
+      if (!obj) continue;
+
+      const res = GJK(obj.collider, ray);
+      if (res.collision) result.push(obj);
+    }
+
+    return result;
   }
 
   /**

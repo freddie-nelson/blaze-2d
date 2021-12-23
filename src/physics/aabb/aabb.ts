@@ -2,6 +2,7 @@ import { vec2 } from "gl-matrix";
 import Shape from "../../shapes/shape";
 import Collider from "../collider/collider";
 import CollisionObject from "../collisionObject";
+import Ray from "../ray";
 
 /**
  * Represents an axis aligned bounding box in 2D world space.
@@ -136,9 +137,38 @@ export default class AABB {
    */
   intersects(point: vec2): boolean;
 
-  intersects(b: AABB | vec2) {
+  /**
+   * Determines wether or not the given ray intersects with this {@link AABB}.
+   *
+   * @param ray The ray to check for intersection
+   */
+  intersects(ray: Ray): boolean;
+
+  intersects(b: AABB | vec2 | Ray) {
     if (b instanceof AABB) {
       return this.max[0] > b.min[0] && this.min[0] < b.max[0] && this.max[1] > b.min[1] && this.min[1] < b.max[1];
+    } else if (b instanceof Ray) {
+      const v0 = b.getStart();
+      const v1 = b.getEnd();
+
+      let fLow = 0;
+      let fHigh = 1;
+
+      let res = this.clipLine(0, v0, v1, fLow, fHigh);
+      if (!res) return false;
+      else {
+        fLow = res.fLow;
+        fHigh = res.fHigh;
+      }
+
+      res = this.clipLine(1, v0, v1, fLow, fHigh);
+      if (!res) return false;
+      else {
+        fLow = res.fLow;
+        fHigh = res.fHigh;
+      }
+
+      return true;
     } else {
       return this.max[0] >= b[0] && this.min[0] <= b[0] && this.max[1] >= b[1] && this.min[1] <= b[1];
     }
@@ -151,5 +181,40 @@ export default class AABB {
    */
   contains(b: AABB) {
     return this.min[0] <= b.min[0] && this.max[0] >= b.max[0] && this.min[1] <= b.min[1] && this.max[1] >= b.max[1];
+  }
+
+  /**
+   * Clips a line based on the {@link AABB}'s min and max to determine if the line intersects with the AABB.
+   *
+   * @param dim The dimension to clip in (0 = x, 1 = y)
+   * @param v0 The line's start point
+   * @param v1 The line's end point
+   * @param fLow The current fLow
+   * @param fHigh The current fHigh
+   * @returns false when no intersection possible, otherwise new fLow and fHigh
+   */
+  private clipLine(dim: number, v0: vec2, v1: vec2, fLow: number, fHigh: number) {
+    let fDimLow = (this.min[dim] - v0[dim]) / (v1[dim] - v0[dim]);
+    let fDimHigh = (this.max[dim] - v0[dim]) / (v1[dim] - v0[dim]);
+
+    if (fDimHigh < fDimLow) {
+      let temp = fDimLow;
+      fDimLow = fDimHigh;
+      fDimHigh = temp;
+    }
+
+    if (fDimHigh < fLow) return false;
+
+    if (fDimLow > fHigh) return false;
+
+    const newFLow = Math.max(fDimLow, fLow);
+    const newFHigh = Math.min(fDimHigh, fHigh);
+
+    if (newFLow > newFHigh) return false;
+
+    return {
+      fLow: newFLow,
+      fHigh: newFHigh,
+    };
   }
 }
