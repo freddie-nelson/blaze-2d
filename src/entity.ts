@@ -86,6 +86,20 @@ export default class Entity extends RigidBody {
   }
 
   /**
+   * Removes a body piece from the entity.
+   *
+   * @param piece The piece to remove from the entity
+   * @returns Wether or not the piece was removed
+   */
+  removePiece(piece: Shape) {
+    const i = this.pieces.findIndex((p) => p === piece);
+    if (i === -1) return false;
+
+    this.pieces.splice(i, 1);
+    return true;
+  }
+
+  /**
    * Sets the entites z index.
    *
    * @throws When {@link validateZIndex} returns a string.

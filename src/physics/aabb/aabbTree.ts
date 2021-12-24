@@ -77,7 +77,6 @@ export default class AABBTree {
       // if (this.root === node) console.log(node)
 
       // re-insert node
-      console.log(this.root);
       this.addNode(node, this.root);
       this.insertionsLastUpdate++;
     }
