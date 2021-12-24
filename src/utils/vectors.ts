@@ -103,3 +103,19 @@ export function midpoint(out: vec2, a: vec2, b: vec2) {
   out[1] = (a[1] + b[1]) / 2;
   return out;
 }
+
+/**
+ * Determines wether two vectors are roughly equal to each other.
+ *
+ * @param a The first vector
+ * @param b The second vector
+ * @param xSlop The allowed x slop
+ * @param ySlop The allowed y slop
+ * @returns Wether the vectors are equal or not
+ */
+export function vec2SloppyEquals(a: vec2, b: vec2, xSlop: number, ySlop: number) {
+  const xDiff = Math.abs(a[0] - b[0]);
+  const yDiff = Math.abs(a[1] - b[1]);
+
+  return xDiff <= xSlop && yDiff <= ySlop;
+}
