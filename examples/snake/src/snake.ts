@@ -1,33 +1,44 @@
 import Blaze from "@blz/blaze";
 import Entity from "@blz/entity";
-import RectCollider from "@blz/physics/collider/rect";
+import CircleCollider from "@blz/physics/collider/circle";
 import Circle from "@blz/shapes/circle";
 import Texture from "@blz/texture/texture";
+import GJK from "@blz/physics/gjk";
 import { vec2 } from "gl-matrix";
-import { vec2SloppyEquals } from "@blz/utils/vectors";
 
 export class SnakePiece extends Circle {
   direction = vec2.fromValues(0, 1);
+  collider: CircleCollider;
 
   constructor(pos: vec2) {
     super(0.5, pos);
+
+    this.collider = new CircleCollider(0.5, pos);
+  }
+
+  override setPosition(pos: vec2) {
+    if (this.collider) this.collider.setPosition(pos);
+    super.setPosition(pos);
   }
 }
 
 export default class Snake extends Entity {
   texture: Texture;
+  isDead = false;
   speed = 7;
   turnSpeed = 3;
   segmentDetail = 5;
 
   constructor(texture: Texture) {
-    super(vec2.create(), new RectCollider(0, 0));
+    super(vec2.create(), new CircleCollider(0));
 
     this.texture = texture;
     this.eat();
   }
 
   update(delta: number) {
+    if (this.isDead) return;
+
     const head = this.getPieces()[0];
     const keys = Blaze.getCanvas().keys;
     if (keys.isPressed("ArrowRight")) {
@@ -37,6 +48,7 @@ export default class Snake extends Entity {
     }
 
     this.move(delta);
+    this.collide();
   }
 
   move(delta: number) {
@@ -52,6 +64,20 @@ export default class Snake extends Entity {
       }
 
       piece.translate(vec2.scale(vec2.create(), piece.direction, step));
+    }
+  }
+
+  collide() {
+    // check body collisions
+    const pieces = this.getPieces();
+    const head = pieces[0];
+
+    for (let i = this.segmentDetail * 2; i < pieces.length; i++) {
+      if (GJK(head.collider, pieces[i].collider).collision) {
+        this.isDead = true;
+        console.log("dead");
+        break;
+      }
     }
   }
 
