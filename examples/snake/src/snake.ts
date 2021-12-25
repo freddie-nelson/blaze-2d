@@ -5,6 +5,7 @@ import Circle from "@blz/shapes/circle";
 import Texture from "@blz/texture/texture";
 import GJK from "@blz/physics/gjk";
 import { vec2 } from "gl-matrix";
+import Apple from "./apple";
 
 export class SnakePiece extends Circle {
   direction = vec2.fromValues(0, 1);
@@ -31,6 +32,8 @@ export default class Snake extends Entity {
 
   constructor(texture: Texture) {
     super(vec2.create(), new CircleCollider(0));
+
+    this.name = "snake";
 
     this.texture = texture;
     this.eat();
@@ -75,8 +78,48 @@ export default class Snake extends Entity {
     for (let i = this.segmentDetail * 2; i < pieces.length; i++) {
       if (GJK(head.collider, pieces[i].collider).collision) {
         this.isDead = true;
-        console.log("dead");
         break;
+      }
+    }
+
+    const world = Blaze.getWorld();
+
+    // check wall collisions
+    const walls = world.getEntitiesByName("wall");
+
+    for (const wall of walls) {
+      if (GJK(head.collider, wall.collider).collision) {
+        this.isDead = true;
+        break;
+      }
+    }
+
+    // apples collision
+    const apples = <Apple[]>world.getEntitiesByName("apple");
+
+    for (const apple of apples) {
+      if (!GJK(head.collider, apple.collider).collision) continue;
+
+      this.eat();
+
+      // move apple
+      let collides = true;
+      const xLim = globalThis.GRID.max[0] - 0.8;
+      const yLim = globalThis.GRID.max[1] - 0.8;
+
+      while (collides) {
+        apple.setPosition(
+          vec2.fromValues(Math.floor(Math.random() * xLim * 2) - xLim, Math.floor(Math.random() * yLim * 2) - yLim),
+        );
+
+        // check for collision
+        for (let i = 0; i < pieces.length; i += this.segmentDetail) {
+          if (!GJK(pieces[i].collider, apple.collider).collision) collides = false;
+          else {
+            collides = true;
+            break;
+          }
+        }
       }
     }
   }
