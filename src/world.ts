@@ -190,6 +190,15 @@ export default class World implements System {
   }
 
   /**
+   * Gets all entities with the given name.
+   *
+   * @param name The name of the entity
+   */
+  getEntitiesByName(name: string) {
+    return this.getEntities().filter((entity) => entity.name === name);
+  }
+
+  /**
    * Adds an entity to the world.
    *
    * @param entity The entity to add
@@ -198,6 +207,28 @@ export default class World implements System {
   addEntity(entity: Entity, fireListeners = true) {
     this.entities.push(entity);
     if (fireListeners) this.callEntityListeners("add", entity, this.entities.length - 1);
+  }
+
+  /**
+   * Adds the given entities to the world.
+   *
+   * By default entity listeners are fired for each entity added however, if the last argument
+   * passed to this function is a boolean then it will be used to decide wether or not to fire entity listeners.
+   *
+   * @param entities The entities to add
+   */
+  addEntities(...entities: (Entity | boolean)[]) {
+    let fireListeners = true;
+    if (typeof entities[entities.length - 1] === "boolean") {
+      fireListeners = <any>entities[entities.length - 1];
+      entities.pop();
+    }
+
+    entities.forEach((entity) => {
+      if (typeof entity === "boolean") return;
+
+      this.addEntity(entity, fireListeners);
+    });
   }
 
   /**

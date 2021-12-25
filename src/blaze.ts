@@ -9,6 +9,7 @@ import BatchRenderer from "./renderer/batchRenderer";
 import Editor from "./editor/editor";
 import Scene from "./scene";
 import BlazeElement from "./ui/element";
+import World from "./world";
 
 import "./ui/styles/root.css";
 import "./ui/styles/canvas.css";
@@ -261,6 +262,24 @@ export default abstract class Blaze {
    */
   static getScene() {
     return this.scene;
+  }
+
+  /**
+   * Gets the current scene's {@link World}.
+   *
+   * @returns The current scene's world
+   */
+  static getWorld() {
+    return this.scene?.world;
+  }
+
+  /**
+   * Gets the current scene's {@link Physics} world.
+   *
+   * @returns THe current scene's physics world
+   */
+  static getPhysics() {
+    return this.scene?.physics;
   }
 
   /**
