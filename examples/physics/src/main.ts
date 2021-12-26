@@ -27,8 +27,8 @@ Blaze.setBgColor(BG_COLOR);
 Blaze.start();
 
 // setup editor
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 const CANVAS = Blaze.getCanvas();
 const SCENE = Blaze.getScene();

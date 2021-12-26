@@ -7,7 +7,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Blaze",
-  tagline: "A fast and simple WebGL 2 voxel game engine written in TypeScript",
+  tagline: "A fast, 2D WebGL 2 game engine written in TypeScript",
   url: "https://your-docusaurus-test-site.com",
   baseUrl: process.env.NODE_ENV === "development" ? "/docs/build/" : "/",
   onBrokenLinks: "throw",
@@ -24,7 +24,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
-          editUrl: "https://github.com/facebook/docusaurus/edit/main/website/",
+          editUrl: "https://github.com/freddie-nelson/blaze-2d/tree/master/docs",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
@@ -44,13 +44,17 @@ const config = {
         },
         items: [
           {
-            type: "doc",
-            docId: "api/index",
+            to: "docs/examples",
+            position: "left",
+            label: "Examples",
+          },
+          {
+            to: "docs/api",
             position: "left",
             label: "API",
           },
           {
-            href: "https://github.com/freddie-nelson/blaze",
+            href: "https://github.com/freddie-nelson/blaze-2d",
             label: "GitHub",
             position: "right",
           },
@@ -62,6 +66,10 @@ const config = {
           {
             title: "Docs",
             items: [
+              {
+                label: "Examples",
+                to: "/docs/examples/lines",
+              },
               {
                 label: "API",
                 to: "/docs/api",
@@ -90,7 +98,7 @@ const config = {
             items: [
               {
                 label: "GitHub",
-                href: "https://github.com/freddie-nelson/blaze",
+                href: "https://github.com/freddie-nelson/blaze-2d",
               },
             ],
           },

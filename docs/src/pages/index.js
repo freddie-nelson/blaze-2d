@@ -25,7 +25,7 @@ function HomepageHeader() {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={"Home"} description="A fast and simple WebGL 2 voxel game engine written in TypeScript.">
+    <Layout title={"Home"} description="A fast, 2D WebGL 2 game engine written in TypeScript.">
       <HomepageHeader />
       {/* <main>
         <HomepageFeatures />

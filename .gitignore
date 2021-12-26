@@ -9,8 +9,10 @@ dev/lib_src_threading_worker_js.js
 
 # docs
 docs/node_modules
-docs/docs/api
 docs/build
+docs/docs/api
+docs/docs/examples
+docs/static/examples
 docs/.docusaurus
 docs/.cache-loader
 docs/.DS_Store

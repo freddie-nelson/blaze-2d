@@ -40,7 +40,7 @@ export default class Snake extends Entity {
   }
 
   update(delta: number) {
-    if (this.isDead) return;
+    if (this.isDead || delta >= 0.5) return;
 
     const head = this.getPieces()[0];
     const keys = Blaze.getCanvas().keys;

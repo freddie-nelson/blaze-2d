@@ -1,23 +1,22 @@
-# 🔥 Blaze 🔥
+# 🔥 Blaze 2D 🔥
 
-A fast and simple WebGL 2 voxel game engine written in TypeScript
+A fast, 2D WebGL 2 game engine written in TypeScript.
 
 # Goals
 
-- Render large voxel worlds efficiently
+- Handle complex scenes
 - Good selection of UI components
 - follow Data Oriented Design principles where performance is critical
 - Simple and well documented API
-- Be easy to extend
 
 # Installation
 
 ```bash
-yarn add blaze-engine
+yarn add blaze-2d
 ```
 
 **NOTE: Some scripts may not work without yarn.**
 
 # Documentation
 
-You can find the documentation and API reference [here](https://blazeengine.netlify.app)
+You can find the documentation and API reference [here](https://blaze2d.netlify.app)

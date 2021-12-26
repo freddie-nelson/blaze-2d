@@ -10,7 +10,7 @@ if (!existsSync(examplesDir)) {
 
 console.log(`Getting examples in ${examplesDir}...`);
 const examples = readdirSync(examplesDir);
-console.log(`Found ${examples.length} exampels in ${examplesDir}.`);
+console.log(`Found ${examples.length} examples in ${examplesDir}.`);
 
 console.log(`Building examples...`);
 examples.forEach((example) => {
