@@ -12,6 +12,7 @@ import { System } from "./system";
 import Texture from "./texture/texture";
 import Color, { RGBAColor } from "./utils/color";
 import Viewport from "./camera/viewport";
+import Logger from "./logger";
 
 export type EntityListener = (event: "add" | "remove", entity: Entity, index: number, entities: Entity[]) => void;
 

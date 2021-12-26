@@ -48,13 +48,18 @@ export default class WorldPane extends EditorPane {
       this.world = Blaze.getScene().world;
       this.world.addEntityListener(this.addEntity);
       this.world.addEntityListener(this.removeEntity);
+
+      const entities = this.world.getEntities();
+      for (let i = 0; i < entities.length; i++) {
+        this.addEntity("add", entities[i], i, entities);
+      }
     }
   }
 
   private addEntity: EntityListener = (event, entity) => {
     if (event === "remove") return;
 
-    const text = new BlazeText(`Entity ${this.entitiesList.items.length + 1}`, 1);
+    const text = new BlazeText(`${entity.name || "Entity"} ${this.entitiesList.items.length + 1}`, 1);
     text.element.style.marginBottom = "0.4rem";
 
     this.entitiesList.addItems(text);

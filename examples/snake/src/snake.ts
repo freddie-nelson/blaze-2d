@@ -6,6 +6,7 @@ import Texture from "@blz/texture/texture";
 import GJK from "@blz/physics/gjk";
 import { vec2 } from "gl-matrix";
 import Apple from "./apple";
+import Logger from "@blz/logger";
 
 export class SnakePiece extends Circle {
   direction = vec2.fromValues(0, 1);
@@ -101,6 +102,7 @@ export default class Snake extends Entity {
       if (!GJK(head.collider, apple.collider).collision) continue;
 
       this.eat();
+      // Logger.log("Snake", `Ate apple at [${apple.getPosition().join()}]`);
 
       // move apple
       let collides = true;

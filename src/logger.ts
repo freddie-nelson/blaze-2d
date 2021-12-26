@@ -52,8 +52,7 @@ export default abstract class Logger {
    * @param args The args to log
    */
   static str(id: string, ...args: LoggerArg[]): string {
-    let str = "";
-    args.forEach((arg) => (str += String(arg)));
+    let str = args.join(" ");
 
     const date = new Date();
     const time = `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date

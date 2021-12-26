@@ -12,18 +12,24 @@ import Ray from "@blz/physics/ray";
 import Line from "@blz/shapes/line";
 import Snake from "./snake";
 import Apple from "./apple";
+import Editor from "@blz/editor/editor";
+import Logger from "@blz/logger";
+import Viewport from "@blz/camera/viewport";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
 Blaze.setBgColor(new Color("#8ECC39"));
 Blaze.start();
 
+// Blaze.editor = new Editor();
+
 const CANVAS = Blaze.getCanvas();
 const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
-const PHYSICS = SCENE.physics;
+const CAMERA = WORLD.getCamera();
 
 WORLD.cellSize = vec2.fromValues(25, 25);
+CAMERA.viewport = new Viewport(vec2.create(), CANVAS.element.clientWidth, CANVAS.element.clientHeight);
 
 // setup atlas
 const ATLAS = new TextureAtlas(2000);
@@ -31,16 +37,12 @@ BatchRenderer.atlas = ATLAS;
 WORLD.useBatchRenderer = true;
 
 // MAIN
-const randInt = (min = 0, max = 1) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
 declare global {
   var GRID: { min: vec2; max: vec2; width: number; height: number };
 }
 
-const min = WORLD.getCellFromPixel(vec2.fromValues(0, window.innerHeight));
-const max = WORLD.getCellFromPixel(vec2.fromValues(window.innerWidth, 0));
+const min = WORLD.getCellFromPixel(vec2.fromValues(0, CANVAS.element.clientHeight));
+const max = WORLD.getCellFromPixel(vec2.fromValues(CANVAS.element.clientWidth, 0));
 
 globalThis.GRID = {
   min,
