@@ -7,6 +7,7 @@ import GJK from "@blz/physics/gjk";
 import { vec2 } from "gl-matrix";
 import Apple from "./apple";
 import Logger from "@blz/logger";
+import BlazeText, { TextStyle } from "@blz/ui/text";
 
 export class SnakePiece extends Circle {
   direction = vec2.fromValues(0, 1);
@@ -30,6 +31,7 @@ export default class Snake extends Entity {
   speed = 7;
   turnSpeed = 3;
   segmentDetail = 5;
+  score = new BlazeText("0", 2.5, true, TextStyle.PRIMARY);
 
   constructor(texture: Texture) {
     super(vec2.create(), new CircleCollider(0));
@@ -38,6 +40,12 @@ export default class Snake extends Entity {
 
     this.texture = texture;
     this.eat();
+
+    this.score.element.style.position = "absolute";
+    this.score.element.style.left = "50%";
+    this.score.element.style.transform = "translate(-50%, 0)";
+    this.score.element.style.top = "10%";
+    document.body.appendChild(this.score.element);
   }
 
   update(delta: number) {
@@ -123,6 +131,8 @@ export default class Snake extends Entity {
           }
         }
       }
+
+      this.score.setText(String(pieces.length / this.segmentDetail));
     }
   }
 
