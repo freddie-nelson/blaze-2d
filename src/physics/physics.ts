@@ -17,6 +17,11 @@ import applyPositionImpulse from "./solvers/collision/applyPositionImpulse";
 import CircleCollider from "./collider/circle";
 import GJK from "./gjk";
 import Ray from "./ray";
+import ConstraintSpace from "./spaces/constraints";
+import preSolveConstraint from "./solvers/constraint/pre";
+import solveConstraint from "./solvers/constraint/solve";
+import postSolveConstraint from "./solvers/constraint/post";
+import Constraint from "./constraints/constraint";
 
 const debugRGBA: RGBAColor = {
   r: 0,
@@ -58,6 +63,7 @@ export interface PhysicsConfig {
   VELOCITY_ITERATIONS: number;
   ACUMMULATE_IMPULSE: boolean;
   WARM_IMPULSE: boolean;
+
   POSITION_ITERATIONS: number;
   POSITION_SLOP: number;
   POSITION_DAMPING: number;
@@ -66,6 +72,9 @@ export interface PhysicsConfig {
 
   EPA_TOLERANCE: number;
   EPA_MAX_ITERATIONS: number;
+
+  CONSTRAINT_ITERATIONS: number;
+  CONSTRAINT_WARMING: number;
 }
 
 const defaultConfig: PhysicsConfig = {
@@ -76,6 +85,7 @@ const defaultConfig: PhysicsConfig = {
   VELOCITY_ITERATIONS: 8,
   ACUMMULATE_IMPULSE: true,
   WARM_IMPULSE: true,
+
   POSITION_ITERATIONS: 4,
   POSITION_SLOP: 0.015,
   POSITION_DAMPING: 0.9,
@@ -84,6 +94,9 @@ const defaultConfig: PhysicsConfig = {
 
   EPA_TOLERANCE: 0.005,
   EPA_MAX_ITERATIONS: 16,
+
+  CONSTRAINT_ITERATIONS: 10,
+  CONSTRAINT_WARMING: 0.8,
 };
 
 /**
@@ -104,6 +117,7 @@ export default class Physics {
   // spaces
   dynamicsSpace = new DynamicsSpace(this.gravity);
   collisionsSpace = new CollisionsSpace(this.gravity);
+  constraintSpace = new ConstraintSpace();
 
   /**
    * The amount of time in ms that the last physics step took.
@@ -153,6 +167,10 @@ export default class Physics {
 
     this.collisionsSpace.addSolver("impulse", solveImpulse, this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.addSolver("position", applyPositionImpulse, 1);
+
+    this.constraintSpace.addSolver("pre", preSolveConstraint, 1);
+    this.constraintSpace.addSolver("solve", solveConstraint, this.CONFIG.CONSTRAINT_ITERATIONS);
+    this.constraintSpace.addSolver("post", postSolveConstraint, 1);
   }
 
   update(delta: number) {
@@ -179,6 +197,7 @@ export default class Physics {
     this.dynamicsSpace.solve("forces", delta);
     this.dynamicsTime = performance.now() - forceTimer;
 
+    // solve collisions
     this.collisionSolveTime = performance.now();
 
     // pre steps
@@ -188,21 +207,29 @@ export default class Physics {
     this.collisionsSpace.setSolverIterations("positionImpulse", this.CONFIG.POSITION_ITERATIONS);
     this.collisionsSpace.solve("positionImpulse", delta);
 
-    // solve collisions
+    // apply position impulse
+    const positionTimer = performance.now();
+    this.collisionsSpace.solve("position", delta);
+    this.collisionSolveTime += performance.now() - positionTimer;
+
+    // solve collision impulse
+    const impulseTimer = performance.now();
     this.collisionsSpace.setSolverIterations("impulse", this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.solve("impulse", delta);
+    this.collisionSolveTime += performance.now() - impulseTimer;
 
-    this.collisionSolveTime = performance.now() - this.collisionSolveTime;
+    // solve constraints
+    this.collisionsSpace.solve("pre", delta);
+
+    this.constraintSpace.setSolverIterations("solve", this.CONFIG.CONSTRAINT_ITERATIONS);
+    this.constraintSpace.solve("solve", delta);
+
+    this.constraintSpace.solve("post", delta);
 
     // integrate velocities
     const velocityTimer = performance.now();
     this.dynamicsSpace.solve("velocity", delta);
     this.dynamicsTime += performance.now() - velocityTimer;
-
-    // apply position impulse
-    const positionTimer = performance.now();
-    this.collisionsSpace.solve("position", delta);
-    this.collisionSolveTime += performance.now() - positionTimer;
 
     // clear forces
     this.dynamicsSpace.solve("reset", delta);
@@ -348,6 +375,24 @@ export default class Physics {
   removeBody(body: RigidBody) {
     this.removeCollisionObj(body);
     this.removeDynamicsObj(body);
+  }
+
+  /**
+   * Adds a {@link Constraint} to the world's constraint space.
+   *
+   * @param constraint The constraint to add
+   */
+  addConstraint(constraint: Constraint) {
+    this.constraintSpace.addObject(constraint);
+  }
+
+  /**
+   * Removes a {@link Constraint} from the world's constraint space.
+   *
+   * @param constraint The constraint to remove
+   */
+  removeConstraint(constraint: Constraint) {
+    this.constraintSpace.removeObject(constraint);
   }
 
   /**

@@ -65,6 +65,10 @@ export default function GJK(a: Collider, b: Collider): GJKResult {
     // };
     // }
   }
+
+  return {
+    collision: false,
+  };
 }
 
 /**
