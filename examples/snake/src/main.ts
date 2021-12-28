@@ -53,13 +53,10 @@ globalThis.GRID = {
 
 // textures
 const snakeTex = new Texture(new Color("#1A73E8"));
-ATLAS.addTexture(snakeTex);
-
 const appleTex = new Texture(new Color("#E94325"));
-ATLAS.addTexture(appleTex);
-
 const leafTex = new Texture(new Color("#40844F"));
-ATLAS.addTexture(leafTex, true);
+
+ATLAS.addTextures(snakeTex, appleTex, leafTex);
 
 const snake = new Snake(snakeTex);
 snake.eat();

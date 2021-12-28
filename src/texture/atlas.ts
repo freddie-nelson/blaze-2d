@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Logger from "../logger";
 import Texture from "./texture";
 
 /**
@@ -45,6 +46,29 @@ export default class TextureAtlas extends Texture {
   }
 
   /**
+   * Adds the given images to the atlas and then refreshes the atlas.
+   *
+   * @param images The paths to the images to add
+   * @returns Wether or not the images were added
+   */
+  async addImages(...images: string[]) {
+    const textures = images.map(() => {
+      return new Texture();
+    });
+
+    // try to load images
+    try {
+      await Promise.all(textures.map((tex, i) => tex.loadImage(images[i])));
+    } catch (error) {
+      Logger.error("TextureAtlas", "An error occured while loading images.", error);
+      return false;
+    }
+
+    await this.addTextures(...textures);
+    return true;
+  }
+
+  /**
    * Adds a texture to the atlas.
    *
    * @param texture The texture to add
@@ -65,6 +89,20 @@ export default class TextureAtlas extends Texture {
     }
 
     return true;
+  }
+
+  /**
+   * Adds the given textures to the atlas and then refreshes the atlas.
+   *
+   * @param textures The textures to add.
+   * @returns The promise returned by `this.refreshAtlas()`
+   */
+  addTextures(...textures: Texture[]) {
+    for (const t of textures) {
+      this.addTexture(t);
+    }
+
+    return this.refreshAtlas();
   }
 
   /**
@@ -115,7 +153,7 @@ export default class TextureAtlas extends Texture {
   }
 
   /**
-   * Loads an the atlas' canvas into `image`.
+   * Loads the atlas' canvas into `this.image`.
    *
    * @returns A promise that resolves once the image has loaded or rejects if there is an error while loading the image.
    */
