@@ -191,6 +191,8 @@ CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
 
   const entity = new Entity(pos, collider, [shape], mass);
   entity.setInertia(inertia * 0.1);
+  // entity.lockYAxis = true;
+  // entity.lockRotation = true;
   // entity.restitution = 1;
   // entity.staticFriction = 1;
   // entity.dynamicFriction = 1;

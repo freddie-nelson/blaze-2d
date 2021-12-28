@@ -33,6 +33,9 @@ export default function applyPositionImpulse(m: Manifold) {
     const body = bodies[i];
     const positionImpulse = impulses[i];
 
+    if (body.lockXAxis) positionImpulse[0] = 0;
+    if (body.lockYAxis) positionImpulse[1] = 0;
+
     body.translate(positionImpulse);
 
     // reset cached impulse if the body has velocity along it

@@ -104,6 +104,27 @@ export default class PhysicsObject extends Object2D {
   takesGravity = true;
 
   /**
+   * Wether or not the object's x position is locked.
+   *
+   * When true the object's x position will not be affected by collisions or dynamics.
+   */
+  lockXAxis = false;
+
+  /**
+   * Wether or not the object's y position is locked.
+   *
+   * When true the object's y position will not be affected by collisions or dynamics.
+   */
+  lockYAxis = false;
+
+  /**
+   * Wether or not the object can rotate.
+   *
+   * When true the object's rotation will not be affected by collisions or dynamics.
+   */
+  lockRotation = false;
+
+  /**
    * Creates a {@link PhysicsObject} with a mass and restitution.
    *
    * @param mass The mass of the object
