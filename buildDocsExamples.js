@@ -68,7 +68,7 @@ id: "${example}"
 title: "${example}"
 slug: "${url}"
 sidebar_label: "${example}"
-sidebar_position: ${i} 
+sidebar_position: ${i + 1} 
 custom_edit_url: null
 ---`;
 
