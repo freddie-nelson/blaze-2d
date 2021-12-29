@@ -75,6 +75,9 @@ export interface PhysicsConfig {
 
   CONSTRAINT_ITERATIONS: number;
   CONSTRAINT_WARMING: number;
+
+  DIST_CONSTRAINT_MIN_LEN: number;
+  DIST_CONSTRAINT_ANGLE_DAMPEN: number;
 }
 
 const defaultConfig: PhysicsConfig = {
@@ -95,8 +98,11 @@ const defaultConfig: PhysicsConfig = {
   EPA_TOLERANCE: 0.005,
   EPA_MAX_ITERATIONS: 16,
 
-  CONSTRAINT_ITERATIONS: 10,
+  CONSTRAINT_ITERATIONS: 2,
   CONSTRAINT_WARMING: 0.8,
+
+  DIST_CONSTRAINT_MIN_LEN: 0.000001,
+  DIST_CONSTRAINT_ANGLE_DAMPEN: 0.4,
 };
 
 /**

@@ -80,11 +80,11 @@ export default abstract class Constraint {
    */
   preSolve() {
     if (!this.a.isStatic) {
-      this.a.applyImpulse(this.aImpulse, this.pointA);
+      vec2.scaleAndAdd(this.a.velocity, this.a.velocity, this.aImpulse, this.a.getInverseMass());
     }
 
     if (this.b && !this.b.isStatic) {
-      this.b.applyImpulse(this.bImpulse, this.pointB);
+      vec2.scaleAndAdd(this.b.velocity, this.b.velocity, this.bImpulse, this.b.getInverseMass());
     }
   }
 

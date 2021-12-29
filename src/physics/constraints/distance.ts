@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
-import { cross2DWithScalar } from "../../utils/vectors";
+import { cross2D, cross2DWithScalar } from "../../utils/vectors";
 import CollisionObject from "../collisionObject";
+import Physics from "../physics";
 import Constraint, { ConstraintOptions } from "./constraint";
 
 interface DistanceConstraintOptions extends ConstraintOptions {
@@ -72,6 +73,36 @@ export default class DistanceConstraint extends Constraint {
       this.stiffness = a.stiffness;
       this.angularStiffness = a.angularStiffness;
     }
+
+    // move a and b to legal positions
+    // const pointA = this.pointA;
+    // const pointB = this.isBodyToPoint() ? this.point : this.pointB;
+
+    // const pointAWorld = vec2.add(vec2.create(), this.a.getPosition(), pointA);
+    // const pointBWorld = this.isBodyToPoint() ? pointB : vec2.add(vec2.create(), this.b.getPosition(), pointB);
+
+    // const axis = vec2.sub(vec2.create(), pointBWorld, pointAWorld);
+    // const currLen = vec2.len(axis);
+    // const unitAxis = vec2.normalize(vec2.create(), axis);
+
+    // const invMass = this.a.getInverseMass() + (this.isBodyToPoint() ? 0 : this.b.getInverseMass());
+    // if (!invMass) return;
+
+    // const positionImpulse = vec2.scale(
+    //   vec2.create(),
+    //   unitAxis,
+    //   currLen *
+    //     invMass *
+    //     ((this.a.isStatic && !this.a.getInverseMass()) || (this.b.isStatic && !this.b.getInverseMass()) ? 2 : 1),
+    // );
+
+    // if (!this.a.isStatic) {
+    //   this.a.translate(vec2.scale(vec2.create(), positionImpulse, this.a.getInverseMass()));
+    // }
+
+    // if (!this.b.isStatic) {
+    //   this.b.translate(vec2.scale(vec2.create(), positionImpulse, -this.b.getInverseMass()));
+    // }
   }
 
   /**
@@ -113,23 +144,46 @@ export default class DistanceConstraint extends Constraint {
 
     const relDist = currLen - this.length;
 
+    const invMass = this.a.getInverseMass() + (this.isBodyToPoint() ? 0 : this.b.getInverseMass());
+    const invInertia = this.a.getInverseInertia() + (this.isBodyToPoint() ? 0 : this.b.getInverseInertia());
+    const resistance = invMass + invInertia;
+
     // calculate impulse to solve
     const remove = relVelAxis + relDist / dt;
-    const impulse = remove / (this.a.getInverseMass() + (this.isBodyToPoint() ? 0 : this.b.getInverseMass()));
+    const impulse = remove / invMass;
 
     // generate impulse vector
     const I = vec2.scale(vec2.create(), unitAxis, impulse * this.stiffness);
 
     // apply impulse
     if (!this.a.isStatic) {
-      this.a.applyImpulse(I, pointA);
       vec2.add(this.aImpulse, this.aImpulse, I);
+
+      // velocity impulse
+      vec2.scaleAndAdd(this.a.velocity, this.a.velocity, I, this.a.getInverseMass());
+
+      // angular impulse
+      this.a.angularVelocity +=
+        this.a.getInverseInertia() *
+        (cross2D(this.pointA, I) / resistance) *
+        Physics.G_CONF.DIST_CONSTRAINT_ANGLE_DAMPEN *
+        (1 - this.angularStiffness);
+      // console.log(this.a.getInverseInertia() * cross2D(this.pointA, angularI));
     }
     if (!this.isBodyToPoint() && !this.b.isStatic) {
       const bImpulse = vec2.negate(vec2.create(), I);
 
-      this.b.applyImpulse(bImpulse, pointB);
       vec2.add(this.bImpulse, this.bImpulse, bImpulse);
+
+      // velocity impulse
+      this.b.applyImpulse(bImpulse, vec2.create());
+
+      // angular impulse
+      this.b.angularVelocity -=
+        this.b.getInverseInertia() *
+        (cross2D(this.pointB, I) / resistance) *
+        Physics.G_CONF.DIST_CONSTRAINT_ANGLE_DAMPEN *
+        (1 - this.angularStiffness);
     }
   }
 

@@ -57,15 +57,18 @@ WORLD.addEntity(body);
 PHYSICS.addBody(body);
 
 // create constraint
-const constraint = new DistanceConstraint(anchor, body, 5, 1);
+const constraint = new DistanceConstraint(anchor, body, 6, 1, 0);
 PHYSICS.addConstraint(constraint);
 
-body.applyForce(vec2.fromValues(100, 0));
+// constraint.pointB = vec2.fromValues(2, 2);
+
+body.applyForce(vec2.fromValues(300, 0));
 
 // create chain
 const root = vec2.fromValues(10, 9);
-const length = 30;
+const length = 0;
 const stiffness = 1;
+const angularStiffness = 0;
 const size = 0.2;
 const spacing = size * 2;
 const chain: Entity[] = [];
@@ -84,7 +87,7 @@ for (let i = 0; i < length; i++) {
     const constraint = new DistanceConstraint(entity, root, 0, 1);
     PHYSICS.addConstraint(constraint);
   } else {
-    const constraint = new DistanceConstraint(chain[i - 1], entity, spacing, stiffness);
+    const constraint = new DistanceConstraint(chain[i - 1], entity, spacing, stiffness, angularStiffness);
     PHYSICS.addConstraint(constraint);
 
     constraint.pointB = vec2.fromValues(0, 0);
