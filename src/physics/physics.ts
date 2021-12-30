@@ -225,7 +225,7 @@ export default class Physics {
     this.collisionSolveTime += performance.now() - impulseTimer;
 
     // solve constraints
-    this.collisionsSpace.solve("pre", delta);
+    this.constraintSpace.solve("pre", delta);
 
     this.constraintSpace.setSolverIterations("solve", this.CONFIG.CONSTRAINT_ITERATIONS);
     this.constraintSpace.solve("solve", delta);

@@ -1,14 +1,14 @@
 import { vec2 } from "gl-matrix";
-import { cross2DWithScalar } from "../../utils/vectors";
+import { cross2D, cross2DWithScalar } from "../../utils/vectors";
 import CollisionObject from "../collisionObject";
 import Physics from "../physics";
 
 export interface ConstraintOptions {
   a: CollisionObject;
-  pointA: vec2;
+  anchorA: vec2;
 
   b: CollisionObject;
-  pointB: vec2;
+  anchorB: vec2;
 }
 
 /**
@@ -20,12 +20,12 @@ export interface ConstraintOptions {
  */
 export default abstract class Constraint {
   a: CollisionObject;
-  pointA = vec2.create();
+  anchorA = vec2.create();
   rotA = 0;
   aImpulse = vec2.create();
 
   b: CollisionObject;
-  pointB = vec2.create();
+  anchorB = vec2.create();
   rotB = 0;
   bImpulse = vec2.create();
 
@@ -67,8 +67,8 @@ export default abstract class Constraint {
       // constraint from options
       this.a = a.a;
       this.b = a.b;
-      this.pointA = a.pointA;
-      this.pointB = a.pointB;
+      this.anchorA = a.anchorA;
+      this.anchorB = a.anchorB;
     }
 
     this.rotA = this.a.getRotation();
@@ -78,7 +78,7 @@ export default abstract class Constraint {
   /**
    * Prepares for constraint solving by applying accumulated impulses.
    */
-  preSolve() {
+  preSolve(dt: number) {
     if (!this.a.isStatic) {
       vec2.scaleAndAdd(this.a.velocity, this.a.velocity, this.aImpulse, this.a.getInverseMass());
     }
@@ -98,7 +98,7 @@ export default abstract class Constraint {
   /**
    * Warms the constraint impulses.
    */
-  postSolve() {
+  postSolve(dt: number) {
     vec2.scale(this.aImpulse, this.aImpulse, Physics.G_CONF.CONSTRAINT_WARMING);
     vec2.scale(this.bImpulse, this.bImpulse, Physics.G_CONF.CONSTRAINT_WARMING);
   }
@@ -110,5 +110,70 @@ export default abstract class Constraint {
    */
   isBodyToPoint() {
     return !this.b;
+  }
+
+  protected applyImpulses(impulse: number, direction: vec2) {
+    const anchorA = this.anchorA;
+    const anchorB = this.isBodyToPoint() ? this.point : this.anchorB;
+
+    if (!this.a.isStatic) {
+      this.a.applyImpulse(vec2.scale(vec2.create(), direction, -impulse), anchorA);
+    }
+
+    if (!this.isBodyToPoint() && !this.b.isStatic) {
+      this.b.applyImpulse(vec2.scale(vec2.create(), direction, impulse), anchorB);
+    }
+  }
+
+  /**
+   * Updates the constraint's anchor points to match the rotations of their bodies.
+   */
+  protected updateAnchors() {
+    const anchorA = this.anchorA;
+    const anchorB = this.isBodyToPoint() ? this.point : this.anchorB;
+
+    // rotate points with bodies
+    if (!this.a.isStatic) {
+      vec2.rotate(anchorA, anchorA, vec2.create(), this.a.getRotation() - this.rotA);
+      this.rotA = this.a.getRotation();
+    }
+
+    if (!this.isBodyToPoint() && !this.b.isStatic) {
+      vec2.rotate(anchorB, anchorB, vec2.create(), this.b.getRotation() - this.rotB);
+      this.rotB = this.b.getRotation();
+    }
+  }
+
+  /**
+   * Calculate the relative velocity of the bodies in the constraint.
+   *
+   * @param pointA The anchor point on body a
+   * @param pointB The anchor point on body b
+   * @returns The relative velocity between body a and b or body a and the anchor point
+   */
+  protected calculateRelativeVelocity(pointA: vec2, pointB: vec2) {
+    const angularCrossPointA = cross2DWithScalar(vec2.create(), pointA, this.a.angularVelocity);
+    const angularCrossPointB = cross2DWithScalar(
+      vec2.create(),
+      pointB,
+      this.isBodyToPoint() ? 0 : -this.b.angularVelocity,
+    );
+
+    const velA = vec2.add(vec2.create(), this.a.velocity, angularCrossPointA);
+    const velB = vec2.add(vec2.create(), this.isBodyToPoint() ? vec2.create() : this.b.velocity, angularCrossPointB);
+    return vec2.sub(vec2.create(), velB, velA);
+  }
+
+  protected kScalarBody(body: CollisionObject, r: vec2, n: vec2) {
+    const rcn = cross2D(r, n);
+    return body.getInverseMass() + body.getInverseInertia() * rcn * rcn;
+  }
+
+  protected kScalar(n: vec2) {
+    const val =
+      this.kScalarBody(this.a, this.anchorA, n) +
+      (this.isBodyToPoint() ? 0 : this.kScalarBody(this.b, this.anchorB, n));
+
+    return val;
   }
 }

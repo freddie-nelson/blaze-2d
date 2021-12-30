@@ -147,10 +147,18 @@ export default class PhysicsObject extends Object2D {
   /**
    * Adds a force to the object's current total force vector.
    *
+   * If no contact point is provided then the force will be applied at the
+   * object's centre, generating 0 torque.
+   *
    * @param force The force vector to apply
+   * @param contact The local position on the body to apply the force at
    */
-  applyForce(force: vec2) {
+  applyForce(force: vec2, contact?: vec2) {
     vec2.add(this.force, this.force, force);
+
+    if (contact) {
+      this.torque += contact[0] * force[1] - contact[1] * force[0];
+    }
   }
 
   /**
@@ -158,14 +166,24 @@ export default class PhysicsObject extends Object2D {
    *
    * The direction vector is calculated from the unit y+ vector.
    *
+   * If no contact point is provided then the force will be applied at the
+   * object's centre, generating 0 torque.
+   *
    * @param force The force to apply in newtons
    * @param angle The angle at which to apply the force in radians (world space)
+   * @param contact The local position on the body to apply the force at
    */
-  applyForceAtAngle(force: number, angle: number) {
+  applyForceAtAngle(force: number, angle: number, contact?: vec2) {
     const dir = vec2.fromValues(0, 1);
     vec2.rotate(dir, dir, vec2.create(), angle);
 
-    vec2.scaleAndAdd(this.force, this.force, dir, force);
+    const forceVec = vec2.scale(vec2.create(), dir, force);
+
+    vec2.add(this.force, this.force, forceVec);
+
+    if (contact) {
+      this.torque += contact[0] * forceVec[1] - contact[1] * forceVec[0];
+    }
   }
 
   /**

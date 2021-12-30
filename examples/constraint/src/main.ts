@@ -9,7 +9,7 @@ import RectCollider from "@blz/physics/collider/rect";
 import CircleCollider from "@blz/physics/collider/circle";
 import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
-import DistanceConstraint from "@blz/physics/constraints/distance";
+import SpringConstraint from "@blz/physics/constraints/spring";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -57,18 +57,18 @@ WORLD.addEntity(body);
 PHYSICS.addBody(body);
 
 // create constraint
-const constraint = new DistanceConstraint(anchor, body, 6, 1, 0);
+const constraint = new SpringConstraint(anchor, body, 2, 1);
 PHYSICS.addConstraint(constraint);
 
 // constraint.pointB = vec2.fromValues(2, 2);
 
-body.applyForce(vec2.fromValues(300, 0));
+body.applyForce(vec2.fromValues(200, 0));
 
 // create chain
 const root = vec2.fromValues(10, 9);
-const length = 0;
-const stiffness = 1;
-const angularStiffness = 0;
+const length = 4;
+const stiffness = 20;
+const damping = 0;
 const size = 0.2;
 const spacing = size * 2;
 const chain: Entity[] = [];
@@ -84,13 +84,13 @@ for (let i = 0; i < length; i++) {
   PHYSICS.addBody(entity);
 
   if (i === 0) {
-    const constraint = new DistanceConstraint(entity, root, 0, 1);
+    const constraint = new SpringConstraint(entity, root, 0, 10000, 10000);
     PHYSICS.addConstraint(constraint);
   } else {
-    const constraint = new DistanceConstraint(chain[i - 1], entity, spacing, stiffness, angularStiffness);
+    const constraint = new SpringConstraint(chain[i - 1], entity, spacing, stiffness, damping);
     PHYSICS.addConstraint(constraint);
 
-    constraint.pointB = vec2.fromValues(0, 0);
+    // constraint.pointB = vec2.fromValues(0, 0);
   }
 
   entity.applyForceAtAngle(5 * i, Math.PI / 2);
