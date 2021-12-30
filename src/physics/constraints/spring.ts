@@ -9,6 +9,10 @@ interface SpringConstraintOptions extends ConstraintOptions {
   damping: number;
 }
 
+/**
+ * Represents a damped spring joint between two {@link CollisionObject}s or
+ * a {@link CollisionObject} and a point.
+ */
 export default class SpringConstraint extends Constraint {
   length: number;
   stiffness: number;
@@ -22,7 +26,7 @@ export default class SpringConstraint extends Constraint {
   jAcc: number;
 
   /**
-   * Creates a new {@link DistanceConstraint} between two bodies.
+   * Creates a new {@link SpringConstraint} between two bodies.
    *
    * @param a The first body
    * @param b The second body
@@ -33,14 +37,14 @@ export default class SpringConstraint extends Constraint {
   constructor(a: CollisionObject, b: CollisionObject, length: number, stiffness: number, damping?: number);
 
   /**
-   * Creates a new {@link Constraint} with the given options.
+   * Creates a new {@link SpringConstraint} with the given options.
    *
    * @param opts The constraint options
    */
   constructor(opts: SpringConstraintOptions);
 
   /**
-   * Creates a new {@link Constraint} between a body and a point.
+   * Creates a new {@link SpringConstraint} between a body and a point.
    *
    * @param a The body to constrain
    * @param point A point in world space
@@ -81,7 +85,12 @@ export default class SpringConstraint extends Constraint {
     }
   }
 
-  override preSolve(dt: number) {
+  /**
+   * Updates the constraints anchors and prepares for solving.
+   *
+   * @param dt The time since the last update
+   */
+  preSolve(dt: number) {
     this.updateAnchors();
 
     const anchorA = this.anchorA;
@@ -110,8 +119,7 @@ export default class SpringConstraint extends Constraint {
   /**
    * Applies the spring forces to the attached bodies.
    *
-   * @see [MatterJS Constraint](https://github.com/liabru/matter-js/blob/master/src/constraint/Constraint.js)
-   * @see [Dyn4j Distance Constraint](https://dyn4j.org/2010/09/distance-constraint/)
+   * @see [Chipmunk2D Damped Spring](https://github.com/slembcke/Chipmunk2D/blob/master/src/cpDampedSpring.c)
    * @see [Constraints and Solvers](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/8constraintsandsolvers/Physics%20-%20Constraints%20and%20Solvers.pdf)
    *
    * @param dt The time since the last update
@@ -133,6 +141,8 @@ export default class SpringConstraint extends Constraint {
 
     this.applyImpulses(jDamp, this.nDelta);
   }
+
+  postSolve() {}
 
   private calcForce(length: number) {
     return (this.length - length) * this.stiffness;

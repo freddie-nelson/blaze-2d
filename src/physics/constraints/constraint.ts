@@ -22,14 +22,18 @@ export default abstract class Constraint {
   a: CollisionObject;
   anchorA = vec2.create();
   rotA = 0;
-  aImpulse = vec2.create();
 
   b: CollisionObject;
   anchorB = vec2.create();
   rotB = 0;
-  bImpulse = vec2.create();
 
   point: vec2;
+
+  bias: number;
+  errorBias = Math.pow(0.9, 60);
+  maxBias = Infinity;
+
+  maxForce = Infinity;
 
   /**
    * Creates a new {@link Constraint} between two bodies.
@@ -76,17 +80,11 @@ export default abstract class Constraint {
   }
 
   /**
-   * Prepares for constraint solving by applying accumulated impulses.
+   * Prepares for constraint solving.
+   *
+   * @param dt The time since the last update
    */
-  preSolve(dt: number) {
-    if (!this.a.isStatic) {
-      vec2.scaleAndAdd(this.a.velocity, this.a.velocity, this.aImpulse, this.a.getInverseMass());
-    }
-
-    if (this.b && !this.b.isStatic) {
-      vec2.scaleAndAdd(this.b.velocity, this.b.velocity, this.bImpulse, this.b.getInverseMass());
-    }
-  }
+  abstract preSolve(dt: number): void;
 
   /**
    * Solves the constraint.
@@ -96,12 +94,11 @@ export default abstract class Constraint {
   abstract solve(dt: number): void;
 
   /**
-   * Warms the constraint impulses.
+   * Performs post solve operations.
+   *
+   * @param dt The time since the last update
    */
-  postSolve(dt: number) {
-    vec2.scale(this.aImpulse, this.aImpulse, Physics.G_CONF.CONSTRAINT_WARMING);
-    vec2.scale(this.bImpulse, this.bImpulse, Physics.G_CONF.CONSTRAINT_WARMING);
-  }
+  abstract postSolve(dt: number): void;
 
   /**
    * Determines wether or not the constraint is between a body and a point.
@@ -162,6 +159,15 @@ export default abstract class Constraint {
     const velA = vec2.add(vec2.create(), this.a.velocity, angularCrossPointA);
     const velB = vec2.add(vec2.create(), this.isBodyToPoint() ? vec2.create() : this.b.velocity, angularCrossPointB);
     return vec2.sub(vec2.create(), velB, velA);
+  }
+
+  /**
+   * Calculates the velocity bias coefficient.
+   *
+   * @param dt The time since the last update
+   */
+  protected biasCoef(dt: number) {
+    return 1 - Math.pow(this.errorBias, dt);
   }
 
   protected kScalarBody(body: CollisionObject, r: vec2, n: vec2) {
