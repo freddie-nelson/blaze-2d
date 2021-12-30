@@ -4,7 +4,9 @@ import RigidBody from "../../rigidbody";
 export default function solveForces(obj: RigidBody, delta: number, gravity: vec2) {
   if (obj.getInverseMass() === 0 || !obj.isDynamic) return;
 
-  const force = vec2.scaleAndAdd(vec2.create(), obj.force, gravity, obj.getInverseMass());
+  const force = vec2.scaleAndAdd(vec2.create(), obj.force, gravity, obj.getMass());
+  vec2.scale(force, force, obj.getInverseMass());
+
   let torque = obj.torque * obj.getInverseInertia();
 
   if (obj.lockXAxis) force[0] = 0;
