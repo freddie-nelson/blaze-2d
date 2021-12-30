@@ -80,6 +80,7 @@ export default class DistanceConstraint extends Constraint {
 
     const delta = vec2.sub(vec2.create(), anchorBWorld, anchorAWorld);
     const length = vec2.len(delta);
+
     this.nDelta = vec2.scale(vec2.create(), delta, 1 / (length ? length : Infinity));
 
     // calculate mass normal
@@ -124,6 +125,6 @@ export default class DistanceConstraint extends Constraint {
    * Applies the cached impulse.
    */
   postSolve() {
-    this.applyImpulses(this.jnAcc * 0.1, this.nDelta);
+    // this.applyImpulses(this.jnAcc * 0.1, this.nDelta);
   }
 }
