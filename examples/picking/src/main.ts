@@ -1,20 +1,14 @@
 import Blaze from "@blz/blaze";
 import BatchRenderer from "@blz/renderer/batchRenderer";
-import LineCollider from "@blz/physics/collider/line";
-import Line from "@blz/shapes/line";
-import Circle from "@blz/shapes/circle";
-import CircleCollider from "@blz/physics/collider/circle";
 import Texture from "@blz/texture/texture";
 import TextureAtlas from "@blz/texture/atlas";
 import Color from "@blz/utils/color";
 import { vec2 } from "gl-matrix";
 import Entity from "@blz/entity";
 import { Mouse } from "@blz/input/mouse";
-import Editor from "@blz/editor/editor";
-import CollisionObject from "@blz/physics/collisionObject";
-import Collider from "@blz/physics/collider/collider";
 import RectCollider from "@blz/physics/collider/rect";
 import Rect from "@blz/shapes/rect";
+import MouseConstraint from "@blz/physics/constraints/mouse";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -80,31 +74,25 @@ for (let i = 0; i < 100; i++) {
 
 // pick entity on click
 let picked: Entity;
+let mouseConstraint: MouseConstraint;
+
 CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (pressed) {
     const point = WORLD.getCellFromPixel(pixelPos);
 
     picked = <Entity>PHYSICS.pick(point)[0];
-    if (picked === floor) return (picked = undefined);
+    if (picked === floor || !picked) return (picked = undefined);
 
     picked.getPieces()[0].texture = pickedTex;
-    picked.setMass(0);
-    picked.isStatic = true;
-    vec2.zero(picked.velocity);
-    picked.angularVelocity = 0;
+
+    mouseConstraint = new MouseConstraint(picked);
+    PHYSICS.addConstraint(mouseConstraint);
   } else if (picked) {
     picked.getPieces()[0].texture = rectTex;
-    picked.setMass(1);
-    picked.setInertia(1);
-    picked.isStatic = false;
     picked = undefined;
+
+    mouseConstraint.remove();
+    PHYSICS.removeConstraint(mouseConstraint);
+    mouseConstraint = undefined;
   }
-});
-
-// stick entity to mouse
-CANVAS.mouse.addListener(Mouse.MOVE, (pressed, pixelPos) => {
-  if (!picked) return;
-
-  const pos = WORLD.getCellFromPixel(pixelPos);
-  picked.setPosition(pos);
 });

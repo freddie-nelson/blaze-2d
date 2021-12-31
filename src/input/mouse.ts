@@ -21,8 +21,13 @@ export type MouseCallback = (pressed: boolean, pos: vec2) => void;
 export default class MouseHandler {
   readonly element: HTMLElement;
 
-  buttons: { [index: number]: boolean } = {};
-  listeners: { [index: number]: MouseCallback[] } = {};
+  /**
+   * The mouse's current position within the element.
+   */
+  private position = vec2.create();
+
+  private buttons: { [index: number]: boolean } = {};
+  private listeners: { [index: number]: MouseCallback[] } = {};
 
   constructor(element: HTMLElement) {
     this.element = element;
@@ -46,8 +51,21 @@ export default class MouseHandler {
 
     this.element.addEventListener("mousemove", (e) => {
       const pos = vec2.fromValues(e.offsetX, e.offsetY);
+      vec2.copy(this.position, pos);
+
       this.listeners[Mouse.MOVE]?.forEach((cb) => cb(this.isPressed(), pos));
     });
+  }
+
+  /**
+   * Gets the current mouse position within the element.
+   *
+   * If the mouse has not yet entered the element then the position will be [0, 0].
+   *
+   * @returns The mouse position in pixels as a {@link vec2};
+   */
+  getMousePos() {
+    return this.position;
   }
 
   /**

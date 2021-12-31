@@ -11,7 +11,9 @@ import Rect from "@blz/shapes/rect";
 import Circle from "@blz/shapes/circle";
 import SpringConstraint from "@blz/physics/constraints/spring";
 import DistanceConstraint from "@blz/physics/constraints/distance";
-import Physics from "@blz/physics/physics";
+import PivotConstraint from "@blz/physics/constraints/pivot";
+import MouseConstraint from "@blz/physics/constraints/mouse";
+import { Mouse } from "@blz/input/mouse";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -67,18 +69,19 @@ PHYSICS.addConstraint(constraint);
 // body.applyForce(vec2.fromValues(200, 0));
 
 // distance constraint at point
-const point = vec2.fromValues(0, 0);
+const point = vec2.fromValues(8, 0);
 const spinnerRect = new Rect(8, 2);
 spinnerRect.texture = rectTex;
-const spinner = new Entity(point, new RectCollider(8, 2), [spinnerRect]);
-
-spinner.setInertia(50);
+const spinnerAnchor = vec2.fromValues(0, 1);
+const spinner = new Entity(vec2.sub(vec2.create(), point, spinnerAnchor), new RectCollider(8, 2), [spinnerRect]);
 
 WORLD.addEntity(spinner);
 PHYSICS.addBody(spinner);
 
-const revolute = new DistanceConstraint(spinner, point, 0);
-PHYSICS.addConstraint(revolute);
+const pivot = new PivotConstraint(spinner, point);
+PHYSICS.addConstraint(pivot);
+
+pivot.anchorA = spinnerAnchor;
 
 // create chain
 const root = vec2.fromValues(10, 9);
@@ -111,3 +114,22 @@ for (let i = 0; i < length; i++) {
 
   entity.applyForceAtAngle(-10 * i, Math.PI / 2);
 }
+
+// setup mouse constraint
+let mouseConstraint: MouseConstraint;
+
+CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
+  if (pressed) {
+    const point = WORLD.getCellFromPixel(pixelPos);
+
+    const picked = <Entity>PHYSICS.pick(point)[0];
+    if (!picked) return;
+
+    mouseConstraint = new MouseConstraint(picked);
+    PHYSICS.addConstraint(mouseConstraint);
+  } else if (mouseConstraint) {
+    mouseConstraint.remove();
+    PHYSICS.removeConstraint(mouseConstraint);
+    mouseConstraint = undefined;
+  }
+});
