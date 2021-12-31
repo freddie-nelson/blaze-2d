@@ -77,7 +77,7 @@ let picked: Entity;
 let mouseConstraint: MouseConstraint;
 
 CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
-  if (pressed) {
+  if (pressed && !picked) {
     const point = WORLD.getCellFromPixel(pixelPos);
 
     picked = <Entity>PHYSICS.pick(point)[0];

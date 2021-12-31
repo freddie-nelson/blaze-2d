@@ -86,9 +86,9 @@ pivot.anchorA = spinnerAnchor;
 // create chain
 const root = vec2.fromValues(10, 9);
 const length = 8;
-const stiffness = 8 * length;
+const stiffness = 10 * length;
 const damping = 4;
-const size = 0.2;
+const size = 0.3;
 const spacing = size * 2;
 const chain: Entity[] = [];
 
@@ -103,7 +103,7 @@ for (let i = 0; i < length; i++) {
   PHYSICS.addBody(entity);
 
   if (i === 0) {
-    const constraint = new DistanceConstraint(entity, root, 0);
+    const constraint = new PivotConstraint(entity, root);
     PHYSICS.addConstraint(constraint);
   } else {
     const constraint = new SpringConstraint(chain[i - 1], entity, spacing, stiffness, damping);

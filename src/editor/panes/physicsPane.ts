@@ -32,9 +32,12 @@ export default class PhysicsPane extends EditorPane {
   broadphaseTime = new BlazeStat("Broadphase Time", 0, 1, false, TextStyle.HIGHLIGHT);
   narrowphaseTime = new BlazeStat("Narrowphase Time", 0, 1, false, TextStyle.HIGHLIGHT);
   solveTime = new BlazeStat("Solving Time", 0, 1, false, TextStyle.HIGHLIGHT);
+  constraintTime = new BlazeStat("Constraint Time", 0, 1, false, TextStyle.HIGHLIGHT);
 
   collisionBodies = new BlazeStat("Bodies", 0, 1, false, TextStyle.SECONDARY);
   aabbTreeHeight = new BlazeStat("AABB Tree Height", 0, 1, false, TextStyle.SECONDARY);
+  aabbLeftHeight = new BlazeStat("AABB Left Height", 0, 1, false, TextStyle.SECONDARY);
+  aabbRightHeight = new BlazeStat("AABB Right Height", 0, 1, false, TextStyle.SECONDARY);
   aabbTreeInsertions = new BlazeStat("AABB Insertions", 0, 1, false, TextStyle.SECONDARY);
   collisionPairs = new BlazeStat("Collision Pairs", 0, 1, false, TextStyle.SECONDARY);
   actualCollisions = new BlazeStat("Actual Collisions", 0, 1, false, TextStyle.SECONDARY);
@@ -111,8 +114,11 @@ export default class PhysicsPane extends EditorPane {
     this.element.appendChild(this.broadphaseTime.element);
     this.element.appendChild(this.narrowphaseTime.element);
     this.element.appendChild(this.solveTime.element);
+    this.element.appendChild(this.constraintTime.element);
     this.element.appendChild(this.collisionBodies.element);
     this.element.appendChild(this.aabbTreeHeight.element);
+    this.element.appendChild(this.aabbLeftHeight.element);
+    this.element.appendChild(this.aabbRightHeight.element);
     this.element.appendChild(this.aabbTreeInsertions.element);
     this.element.appendChild(this.collisionPairs.element);
     this.element.appendChild(this.actualCollisions.element);
@@ -133,10 +139,20 @@ export default class PhysicsPane extends EditorPane {
     this.broadphaseTime.setValue(Number(physics.broadphaseTime.toFixed(2)));
     this.narrowphaseTime.setValue(Number(physics.narrowphaseTime.toFixed(2)));
     this.solveTime.setValue(Number(physics.collisionSolveTime.toFixed(2)));
+    this.constraintTime.setValue(Number(physics.constraintTime.toFixed(2)));
 
     this.collisionBodies.setValue(physics.collisionsSpace.objects.length);
+
     this.aabbTreeHeight.setValue(physics.collisionsSpace.aabbTree.getHeight());
+    this.aabbLeftHeight.setValue(
+      physics.collisionsSpace.aabbTree.getHeight(physics.collisionsSpace.aabbTree.root?.left),
+    );
+    this.aabbRightHeight.setValue(
+      physics.collisionsSpace.aabbTree.getHeight(physics.collisionsSpace.aabbTree.root?.right),
+    );
+
     this.aabbTreeInsertions.setValue(physics.collisionsSpace.aabbTree.insertionsLastUpdate);
+
     this.collisionPairs.setValue(physics.collisionsSpace.collisionPairs.length);
     this.actualCollisions.setValue(
       physics.collisionsSpace.collisionManifolds.length + physics.collisionsSpace.triggerManifolds.length,

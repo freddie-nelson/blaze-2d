@@ -255,7 +255,7 @@ export default class AABBTree {
 
   /**
    * Removes the leaf node containing the {@link AABB} bounding the given {@link CollisionObject}.
-   *j
+   *
    * @param obj The {@link CollisionObject} to remove
    */
   remove(obj: CollisionObject): void {
@@ -276,29 +276,6 @@ export default class AABBTree {
 
       if (!node.isLeaf()) stack.push(node.left, node.right);
     }
-  }
-
-  /**
-   * Remove the given node and replace the parent with the node's sibling
-   *
-   * @param node The node to remove
-   */
-  private removeNode(node: AABBNode) {
-    const parent = node.parent;
-    if (node === this.root) {
-      this.root = undefined;
-      return;
-    }
-
-    const sibling = node.sibling();
-    if (!parent.parent) {
-      this.root = sibling;
-      sibling.parent = undefined;
-    } else {
-      parent.parent.replaceChild(parent, sibling);
-    }
-
-    node.parent = undefined;
   }
 
   /**
@@ -337,6 +314,29 @@ export default class AABBTree {
 
     // update parent AABB
     parent.updateAABB(this.margin);
+  }
+
+  /**
+   * Remove the given node and replace the parent with the node's sibling
+   *
+   * @param node The node to remove
+   */
+  private removeNode(node: AABBNode) {
+    const parent = node.parent;
+    if (node === this.root) {
+      this.root = undefined;
+      return;
+    }
+
+    const sibling = node.sibling();
+    if (!parent.parent) {
+      this.root = sibling;
+      sibling.parent = undefined;
+    } else {
+      parent.parent.replaceChild(parent, sibling);
+    }
+
+    node.parent = undefined;
   }
 
   /**

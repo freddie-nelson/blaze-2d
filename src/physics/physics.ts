@@ -78,7 +78,7 @@ export interface PhysicsConfig {
 
 const defaultConfig: PhysicsConfig = {
   POINT_SIZE: 0.000001,
-  CACHED_CONTACTS_TOLERANCE: 0.0005,
+  CACHED_CONTACTS_TOLERANCE: 0.0008,
   RESTITUTION_THRESHOLD: 1,
 
   VELOCITY_ITERATIONS: 8,
@@ -87,7 +87,7 @@ const defaultConfig: PhysicsConfig = {
 
   POSITION_ITERATIONS: 4,
   POSITION_SLOP: 0.015,
-  POSITION_DAMPING: 0.9,
+  POSITION_DAMPING: 0.7,
   POSITION_WARMING: 0.8,
   POSITION_SCALE: 0.1,
 
@@ -136,6 +136,11 @@ export default class Physics {
    * The time in ms that the last collision solving steps took.
    */
   collisionSolveTime = 0;
+
+  /**
+   * The time in ms that the last constraint solving steps took.
+   */
+  constraintTime = 0;
 
   /**
    * The time in ms that the last dynamics solving steps took.
@@ -206,23 +211,25 @@ export default class Physics {
     this.collisionsSpace.solve("positionImpulse", delta);
 
     // apply position impulse
-    const positionTimer = performance.now();
     this.collisionsSpace.solve("position", delta);
-    this.collisionSolveTime += performance.now() - positionTimer;
 
     // solve collision impulse
-    const impulseTimer = performance.now();
     this.collisionsSpace.setSolverIterations("impulse", this.CONFIG.VELOCITY_ITERATIONS);
     this.collisionsSpace.solve("impulse", delta);
-    this.collisionSolveTime += performance.now() - impulseTimer;
+
+    this.collisionSolveTime = performance.now() - this.collisionSolveTime;
 
     // solve constraints
+    this.constraintTime = performance.now();
+
     this.constraintSpace.solve("pre", delta);
 
     this.constraintSpace.setSolverIterations("solve", this.CONFIG.CONSTRAINT_ITERATIONS);
     this.constraintSpace.solve("solve", delta);
 
     this.constraintSpace.solve("post", delta);
+
+    this.constraintTime = performance.now() - this.constraintTime;
 
     // integrate velocities
     const velocityTimer = performance.now();
