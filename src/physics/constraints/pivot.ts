@@ -1,73 +1,65 @@
-import { vec2 } from "gl-matrix";
+import { mat2, vec2 } from "gl-matrix";
 import ConsolePane from "../../editor/panes/consolePane";
 import { cross2DWithScalar } from "../../utils/vectors";
 import CollisionObject from "../collisionObject";
 import Constraint, { ConstraintOptions } from "./constraint";
 
-interface DistanceConstraintOptions extends ConstraintOptions {
-  length: number;
-  // stiffness: number;
-  // damping: number;
+interface PivotConstraintOptions extends ConstraintOptions {
+  point: vec2;
 }
 
 /**
- * Represents a distance/pin joint between two {@link CollisionObject}s or
+ * Represents a pivot joint between two {@link CollisionObject}s or
  * a {@link CollisionObject} and a point.
  *
- * This constraint will maintain a set distance between the two anchor points.
+ * This constraint will keep the object's joined together by their anchor points at the given point.
  */
-export default class DistanceConstraint extends Constraint {
-  length: number;
-
-  bias: number;
-  nDelta: vec2;
-  nMass: number;
-  jnAcc: number;
+export default class PivotConstraint extends Constraint {
+  bias: vec2;
+  jAcc: vec2;
+  k: mat2;
 
   /**
-   * Creates a new {@link DistanceConstraint} between two bodies.
+   * Creates a new {@link PivotConstraint} between two bodies.
    *
    * @param a The first body
    * @param b The second body
-   * @param length The distance to maintain between the bodies
+   * @param point The point to join the bodies at in world space
    */
-  constructor(a: CollisionObject, b: CollisionObject, length: number);
+  constructor(a: CollisionObject, b: CollisionObject, point: vec2);
 
   /**
-   * Creates a new {@link Constraint} with the given options.
+   * Creates a new {@link PivotConstraint} with the given options.
    *
    * @param opts The constraint options
    */
-  constructor(opts: DistanceConstraintOptions);
+  constructor(opts: PivotConstraintOptions);
 
   /**
-   * Creates a new {@link DistanceConstraint} between a body and a point.
+   * Creates a new {@link PivotConstraint} between a body and a point.
    *
    * @param a The body to constrain
    * @param point A point in world space
-   * @param length The distance to maintain between the body and point.
    */
-  constructor(a: CollisionObject, point: vec2, length: number);
+  constructor(a: CollisionObject, point: vec2);
 
-  constructor(a: CollisionObject | DistanceConstraintOptions, b?: CollisionObject | vec2, length?: number) {
+  constructor(a: CollisionObject | PivotConstraintOptions, b?: CollisionObject | vec2, point?: vec2) {
     if (a instanceof CollisionObject && b instanceof CollisionObject) {
       // constraint between two bodies
       super(a, b);
 
-      this.length = length;
+      this.point = point;
     } else if (a instanceof CollisionObject) {
       // constraint between body and point
       super(a, <vec2>b);
-
-      this.length = length;
     } else {
       // constraint from options
       super(a);
 
-      this.length = a.length;
+      this.point = a.point;
     }
 
-    this.jnAcc = 0;
+    this.jAcc = vec2.create();
   }
 
   preSolve(dt: number) {
@@ -80,16 +72,14 @@ export default class DistanceConstraint extends Constraint {
     const anchorBWorld = this.isBodyToPoint() ? anchorB : vec2.add(vec2.create(), this.b.getPosition(), anchorB);
 
     const delta = vec2.sub(vec2.create(), anchorBWorld, anchorAWorld);
-    const length = vec2.len(delta);
-
-    this.nDelta = vec2.scale(vec2.create(), delta, 1 / (length ? length : Infinity));
-
-    // calculate mass normal
-    const k = this.kScalar(this.nDelta);
-    this.nMass = 1 / k;
+    this.k = this.kTensor();
 
     // calculate bias velocity
-    this.bias = Math.max(-this.maxBias, Math.min(-this.biasCoef(dt) * ((length - this.length) / dt), this.maxBias));
+    const bias = vec2.scale(vec2.create(), delta, -this.biasCoef(dt) / dt);
+    vec2.min(bias, bias, vec2.fromValues(this.maxBias, this.maxBias));
+    vec2.max(bias, bias, vec2.fromValues(-this.maxBias, -this.maxBias));
+
+    this.bias = bias;
   }
 
   /**
@@ -108,18 +98,19 @@ export default class DistanceConstraint extends Constraint {
 
     // compute relative velocity
     const relVel = this.calculateRelativeVelocity(anchorA, anchorB);
-    const vrn = vec2.dot(relVel, this.nDelta);
-
-    const jnMax = this.maxForce * dt;
 
     // compute normal impulse
-    let jn = (this.bias - vrn) * this.nMass;
-    const jnOld = this.jnAcc;
+    const j = vec2.transformMat2(vec2.create(), vec2.sub(vec2.create(), this.bias, relVel), this.k);
+    const jOld = vec2.clone(this.jAcc);
 
-    this.jnAcc = Math.max(-jnMax, Math.min(jnOld + jn, jnMax));
-    jn = this.jnAcc - jnOld;
+    const maxForce = this.maxForce * dt;
+    vec2.add(this.jAcc, this.jAcc, j);
+    vec2.min(this.jAcc, this.jAcc, vec2.fromValues(maxForce, maxForce));
+    vec2.max(this.jAcc, this.jAcc, vec2.fromValues(-maxForce, -maxForce));
 
-    this.applyImpulses(jn, this.nDelta);
+    vec2.sub(j, this.jAcc, jOld);
+
+    this.applyImpulses(j);
   }
 
   /**

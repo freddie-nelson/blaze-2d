@@ -1,4 +1,4 @@
-import { vec2 } from "gl-matrix";
+import { mat2, vec2 } from "gl-matrix";
 import { cross2D, cross2DWithScalar } from "../../utils/vectors";
 import CollisionObject from "../collisionObject";
 import Physics from "../physics";
@@ -29,7 +29,6 @@ export default abstract class Constraint {
 
   point: vec2;
 
-  bias: number;
   errorBias = Math.pow(0.9, 60);
   maxBias = Infinity;
 
@@ -109,16 +108,30 @@ export default abstract class Constraint {
     return !this.b;
   }
 
-  protected applyImpulses(impulse: number, direction: vec2) {
+  protected applyImpulses(impulse: number, direction: vec2): void;
+
+  protected applyImpulses(impulse: vec2): void;
+
+  protected applyImpulses(impulse: number | vec2, direction?: vec2) {
     const anchorA = this.anchorA;
     const anchorB = this.isBodyToPoint() ? this.point : this.anchorB;
 
-    if (!this.a.isStatic) {
-      this.a.applyImpulse(vec2.scale(vec2.create(), direction, -impulse), anchorA);
-    }
+    if (typeof impulse === "number") {
+      if (!this.a.isStatic) {
+        this.a.applyImpulse(vec2.scale(vec2.create(), direction, -impulse), anchorA);
+      }
 
-    if (!this.isBodyToPoint() && !this.b.isStatic) {
-      this.b.applyImpulse(vec2.scale(vec2.create(), direction, impulse), anchorB);
+      if (!this.isBodyToPoint() && !this.b.isStatic) {
+        this.b.applyImpulse(vec2.scale(vec2.create(), direction, impulse), anchorB);
+      }
+    } else {
+      if (!this.a.isStatic) {
+        this.a.applyImpulse(vec2.negate(vec2.create(), impulse), anchorA);
+      }
+
+      if (!this.isBodyToPoint() && !this.b.isStatic) {
+        this.b.applyImpulse(impulse, anchorB);
+      }
     }
   }
 
@@ -156,7 +169,7 @@ export default abstract class Constraint {
       this.isBodyToPoint() ? 0 : -this.b.angularVelocity,
     );
 
-    const velA = vec2.add(vec2.create(), this.a.velocity, angularCrossPointA);
+    const velA = vec2.sub(vec2.create(), this.a.velocity, angularCrossPointA);
     const velB = vec2.add(vec2.create(), this.isBodyToPoint() ? vec2.create() : this.b.velocity, angularCrossPointB);
     return vec2.sub(vec2.create(), velB, velA);
   }
@@ -170,16 +183,74 @@ export default abstract class Constraint {
     return 1 - Math.pow(this.errorBias, dt);
   }
 
+  /**
+   * Computes the k scalar value for the given body.
+   *
+   * @param body The body to calculate for
+   * @param r The anchor point on the body
+   * @param n The constraint's delta normal
+   * @returns The k scalar value for the given body
+   */
   protected kScalarBody(body: CollisionObject, r: vec2, n: vec2) {
     const rcn = cross2D(r, n);
     return body.getInverseMass() + body.getInverseInertia() * rcn * rcn;
   }
 
+  /**
+   * Computes the k scalar value for the constraint.
+   *
+   * @param n The constraint's delta normal
+   * @returns The k scalar value for the constraint
+   */
   protected kScalar(n: vec2) {
     const val =
       this.kScalarBody(this.a, this.anchorA, n) +
       (this.isBodyToPoint() ? 0 : this.kScalarBody(this.b, this.anchorB, n));
 
     return val;
+  }
+
+  /**
+   * Computes the k tensor matrix for the constraint.
+   *
+   * @see [Chipmunk2D kTensor](https://github.com/slembcke/Chipmunk2D/blob/master/include/chipmunk/chipmunk_private.h#L229)
+   *
+   * @returns k tensor matrix
+   */
+  protected kTensor() {
+    const r1 = this.anchorA;
+    const r2 = this.isBodyToPoint() ? this.point : this.anchorB;
+    const invMass = this.a.getInverseMass() + (this.isBodyToPoint() ? 0 : this.b.getInverseMass());
+
+    // start with Identity * invMass
+    const k = mat2.identity(mat2.create());
+    mat2.multiplyScalar(k, k, invMass);
+
+    // add the influence from r1
+    const aInvInertia = this.a.getInverseInertia();
+    const r1xsq = r1[0] * r1[0] * aInvInertia;
+    const r1ysq = r1[1] * r1[1] * aInvInertia;
+    const r1nxy = -r1[0] * r1[1] * aInvInertia;
+
+    k[0] += r1ysq;
+    k[2] += r1nxy;
+    k[1] += r1nxy;
+    k[3] += r1xsq;
+
+    // add the influence from r2
+    const bInvInertia = this.isBodyToPoint() ? 0 : this.b.getInverseInertia();
+    const r2xsq = r2[0] * r2[0] * bInvInertia;
+    const r2ysq = r2[1] * r2[1] * bInvInertia;
+    const r2nxy = -r2[0] * r2[1] * bInvInertia;
+
+    k[0] += r2ysq;
+    k[2] += r2nxy;
+    k[1] += r2nxy;
+    k[3] += r2xsq;
+
+    // invert
+    mat2.invert(k, k);
+
+    return k;
   }
 }
