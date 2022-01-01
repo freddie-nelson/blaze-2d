@@ -127,8 +127,7 @@ export default abstract class Shape extends Object2D {
   getPoints() {
     // return cached points if they are valid
     if (
-      vec2.sqrLen(vec2.sub(this.posDiff, this.getPosition(), this.cachedPoints.pos)) <=
-        this.cachedPoints.posSlop &&
+      vec2.sqrLen(vec2.sub(this.posDiff, this.getPosition(), this.cachedPoints.pos)) <= this.cachedPoints.posSlop &&
       Math.abs(this.getRotation() - this.cachedPoints.rotation) <= this.cachedPoints.rotationSlop
     ) {
       // console.log("using cached points");

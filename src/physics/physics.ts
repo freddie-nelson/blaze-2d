@@ -355,6 +355,17 @@ export default class Physics {
   }
 
   /**
+   * Adds the given bodies to the world's dynamics and collisions spaces.
+   *
+   * @param bodies The bodies to add
+   */
+  addBodies(...bodies: RigidBody[]) {
+    for (const body of bodies) {
+      this.addBody(body);
+    }
+  }
+
+  /**
    * Removes a {@link CollisionObject} from the world's collisions space.
    *
    * @param c The collision object to remove

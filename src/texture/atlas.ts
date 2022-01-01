@@ -16,7 +16,7 @@ export interface TextureAtlasImage {
 }
 
 const colorBlockSize = 5;
-const padding = 1;
+const padding = 5;
 
 /**
  * Combines {@link Texture}s into one single image using an offscreen canvas.
