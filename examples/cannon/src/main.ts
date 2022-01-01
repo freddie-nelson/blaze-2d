@@ -190,7 +190,7 @@ CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   const len = vec2.len(diff);
 
   const power = Math.max(minForce, Math.min(len * strength, maxForce));
-  const dir = vec2.normalize(vec2.create(), diff);
+  const dir = vec2.rotate(vec2.create(), vec2.fromValues(1, 0), vec2.create(), barrel.getRotation());
 
   const ballCircle = new Circle(ballSize);
   ballCircle.texture = ballTex;
