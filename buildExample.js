@@ -20,7 +20,7 @@ if (!existsSync(conf)) {
   process.exit(1);
 }
 
-const build = spawn("webpack", ["--config", conf]);
+const build = spawn("webpack", ["--config", "webpack.config.js"], { cwd: dir });
 
 build.stdout.on("data", (data) => {
   console.log(data.toString());

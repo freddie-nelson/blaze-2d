@@ -17,6 +17,7 @@ import Editor, { EDITOR_GRID_SIZE } from "@blz/editor/editor";
 import PivotConstraint from "@blz/physics/constraints/pivot";
 import RotarySpringConstraint from "@blz/physics/constraints/rotarySpring";
 import createBounds from "@helpers/bounds";
+import { boxPyramid } from "@helpers/structures";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -68,22 +69,7 @@ const spacing = 0.5;
 const startX = BOUNDS.max[0] - thickness - size / 2 + (spacing * base) / 2;
 const startY = BOUNDS.min[1] + thickness / 2 + size / 2;
 
-for (let row = 0; row < base; row += diff) {
-  for (let col = 0; col < base - row; col++) {
-    const x = startX - col * size - (row * size) / 2 - (spacing * base) / 2 - spacing * (col + row / 2);
-    const y = startY + (row / diff) * size;
-
-    const rect = new Rect(size, size);
-    rect.texture = crateTex;
-
-    const crate = new Entity(vec2.fromValues(x, y), new RectCollider(size, size), [rect], mass);
-    crate.staticFriction = 0.5;
-    crate.dynamicFriction = 0.5;
-
-    WORLD.addEntity(crate);
-    PHYSICS.addBody(crate);
-  }
-}
+boxPyramid(crateTex, size, mass, base, diff, spacing, startX, startY);
 
 // cannon legs
 const legWidth = 2.6;

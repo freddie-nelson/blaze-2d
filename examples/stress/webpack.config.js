@@ -5,7 +5,7 @@ module.exports = {
   mode: "development",
   // stats: "none",
   entry: {
-    main: "./examples/stress/src/main.ts",
+    main: "./src/main.ts",
   },
   output: {
     path: path.resolve(__dirname, "build"),
@@ -17,6 +17,7 @@ module.exports = {
     modules: ["./node_modules"],
     alias: {
       "@blz": path.resolve(__dirname, "../../lib/src"),
+      "@helpers": path.resolve(__dirname, "../_helpers"),
     },
   },
   devtool: "inline-source-map",

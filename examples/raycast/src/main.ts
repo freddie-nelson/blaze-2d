@@ -10,6 +10,10 @@ import RectCollider from "@blz/physics/collider/rect";
 import Rect from "@blz/shapes/rect";
 import Ray from "@blz/physics/ray";
 import Line from "@blz/shapes/line";
+import createBounds from "@helpers/bounds";
+import { boxGrid } from "@helpers/structures";
+import { mousePicker } from "@helpers/mouse";
+import { randomTexs } from "@helpers/textures";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -35,8 +39,8 @@ WORLD.useBatchRenderer = true;
 const rayTex = new Texture(new Color("black"));
 ATLAS.addTexture(rayTex, true);
 
-const floorTex = new Texture(new Color("grey"));
-ATLAS.addTexture(floorTex);
+const boundsTex = new Texture(new Color("grey"));
+ATLAS.addTexture(boundsTex);
 
 const rectTex = new Texture(new Color("blue"));
 ATLAS.addTexture(rectTex);
@@ -45,36 +49,19 @@ const highlightTex = new Texture(new Color("red"));
 ATLAS.addTexture(highlightTex, true);
 
 // create demo scene
-// add floor
-const floorRect = new Rect(30, 3);
-floorRect.texture = floorTex;
-
-const floor = new Entity(vec2.fromValues(0, -9), new RectCollider(30, 3), [floorRect], 0);
-floor.isStatic = true;
-
-WORLD.addEntity(floor);
-PHYSICS.addBody(floor);
+const thickness = 2;
+const BOUNDS = createBounds(thickness, boundsTex);
 
 // add rects
-const xRange = 20;
-const yRange = 8;
+const size = 1;
+const spacing = size / 20;
+const cols = Math.min(25, Math.floor(BOUNDS.width / size - thickness) - 1);
+const rows = 9;
 
-for (let i = 0; i < 100; i++) {
-  const x = Math.floor(Math.random() * xRange) - xRange / 2;
-  const y = Math.floor(Math.random() * yRange) - yRange / 2;
-  const rot = (Math.floor(Math.random() * 360) * Math.PI) / 180;
-
-  const rect = new Rect(1, 1);
-  rect.texture = rectTex;
-
-  const collider = new RectCollider(1, 1);
-
-  const entity = new Entity(vec2.fromValues(x, y), collider, [rect], 1);
-  entity.rotate(rot);
-
-  WORLD.addEntity(entity);
-  PHYSICS.addBody(entity);
-}
+const boxes = boxGrid(rectTex, size, size, rows, cols, spacing, 0, BOUNDS.min[1] + thickness / 2);
+boxes.forEach((box) => {
+  box.applyForceAtAngle(1000, Math.random() * Math.PI * 2);
+});
 
 // raycast entities
 const origin = vec2.fromValues(0, 9);
@@ -119,7 +106,7 @@ Blaze.addSystem(
 
       // highlight results
       for (const entity of results) {
-        if (entity === floor) continue;
+        if (entity.name === "bounds") continue;
 
         entity.getPieces()[0].texture = highlightTex;
         changed.push(entity);
@@ -128,3 +115,6 @@ Blaze.addSystem(
   },
   true,
 );
+
+// pick entity on click
+mousePicker(() => undefined, "bounds");

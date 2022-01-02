@@ -14,6 +14,7 @@ import DistanceConstraint from "@blz/physics/constraints/distance";
 import PivotConstraint from "@blz/physics/constraints/pivot";
 import MouseConstraint from "@blz/physics/constraints/mouse";
 import { Mouse } from "@blz/input/mouse";
+import { mousePicker } from "@helpers/mouse";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -116,20 +117,4 @@ for (let i = 0; i < length; i++) {
 }
 
 // setup mouse constraint
-let mouseConstraint: MouseConstraint;
-
-CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
-  if (pressed) {
-    const point = WORLD.getCellFromPixel(pixelPos);
-
-    const picked = <Entity>PHYSICS.pick(point)[0];
-    if (!picked) return;
-
-    mouseConstraint = new MouseConstraint(picked);
-    PHYSICS.addConstraint(mouseConstraint);
-  } else if (mouseConstraint) {
-    mouseConstraint.remove();
-    PHYSICS.removeConstraint(mouseConstraint);
-    mouseConstraint = undefined;
-  }
-});
+mousePicker(() => undefined, "bounds");

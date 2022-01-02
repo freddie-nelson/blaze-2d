@@ -28,6 +28,7 @@ export default function createBounds(thickness: number, tex: Texture) {
   ];
 
   boundsEntities.forEach((bounds) => {
+    bounds.name = "bounds";
     bounds.isStatic = true;
     bounds.setMass(0);
 

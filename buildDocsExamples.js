@@ -81,7 +81,7 @@ custom_edit_url: null
 <iframe tabindex="0" title="${example}" width="100%" height="800" src="${url}"></iframe>
 
 <a href="pathname://${url}" style={{marginLeft: "1.5rem", float: "right"}}>View Fullscreen</a>
-<a href="https://github.com/freddie-nelson/blaze-2d/tree/master/examples/${example}" style={{float: "right"}}>View Code</a>
+<a href="https://github.com/freddie-nelson/blaze-2d/tree/master/examples/${example}/src/main.ts" style={{float: "right"}}>View Code</a>
 `;
 
   writeFileSync(path, header + content);
