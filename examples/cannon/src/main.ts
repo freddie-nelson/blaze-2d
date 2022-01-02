@@ -90,14 +90,16 @@ PHYSICS.addBodies(...boundsEntities);
 // crate pyramid
 const size = 1;
 const mass = 1;
-const base = Math.min(Math.floor(BOUNDS.width / size / 2), 19);
-const diff = 2;
-const startX = BOUNDS.max[0] - thickness / 2 - size;
+const base = Math.min(Math.floor(BOUNDS.width / size / 3), 14);
+const diff = 1;
+const spacing = 0.5;
+const startX = BOUNDS.max[0] - thickness - size / 2 + (spacing * base) / 2;
 const startY = BOUNDS.min[1] + thickness / 2 + size / 2;
 
 for (let row = 0; row < base; row += diff) {
   for (let col = 0; col < base - row; col++) {
-    const x = startX - col * size - (row * size) / 2;
+    console.log((spacing * base) / 2, spacing * (col + row / 2));
+    const x = startX - col * size - (row * size) / 2 - (spacing * base) / 2 - spacing * (col + row / 2);
     const y = startY + (row / diff) * size;
 
     const rect = new Rect(size, size);
@@ -112,26 +114,6 @@ for (let row = 0; row < base; row += diff) {
   }
 }
 
-// cannon barrel
-const barrelLength = 4.8;
-const barrelHeight = 1.5;
-const barrelRect = new Rect(barrelLength, barrelHeight);
-barrelRect.texture = barrelTex;
-
-const barrel = new Entity(
-  vec2.add(
-    vec2.create(),
-    BOUNDS.min,
-    vec2.fromValues(thickness / 2 + barrelLength / 2, thickness / 2 + barrelHeight * 2),
-  ),
-  new RectCollider(barrelLength, barrelHeight),
-  [barrelRect],
-  100,
-);
-
-WORLD.addEntity(barrel);
-PHYSICS.addBody(barrel);
-
 // cannon legs
 const legWidth = 2.6;
 const legHeight = 2.4;
@@ -142,7 +124,7 @@ const leg = new Entity(
   vec2.add(
     vec2.create(),
     BOUNDS.min,
-    vec2.fromValues(thickness / 2 + Math.max(BOUNDS.width / 10, 2.5), thickness / 2 + legHeight / 2),
+    vec2.fromValues(thickness / 2 + Math.max(BOUNDS.width / 10, 3), thickness / 2 + legHeight / 2),
   ),
   new TriangleCollider(legWidth, legHeight),
   [legTri],
@@ -152,16 +134,25 @@ leg.isStatic = true;
 
 WORLD.addEntity(leg);
 
+// cannon barrel
+const barrelLength = 4.8;
+const barrelHeight = 1.5;
+const barrelRect = new Rect(barrelLength, barrelHeight);
+barrelRect.texture = barrelTex;
+
+const barrel = new Entity(leg.getPosition(), new RectCollider(barrelLength, barrelHeight), [barrelRect], 100);
+
+WORLD.addEntity(barrel);
+PHYSICS.addBody(barrel);
+
 // cannon pivot joint
 const cannonJoint = new PivotConstraint(barrel, leg.getPosition());
 cannonJoint.anchorA = vec2.fromValues(0, -barrelHeight / 1.3);
 PHYSICS.addConstraint(cannonJoint);
 
 // cannon rotary spring
-const cannonSpring = new RotarySpringConstraint(barrel, 0, 3000, 70);
+const cannonSpring = new RotarySpringConstraint(barrel, 0, 4000, 80);
 PHYSICS.addConstraint(cannonSpring);
-
-barrel.rotate(Math.PI / 2);
 
 // track mouse with cannon
 const minAngle = glMatrix.toRadian(-40);
