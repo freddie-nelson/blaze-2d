@@ -2,6 +2,8 @@ import { vec2 } from "gl-matrix";
 import RigidBody from "../../rigidbody";
 import solveForces from "./forces";
 
+const translate = vec2.create();
+
 export default function solveVelocity(obj: RigidBody, delta: number, gravity: vec2) {
   if (obj.getInverseMass() === 0 || !obj.isDynamic) return;
 
@@ -12,7 +14,7 @@ export default function solveVelocity(obj: RigidBody, delta: number, gravity: ve
   if (obj.lockYAxis) obj.velocity[1] = 0;
   if (obj.lockRotation) obj.angularVelocity = 0;
 
-  obj.translate(vec2.scale(vec2.create(), obj.velocity, delta));
+  obj.translate(vec2.scale(translate, obj.velocity, delta));
   obj.rotate(obj.angularVelocity * delta);
 
   solveForces(obj, delta, gravity);

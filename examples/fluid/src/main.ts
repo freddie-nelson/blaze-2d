@@ -14,7 +14,7 @@ import RectCollider from "@blz/physics/collider/rect";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
-Blaze.setBgColor(new Color("black"));
+Blaze.setBgColor(new Color("skyblue"));
 Blaze.start();
 
 const CANVAS = Blaze.getCanvas();
@@ -33,7 +33,7 @@ WORLD.useBatchRenderer = true;
 
 // textures
 const boundsTex = new Texture(new Color("grey"));
-const fluidTex = new Texture(new Color("blue"));
+const fluidTex = new Texture(new Color("#1D7BE3"));
 
 ATLAS.addTextures(boundsTex, fluidTex);
 
@@ -44,13 +44,13 @@ const BOUNDS = createBounds(thickness, boundsTex);
 // add fluid
 const particleRadius = 0.3;
 const fluid = new Fluid({
-  restDensity: 6,
+  restDensity: 20 * particleRadius,
   smoothingRadius: particleRadius * 5.5,
   stiffness: 10,
   stiffnessNear: 80,
 
   particleRadius: particleRadius,
-  maxParticles: 300,
+  maxParticles: 400,
   collisionGroup: 1,
 
   debug: true,

@@ -4,6 +4,7 @@ import BatchRenderer from "../../renderer/batchRenderer";
 import Renderer from "../../renderer/renderer";
 import Circle from "../../shapes/circle";
 import Texture from "../../texture/texture";
+import Color from "../../utils/color";
 import Physics from "../physics";
 import solveForces from "../solvers/dynamics/forces";
 import ParticlePair from "./pair";
@@ -18,6 +19,8 @@ export interface FluidOptions {
   particleRadius: number;
   maxParticles: number;
   collisionGroup: number;
+
+  color?: Color;
 
   debug?: boolean;
   debugTex?: Texture;
@@ -44,6 +47,8 @@ export default class Fluid {
   maxParticles: number;
   collisionGroup: number;
 
+  color: Color;
+
   debug: boolean;
   debugTex: Texture;
   debugShapes: Map<Particle, Circle> = new Map();
@@ -68,6 +73,8 @@ export default class Fluid {
     this.particleRadius = opts.particleRadius;
     this.maxParticles = opts.maxParticles;
     this.collisionGroup = opts.collisionGroup;
+
+    this.color = opts.color || new Color("#1D7BE3");
 
     this.debug = opts.debug || false;
     this.debugTex = opts.debugTex;
@@ -229,11 +236,16 @@ export default class Fluid {
       }
     }
 
+    const gravity = this.physics.getGravity() || vec2.create();
+
     for (const p of this.particles) {
       p.translate(p.dx);
 
       vec2.sub(p.velocity, p.getPosition(), p.posPrev);
       vec2.scale(p.velocity, p.velocity, 1 / delta);
+
+      // integrate forces
+      solveForces(p, delta, gravity);
     }
   }
 
