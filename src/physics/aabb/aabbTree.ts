@@ -159,7 +159,8 @@ export default class AABBTree {
       // 2 leaves so check for collision
       if (b.isLeaf()) {
         // found potential collision
-        if (a.aabb.intersects(b.aabb)) this.pairs.push({ a: a.aabb.obj, b: b.aabb.obj });
+        if (!a.aabb.obj.filter.reject(b.aabb.obj.filter) && a.aabb.intersects(b.aabb))
+          this.pairs.push({ a: a.aabb.obj, b: b.aabb.obj });
       } else {
         // leaf / branch, 2 cross checks
         this.crossChildren(b);

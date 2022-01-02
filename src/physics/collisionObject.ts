@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
 import validateZIndex from "../utils/validators";
 import Collider, { CollisionResult } from "./collider/collider";
+import CollisionFilter from "./collisionFilter";
 import PhysicsObject from "./object";
 
 /**
@@ -11,6 +12,14 @@ import PhysicsObject from "./object";
 export default class CollisionObject extends PhysicsObject {
   // private terrainCollisionFlags: { [index: number]: boolean } = {};
 
+  /**
+   * The object's collision filter.
+   */
+  filter = new CollisionFilter();
+
+  /**
+   * The object's collider.
+   */
   collider: Collider;
 
   /**
