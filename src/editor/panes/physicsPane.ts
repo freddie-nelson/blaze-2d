@@ -33,6 +33,7 @@ export default class PhysicsPane extends EditorPane {
   narrowphaseTime = new BlazeStat("Narrowphase Time", 0, 1, false, TextStyle.HIGHLIGHT);
   solveTime = new BlazeStat("Solving Time", 0, 1, false, TextStyle.HIGHLIGHT);
   constraintTime = new BlazeStat("Constraint Time", 0, 1, false, TextStyle.HIGHLIGHT);
+  fluidTime = new BlazeStat("Fluid Time", 0, 1, false, TextStyle.HIGHLIGHT);
 
   collisionBodies = new BlazeStat("Bodies", 0, 1, false, TextStyle.SECONDARY);
   aabbTreeHeight = new BlazeStat("AABB Tree Height", 0, 1, false, TextStyle.SECONDARY);
@@ -111,10 +112,13 @@ export default class PhysicsPane extends EditorPane {
     this.element.appendChild(this.dynamicsBodies.element);
 
     this.element.appendChild(this.collisionsHeading.element);
+
     this.element.appendChild(this.broadphaseTime.element);
     this.element.appendChild(this.narrowphaseTime.element);
     this.element.appendChild(this.solveTime.element);
     this.element.appendChild(this.constraintTime.element);
+    this.element.appendChild(this.fluidTime.element);
+
     this.element.appendChild(this.collisionBodies.element);
     this.element.appendChild(this.aabbTreeHeight.element);
     this.element.appendChild(this.aabbLeftHeight.element);
@@ -140,6 +144,7 @@ export default class PhysicsPane extends EditorPane {
     this.narrowphaseTime.setValue(Number(physics.narrowphaseTime.toFixed(2)));
     this.solveTime.setValue(Number(physics.collisionSolveTime.toFixed(2)));
     this.constraintTime.setValue(Number(physics.constraintTime.toFixed(2)));
+    this.fluidTime.setValue(Number(physics.fluidTime.toFixed(2)));
 
     this.collisionBodies.setValue(physics.collisionsSpace.objects.length);
 

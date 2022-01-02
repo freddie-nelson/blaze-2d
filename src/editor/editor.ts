@@ -50,7 +50,7 @@ export default class Editor implements System {
   }
 
   /**
-   * Create and inject the editor's UI.
+   * Create and inject the editor's UI with default layout.
    */
   createUI() {
     // remove old ui

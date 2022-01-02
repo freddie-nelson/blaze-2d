@@ -141,7 +141,7 @@ export default abstract class BatchRenderer extends Renderer {
    * @param rects The rects to queue
    * @param zIndex The z index of the rectangles
    */
-  private static queueRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
+  static queueRects(rects: (Rect | Renderable<Rect>)[], zIndex = 0) {
     const renderable =
       rects[0] instanceof Rect ? this.getRenderableRectsFromRects(<Rect[]>rects) : (rects as Renderable<Rect>[]);
 
@@ -154,7 +154,7 @@ export default abstract class BatchRenderer extends Renderer {
    * @param circles The circles to queue
    * @param zIndex The z index of the circles
    */
-  private static queueCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0) {
+  static queueCircles(circles: (Circle | Renderable<Circle>)[], zIndex = 0) {
     const renderable =
       circles[0] instanceof Circle
         ? this.getRenderableCirclesFromCircles(<Circle[]>circles)
@@ -169,7 +169,7 @@ export default abstract class BatchRenderer extends Renderer {
    * @param triangles The triangles to queue
    * @param zIndex The z index of the triangles
    */
-  private static queueTriangles(triangles: (Triangle | Renderable<Triangle>)[], zIndex = 0) {
+  static queueTriangles(triangles: (Triangle | Renderable<Triangle>)[], zIndex = 0) {
     const renderable =
       triangles[0] instanceof Triangle
         ? this.getRenderableTrianglesfromTriangles(<Triangle[]>triangles)

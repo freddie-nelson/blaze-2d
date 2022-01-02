@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["@types", "node_modules/@types"],
+    "lib": ["es2020", "DOM"],
+    "module": "es2020",
+    "target": "es6",
+    "noImplicitAny": true,
+    "rootDir": "../../",
+    "outDir": "build",
+    "baseUrl": "../../",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "sourceMap": true,
+    "paths": {
+      "@blz/*": ["lib/src/*"],
+      "@helpers/*": ["examples/_helpers/*"]
+    }
+  },
+  "include": ["./src/**/*", "../_helpers/*"],
+  "exclude": ["node_modules"]
+}

@@ -22,6 +22,7 @@ import preSolveConstraint from "./solvers/constraint/pre";
 import solveConstraint from "./solvers/constraint/solve";
 import postSolveConstraint from "./solvers/constraint/post";
 import Constraint from "./constraints/constraint";
+import Fluid from "./fluid/fluid";
 
 const debugRGBA: RGBAColor = {
   r: 0,
@@ -117,6 +118,8 @@ export default class Physics {
   collisionsSpace = new CollisionsSpace(this.gravity);
   constraintSpace = new ConstraintSpace();
 
+  fluids: Fluid[] = [];
+
   /**
    * The amount of time in ms that the last physics step took.
    */
@@ -148,6 +151,11 @@ export default class Physics {
   dynamicsTime = 0;
 
   /**
+   * The time in ms that the last fluid solving steps took.
+   */
+  fluidTime = 0;
+
+  /**
    * Enable/disable debug tools.
    */
   debug = false;
@@ -176,15 +184,27 @@ export default class Physics {
     this.constraintSpace.addSolver("post", postSolveConstraint, 1);
   }
 
+  /**
+   * Steps the physics world forward by the given delta time.
+   *
+   * Order of updates is very important.
+   *
+   * @param delta The time since the last update
+   */
   update(delta: number) {
     this.physicsTime = performance.now();
 
     // set physics config
     Physics.G_CONF = this.CONFIG;
 
-    // step bodies
-    // order is very important
+    // step fluids
+    this.fluidTime = performance.now();
+    for (const f of this.fluids) {
+      f.update(delta);
+    }
+    this.fluidTime = performance.now() - this.fluidTime;
 
+    // step bodies
     // broadphase
     this.broadphaseTime = performance.now();
     this.collisionsSpace.broadphase();
@@ -394,6 +414,17 @@ export default class Physics {
   }
 
   /**
+   * Removes the given bodies from the world's dynamics and collision spaces.
+   *
+   * @param bodies The bodies to remove
+   */
+  removeBodies(...bodies: RigidBody[]) {
+    for (const body of bodies) {
+      this.removeBody(body);
+    }
+  }
+
+  /**
    * Adds a {@link Constraint} to the world's constraint space.
    *
    * @param constraint The constraint to add
@@ -409,6 +440,33 @@ export default class Physics {
    */
   removeConstraint(constraint: Constraint) {
     this.constraintSpace.removeObject(constraint);
+  }
+
+  /**
+   * Adds the given fluid to the physics world.
+   *
+   * @param fluid The fluid to add
+   */
+  addFluid(fluid: Fluid) {
+    this.fluids.push(fluid);
+    fluid.physics = this;
+
+    for (const p of fluid.particles) {
+      this.addCollisionObj(p);
+    }
+  }
+
+  /**
+   * Removes the given fluid from the physics world.
+   *
+   * @param fluid The fluid to remove
+   */
+  removeFluid(fluid: Fluid) {
+    const i = this.fluids.findIndex((f) => f === fluid);
+    if (i === -1) return;
+
+    this.fluids.splice(i, 1);
+    this.removeBodies(...fluid.particles);
   }
 
   /**

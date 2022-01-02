@@ -4,11 +4,15 @@ import Rect from "@blz/shapes/rect";
 import RectCollider from "@blz/physics/collider/rect";
 import { vec2 } from "gl-matrix";
 import Texture from "@blz/texture/texture";
+import Viewport from "@blz/camera/viewport";
 
 export default function createBounds(thickness: number, tex: Texture) {
   const CANVAS = Blaze.getCanvas();
   const WORLD = Blaze.getScene().world;
   const PHYSICS = Blaze.getScene().physics;
+  const CAMERA = WORLD.getCamera();
+
+  CAMERA.viewport = new Viewport(vec2.create(), CANVAS.element.clientWidth, CANVAS.element.clientHeight);
 
   const min = WORLD.getCellFromPixel(vec2.fromValues(0, CANVAS.element.clientHeight));
   const max = WORLD.getCellFromPixel(vec2.fromValues(CANVAS.element.clientWidth, 0));
