@@ -13,9 +13,10 @@
     "allowJs": true,
     "sourceMap": true,
     "paths": {
-      "@blz/*": ["lib/src/*"]
+      "@blz/*": ["lib/src/*"],
+      "@helpers/*": ["examples/_helpers/*"]
     }
   },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", ""]
+  "include": ["./src/**/*", "../_helpers/*"],
+  "exclude": ["node_modules"]
 }

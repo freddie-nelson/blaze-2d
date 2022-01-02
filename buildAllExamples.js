@@ -15,7 +15,7 @@ console.log(`Found ${examples.length} examples in ${examplesDir}.`);
 console.log(`Building examples...`);
 examples.forEach((example) => {
   const p = resolve(examplesDir, example);
-  if (!existsSync(p) || !lstatSync(p).isDirectory()) return;
+  if (!existsSync(p) || !lstatSync(p).isDirectory() || example.startsWith("_")) return;
 
   console.log(`Building ${example}...`);
   execSync(`yarn example:build ${example}`);

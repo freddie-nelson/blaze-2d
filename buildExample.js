@@ -9,7 +9,7 @@ if (!example) {
 }
 
 const dir = path.resolve(__dirname, `examples/${example}`);
-if (!existsSync(dir)) {
+if (!existsSync(dir) || example.startsWith("_")) {
   console.log(`Error: ${example} is not a valid example.`);
   process.exit(1);
 }

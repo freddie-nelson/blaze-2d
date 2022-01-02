@@ -14,7 +14,12 @@ let examples = readdirSync(examplesDir);
 // get built examples
 examples = examples.filter((example) => {
   const p = resolve(examplesDir, example);
-  if (!existsSync(p) || !lstatSync(p).isDirectory() || !existsSync(resolve(examplesDir, example, "build")))
+  if (
+    !existsSync(p) ||
+    !lstatSync(p).isDirectory() ||
+    !existsSync(resolve(examplesDir, example, "build")) ||
+    example.startsWith("_")
+  )
     return false;
 
   return true;

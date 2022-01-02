@@ -16,6 +16,7 @@ import MouseConstraint from "@blz/physics/constraints/mouse";
 import Editor, { EDITOR_GRID_SIZE } from "@blz/editor/editor";
 import PivotConstraint from "@blz/physics/constraints/pivot";
 import RotarySpringConstraint from "@blz/physics/constraints/rotarySpring";
+import createBounds from "@helpers/bounds";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -55,37 +56,8 @@ ATLAS.addTextures(boundsTex, crateTex, barrelTex, legTex, ballTex);
 })();
 
 // create boundaries
-const min = WORLD.getCellFromPixel(vec2.fromValues(0, CANVAS.element.clientHeight));
-const max = WORLD.getCellFromPixel(vec2.fromValues(CANVAS.element.clientWidth, 0));
-
-const BOUNDS = {
-  min,
-  max,
-  width: max[0] * 2,
-  height: max[1] * 2,
-};
-
 const thickness = 2;
-
-const boundsEntities = [
-  new Entity(vec2.fromValues(0, BOUNDS.max[1]), new RectCollider(BOUNDS.width, thickness)),
-  new Entity(vec2.fromValues(0, BOUNDS.min[1]), new RectCollider(BOUNDS.width, thickness)),
-  new Entity(vec2.fromValues(BOUNDS.max[0], 0), new RectCollider(thickness, BOUNDS.height)),
-  new Entity(vec2.fromValues(BOUNDS.min[0], 0), new RectCollider(thickness, BOUNDS.height)),
-];
-
-boundsEntities.forEach((bounds) => {
-  bounds.isStatic = true;
-  bounds.setMass(0);
-
-  const collider = <RectCollider>bounds.collider;
-  const rect = new Rect(collider.getWidth(), collider.getHeight());
-  rect.texture = boundsTex;
-  bounds.addPiece(rect);
-});
-
-WORLD.addEntities(...boundsEntities);
-PHYSICS.addBodies(...boundsEntities);
+const BOUNDS = createBounds(thickness, boundsTex);
 
 // crate pyramid
 const size = 1;
@@ -98,7 +70,6 @@ const startY = BOUNDS.min[1] + thickness / 2 + size / 2;
 
 for (let row = 0; row < base; row += diff) {
   for (let col = 0; col < base - row; col++) {
-    console.log((spacing * base) / 2, spacing * (col + row / 2));
     const x = startX - col * size - (row * size) / 2 - (spacing * base) / 2 - spacing * (col + row / 2);
     const y = startY + (row / diff) * size;
 

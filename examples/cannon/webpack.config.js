@@ -17,6 +17,7 @@ module.exports = {
     modules: ["./node_modules"],
     alias: {
       "@blz": path.resolve(__dirname, "../../lib/src"),
+      "@helpers": path.resolve(__dirname, "../_helpers"),
     },
   },
   devtool: "inline-source-map",
