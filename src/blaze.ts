@@ -57,8 +57,6 @@ export default abstract class Blaze {
    */
   private static timeStep: TimeStep;
 
-  private static lastFixedUpdateTime = performance.now();
-
   /**
    * The minimum time in ms between each fixed update.
    */
@@ -184,7 +182,7 @@ export default abstract class Blaze {
       this.timeStep = new TimeStep(now, dt, this.timeStep.dt);
     } else {
       const dt = (now - this.fixedTimeStep.time) / 1000;
-      this.fixedTimeStep = new TimeStep(now, Math.min(dt, this.maxFixedDt), this.fixedTimeStep.dt);
+      this.fixedTimeStep = new TimeStep(now, Math.min(dt, this.maxFixedDt / 1000), this.fixedTimeStep.dt);
     }
   }
 

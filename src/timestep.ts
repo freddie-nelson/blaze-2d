@@ -28,8 +28,8 @@ export default class TimeStep {
     this.dt = dt;
     this.lastDt = lastDt;
 
-    this.dtRatio = dt / lastDt;
+    this.dtRatio = lastDt === 0 ? 0 : dt / lastDt;
     this.dtSquared = dt * dt;
-    this.inverseDt = 1 / dt;
+    this.inverseDt = dt === 0 ? 0 : 1 / dt;
   }
 }
