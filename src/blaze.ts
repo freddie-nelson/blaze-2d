@@ -14,6 +14,7 @@ import World from "./world";
 import "./ui/styles/root.css";
 import "./ui/styles/canvas.css";
 import Logger from "./logger";
+import TimeStep from "./timestep";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -51,31 +52,29 @@ export default abstract class Blaze {
 
   private static threadPool = new ThreadPool();
 
-  private static lastUpdateTime = performance.now();
-
   /**
-   * The time since `lastUpdateTime`
+   * The {@link TimeStep} for normal updates.
    */
-  private static delta = 0;
+  private static timeStep: TimeStep;
 
   private static lastFixedUpdateTime = performance.now();
 
   /**
    * The minimum time in ms between each fixed update.
    */
-  private static fixedTimeStep = 1000 / 60;
+  static fixedDt = 1000 / 60;
 
   /**
    * The maximum fixed delta time step in ms.
    *
    * If the time since the last fixed update exceeds this amount then it will be clamped.
    */
-  private static maxFixedTimeStep = 1000 / 50;
+  static maxFixedDt = 1000 / 50;
 
   /**
-   * The time since `lastFixedUpdateTime`
+   * The {@link TimeStep} for fixed updates.
    */
-  private static fixedDelta = 0;
+  private static fixedTimeStep: TimeStep;
 
   /**
    * The current {@link Scene}.
@@ -111,8 +110,8 @@ export default abstract class Blaze {
    * i.e. calls `this.update`
    */
   static start() {
-    this.lastUpdateTime = performance.now();
-    this.lastFixedUpdateTime = this.lastUpdateTime;
+    this.timeStep = new TimeStep(performance.now(), 0, 0);
+    this.fixedTimeStep = new TimeStep(performance.now(), 0, 0);
 
     this.update();
     this.fixedUpdate();
@@ -132,17 +131,14 @@ export default abstract class Blaze {
   static update() {
     requestAnimationFrame(() => this.update());
 
-    const now = performance.now();
-    const delta = (now - this.lastUpdateTime) / 1000;
-    this.delta = delta;
-    this.lastUpdateTime = now;
+    this.nextTimestep();
 
     Renderer.clear(this.bgColor);
 
-    this.scene?.world.update(delta);
+    this.scene?.world.update(this.timeStep);
 
     for (const system of this.systems) {
-      system.update(delta);
+      system.update(this.timeStep);
     }
 
     BatchRenderer.flush();
@@ -164,17 +160,31 @@ export default abstract class Blaze {
    * Fixed update also steps the {@link Physics} engine.
    */
   static fixedUpdate() {
-    setTimeout(() => this.fixedUpdate(), this.fixedTimeStep);
+    setTimeout(() => this.fixedUpdate(), this.fixedDt);
 
-    const now = performance.now();
-    const delta = Math.min((now - this.lastFixedUpdateTime) / 1000, this.maxFixedTimeStep / 1000);
-    this.fixedDelta = delta;
-    this.lastFixedUpdateTime = now;
+    this.nextTimestep(true);
 
-    this.scene?.physics.update(delta);
+    this.scene?.physics.update(this.fixedTimeStep);
 
     for (const system of this.fixedSystems) {
-      system.update(delta);
+      system.update(this.fixedTimeStep);
+    }
+  }
+
+  /**
+   * Updates the engine's timestep to the current time.
+   *
+   * @param fixed Wether or not to set the fixed time step
+   */
+  private static nextTimestep(fixed = false) {
+    const now = performance.now();
+
+    if (!fixed) {
+      const dt = (now - this.timeStep.time) / 1000;
+      this.timeStep = new TimeStep(now, dt, this.timeStep.dt);
+    } else {
+      const dt = (now - this.fixedTimeStep.time) / 1000;
+      this.fixedTimeStep = new TimeStep(now, Math.min(dt, this.maxFixedDt), this.fixedTimeStep.dt);
     }
   }
 
@@ -341,61 +351,21 @@ export default abstract class Blaze {
   }
 
   /**
-   * Gets the time of the last update, measured from the time the page started to load.
+   * Gets the {@link TimeStep} between each update.
    *
-   * @see Uses [performance.now](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now)
-   *
-   * @returns The time of the last update
+   * @returns The most recent fixed time step
    */
-  static getLastUpdateTime() {
-    return this.lastUpdateTime;
+  static getTimeStep() {
+    return this.timeStep;
   }
 
   /**
-   * Gets the time since the last update, measured in ms.
+   * Gets the {@link TimeStep} between each fixed update.
    *
-   * @returns The time since the last update
-   */
-  static getDelta() {
-    return this.delta;
-  }
-
-  /**
-   * Set the minimum time step between each fixed update in ms.
-   *
-   * @param step The time step in ms
-   */
-  static setFixedTimeStep(step: number) {
-    this.fixedTimeStep = step;
-  }
-
-  /**
-   * Get the time step between each fixed update.
-   *
-   * @returns The fixed time step in ms
+   * @returns The most recent fixed time step
    */
   static getFixedTimeStep() {
     return this.fixedTimeStep;
-  }
-
-  /**
-   * Gets the time of the last fixed update, measured from the time the page started to load.
-   *
-   * @see Uses [performance.now](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now)
-   *
-   * @returns The time of the last fixed update
-   */
-  static getLastFixedUpdateTime() {
-    return this.lastFixedUpdateTime;
-  }
-
-  /**
-   * Gets the time since the last fixed update, measured in ms.
-   *
-   * @returns The time since the last fixed update
-   */
-  static getFixedDelta() {
-    return this.fixedDelta;
   }
 
   /**

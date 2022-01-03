@@ -84,7 +84,7 @@ export default class RendererPane extends EditorPane {
    * Update render stats.
    */
   update() {
-    this.fps.setValue(Number((1 / Blaze.getDelta()).toFixed(1)));
+    this.fps.setValue(Number((1 / Blaze.getTimeStep().dt).toFixed(1)));
 
     this.instanceRenderTime.setValue(Number(Renderer.renderTime.toFixed(2)));
     this.instanceDrawCalls.setValue(Renderer.drawCalls);

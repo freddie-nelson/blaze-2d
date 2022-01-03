@@ -1,3 +1,5 @@
+import TimeStep from "./timestep";
+
 export interface System {
-  update(delta?: number): void;
+  update(ts?: TimeStep): void;
 }

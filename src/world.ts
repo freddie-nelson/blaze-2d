@@ -13,6 +13,7 @@ import Texture from "./texture/texture";
 import Color, { RGBAColor } from "./utils/color";
 import Viewport from "./camera/viewport";
 import Logger from "./logger";
+import TimeStep from "./timestep";
 
 export type EntityListener = (event: "add" | "remove", entity: Entity, index: number, entities: Entity[]) => void;
 
@@ -75,14 +76,14 @@ export default class World implements System {
    *
    * Also calls the render function.
    *
-   * @param delta Time since last frame
+   * @param ts The {@link TimeStep} for this update
    */
-  update(delta: number) {
+  update(ts: TimeStep) {
     this.camera.update();
 
     // update entities
     for (const e of this.entities) {
-      e.update(delta);
+      e.update(ts.dt);
 
       if (this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())) {
       }

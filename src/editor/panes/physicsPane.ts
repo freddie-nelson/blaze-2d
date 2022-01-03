@@ -134,7 +134,7 @@ export default class PhysicsPane extends EditorPane {
   update() {
     const physics = Blaze.getScene().physics;
 
-    this.fps.setValue(Number((1 / Blaze.getDelta()).toFixed(1)));
+    this.fps.setValue(Number((1 / Blaze.getTimeStep().dt).toFixed(1)));
     this.physicsTime.setValue(Number(physics.physicsTime.toFixed(2)));
 
     this.dynamicsTime.setValue(Number(physics.dynamicsTime.toFixed(2)));

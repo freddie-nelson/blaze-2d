@@ -23,6 +23,7 @@ import solveConstraint from "./solvers/constraint/solve";
 import postSolveConstraint from "./solvers/constraint/post";
 import Constraint from "./constraints/constraint";
 import Fluid from "./fluid/fluid";
+import TimeStep from "../timestep";
 
 const debugRGBA: RGBAColor = {
   r: 0,
@@ -106,7 +107,7 @@ const defaultConfig: PhysicsConfig = {
  * At the start of each `update` call the static `G_CONF` variable is set to the instances `CONFIG` variable.
  * This allows for easy access to the physics config from other parts of the physics system.
  */
-export default class Physics {
+export default class Physics implements System {
   static G_CONF = { ...defaultConfig };
 
   CONFIG = { ...defaultConfig };
@@ -189,9 +190,9 @@ export default class Physics {
    *
    * Order of updates is very important.
    *
-   * @param delta The time since the last update
+   * @param ts The {@link TimeStep} for this update.
    */
-  update(delta: number) {
+  update(ts: TimeStep) {
     this.physicsTime = performance.now();
 
     // set physics config
@@ -200,7 +201,7 @@ export default class Physics {
     // step fluids
     this.fluidTime = performance.now();
     for (const f of this.fluids) {
-      f.update(delta);
+      f.update(ts.dt);
     }
     this.fluidTime = performance.now() - this.fluidTime;
 
@@ -212,52 +213,52 @@ export default class Physics {
 
     // narrow pahse
     this.narrowphaseTime = performance.now();
-    this.collisionsSpace.obtainManifolds(delta);
+    this.collisionsSpace.obtainManifolds(ts.dt);
     this.narrowphaseTime = performance.now() - this.narrowphaseTime;
 
     // integrate forces
     const forceTimer = performance.now();
-    this.dynamicsSpace.solve("forces", delta);
+    this.dynamicsSpace.solve("forces", ts.dt);
     this.dynamicsTime = performance.now() - forceTimer;
 
     // solve collisions
     this.collisionSolveTime = performance.now();
 
     // pre steps
-    this.collisionsSpace.solve("preStepImpulse", delta);
+    this.collisionsSpace.solve("preStepImpulse", ts.dt);
 
     // solve position impulse
     this.collisionsSpace.setSolverIterations("positionImpulse", this.CONFIG.POSITION_ITERATIONS);
-    this.collisionsSpace.solve("positionImpulse", delta);
+    this.collisionsSpace.solve("positionImpulse", ts.dt);
 
     // apply position impulse
-    this.collisionsSpace.solve("position", delta);
+    this.collisionsSpace.solve("position", ts.dt);
 
     // solve collision impulse
     this.collisionsSpace.setSolverIterations("impulse", this.CONFIG.VELOCITY_ITERATIONS);
-    this.collisionsSpace.solve("impulse", delta);
+    this.collisionsSpace.solve("impulse", ts.dt);
 
     this.collisionSolveTime = performance.now() - this.collisionSolveTime;
 
     // solve constraints
     this.constraintTime = performance.now();
 
-    this.constraintSpace.solve("pre", delta);
+    this.constraintSpace.solve("pre", ts.dt);
 
     this.constraintSpace.setSolverIterations("solve", this.CONFIG.CONSTRAINT_ITERATIONS);
-    this.constraintSpace.solve("solve", delta);
+    this.constraintSpace.solve("solve", ts.dt);
 
-    this.constraintSpace.solve("post", delta);
+    this.constraintSpace.solve("post", ts.dt);
 
     this.constraintTime = performance.now() - this.constraintTime;
 
     // integrate velocities
     const velocityTimer = performance.now();
-    this.dynamicsSpace.solve("velocity", delta);
+    this.dynamicsSpace.solve("velocity", ts.dt);
     this.dynamicsTime += performance.now() - velocityTimer;
 
     // clear forces
-    this.dynamicsSpace.solve("reset", delta);
+    this.dynamicsSpace.solve("reset", ts.dt);
 
     // fire collision and trigger events
     this.collisionsSpace.fireEvents();
