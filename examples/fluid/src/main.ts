@@ -22,8 +22,8 @@ const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
 const PHYSICS = SCENE.physics;
 
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 // MAIN
 // setup atlas
@@ -33,9 +33,10 @@ WORLD.useBatchRenderer = true;
 
 // textures
 const boundsTex = new Texture(new Color("grey"));
+const rectTex = new Texture(new Color("#FDC731"));
 const fluidTex = new Texture(new Color("#1D7BE3"));
 
-ATLAS.addTextures(boundsTex, fluidTex);
+ATLAS.addTextures(boundsTex, rectTex, fluidTex);
 
 // create demo scene
 const thickness = 2;
@@ -66,13 +67,17 @@ while (true) {
 WORLD.addFluid(fluid);
 PHYSICS.addFluid(fluid);
 
-// add rect
-// const rect = new Rect(2, 1);
-// rect.texture = boundsTex;
-// const entity = new Entity(vec2.create(), new RectCollider(2, 1), [rect], 10);
+// add random rects
+const rect1 = new Rect(2, 2);
+rect1.texture = rectTex;
+const entity1 = new Entity(vec2.fromValues(-3, 0), new RectCollider(2, 2), [rect1], 1);
 
-// WORLD.addEntity(entity);
-// PHYSICS.addBody(entity);
+const rect2 = new Rect(2, 2);
+rect2.texture = rectTex;
+const entity2 = new Entity(vec2.fromValues(3, 0), new RectCollider(2, 2), [rect2], 10);
+
+WORLD.addEntities(entity1, entity2);
+PHYSICS.addBodies(entity1, entity2);
 
 // pick entity on click
 mousePicker(() => undefined, "bounds");

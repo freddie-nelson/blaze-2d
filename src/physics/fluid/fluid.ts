@@ -1,14 +1,11 @@
 import { vec2 } from "gl-matrix";
-import Logger from "../../logger";
 import BatchRenderer from "../../renderer/batchRenderer";
 import FluidRenderer from "../../renderer/fluidRenderer";
-import Renderer from "../../renderer/renderer";
 import Circle from "../../shapes/circle";
 import Texture from "../../texture/texture";
 import Color from "../../utils/color";
 import Physics from "../physics";
 import solveForces from "../solvers/dynamics/forces";
-import ParticlePair from "./pair";
 import Particle from "./particle";
 
 export const MAX_FLUID_PARTICLES = 1000;
