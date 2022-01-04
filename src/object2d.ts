@@ -43,7 +43,7 @@ export default class Object2D {
   setPosition(pos: vec2) {
     vec2.copy(this.position, pos);
 
-    this.fireEvent("position", this.position);
+    this.fireEvent("position", this.getPosition());
   }
 
   private setVec = vec2.create();

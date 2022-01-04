@@ -15,6 +15,8 @@ import "./ui/styles/root.css";
 import "./ui/styles/canvas.css";
 import Logger from "./logger";
 import TimeStep from "./timestep";
+import FluidRenderer from "./renderer/fluidRenderer";
+import RenderController from "./renderer/controller";
 
 export interface BlazeOptions {
   antialias: boolean;
@@ -46,6 +48,8 @@ export default abstract class Blaze {
    * The higher this value the more zIndexes the camera will be able to see.
    */
   private static zLevels = 100;
+
+  static renderController = new RenderController();
 
   private static systems: System[] = [];
   private static fixedSystems: System[] = [];
@@ -97,6 +101,8 @@ export default abstract class Blaze {
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
 
+    this.renderController.addRenderers(Renderer, BatchRenderer, FluidRenderer);
+
     this.scene = new Scene();
 
     glMatrix.setMatrixArrayType(Array);
@@ -139,8 +145,7 @@ export default abstract class Blaze {
       system.update(this.timeStep);
     }
 
-    BatchRenderer.flush();
-    Renderer.flush();
+    this.renderController.flush();
 
     if (this.editor) this.editor.update();
   }

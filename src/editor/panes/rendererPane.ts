@@ -85,17 +85,5 @@ export default class RendererPane extends EditorPane {
    */
   update() {
     this.fps.setValue(Number((1 / Blaze.getTimeStep().dt).toFixed(1)));
-
-    this.instanceRenderTime.setValue(Number(Renderer.renderTime.toFixed(2)));
-    this.instanceDrawCalls.setValue(Renderer.drawCalls);
-    this.instanceRects.setValue(Renderer.shapes.rect);
-    this.instanceCircles.setValue(Renderer.shapes.circle);
-    this.instanceTris.setValue(Renderer.shapes.triangle);
-
-    this.batchRenderTime.setValue(Number(BatchRenderer.batchRenderTime.toFixed(2)));
-    this.batchDrawCalls.setValue(BatchRenderer.batchDrawCalls);
-    this.batchRects.setValue(BatchRenderer.batchShapes.rect);
-    this.batchCircles.setValue(BatchRenderer.batchShapes.circle);
-    this.batchTris.setValue(BatchRenderer.batchShapes.triangle);
   }
 }

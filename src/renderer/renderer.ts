@@ -58,11 +58,6 @@ export default abstract class Renderer {
   static triangleProgram: WebGLProgram;
   static triangleProgramInfo: ShaderProgramInfo;
 
-  // stats
-  static renderTime = 0;
-  static drawCalls = 0;
-  static shapes = { rect: 0, circle: 0, triangle: 0 };
-
   /**
    * Sets up the renderer to be used for rendering.
    *
@@ -188,32 +183,19 @@ export default abstract class Renderer {
    *
    * If there is no camera specified in {@link Renderer} then nothing will be rendered.
    */
-  static flush() {
-    if (!this.camera) return;
+  static flush(z: number) {
+    const min = this.queue.min || 0;
+    const max = this.queue.max || Blaze.getZLevels();
 
-    // reset stats
-    this.renderTime = performance.now();
-    this.drawCalls = 0;
-    this.shapes.rect = 0;
-    this.shapes.circle = 0;
-    this.shapes.triangle = 0;
+    if (!this.camera || z < min || z > max || !this.queue[z]) return;
 
-    const queue = this.queue;
-    const min = queue.min || 0;
-    const max = queue.max || Blaze.getZLevels();
+    const queue = this.queue[z];
 
-    for (let z = min; z <= max; z++) {
-      if (!queue[z]) continue;
-
-      for (const item of queue[z]) {
-        this.renderQueueItem(item, z);
-      }
-
-      delete queue[z];
+    for (const item of queue) {
+      this.renderQueueItem(item, z);
     }
 
-    // calculate render time
-    this.renderTime = performance.now() - this.renderTime;
+    delete this.queue[z];
   }
 
   /**
@@ -234,6 +216,9 @@ export default abstract class Renderer {
 
     if (this.queue[zIndex]) this.queue[zIndex].push(item);
     else this.queue[zIndex] = [item];
+
+    if (zIndex >= (this.queue.max ? this.queue.max : 0)) this.queue.max = zIndex;
+    if (zIndex <= (this.queue.min ? this.queue.min : 0)) this.queue.min = zIndex;
   }
 
   /**
@@ -248,13 +233,10 @@ export default abstract class Renderer {
     let programInfo: ShaderProgramInfo;
     if (shape instanceof Rect) {
       programInfo = this.rectProgramInfo;
-      this.shapes.rect++;
     } else if (shape instanceof Circle) {
       programInfo = this.circleProgramInfo;
-      this.shapes.circle++;
     } else if (shape instanceof Triangle) {
       programInfo = this.triangleProgramInfo;
-      this.shapes.triangle++;
     }
 
     // vertex positions
@@ -300,7 +282,6 @@ export default abstract class Renderer {
     }
 
     gl.drawElements(gl[this.mode], indices.length, gl.UNSIGNED_SHORT, 0);
-    this.drawCalls++;
   }
 
   /**
@@ -402,5 +383,23 @@ export default abstract class Renderer {
    */
   static getQueue() {
     return this.queue;
+  }
+
+  /**
+   * Gets the maximum zIndex used by the queue.
+   *
+   * @returns The max zIndex of the queue
+   */
+  static getQueueMax() {
+    return this.queue.max;
+  }
+
+  /**
+   * Gets the minimum zIndex used by the queue.
+   *
+   * @returns The min zIndex of the queue
+   */
+  static getQueueMin() {
+    return this.queue.min;
   }
 }

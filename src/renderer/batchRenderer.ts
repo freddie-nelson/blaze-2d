@@ -47,11 +47,6 @@ export default abstract class BatchRenderer extends Renderer {
 
   static batchQueue: ZMap<{ [index: string]: Renderable<Shape>[] }> = {};
 
-  // stats
-  static batchRenderTime = 0;
-  static batchDrawCalls = 0;
-  static batchShapes = { rect: 0, circle: 0, triangle: 0 };
-
   /**
    * Renders all items currently in the batch render queue and clears the queue.
    *
@@ -59,52 +54,34 @@ export default abstract class BatchRenderer extends Renderer {
    *
    * If there is no camera specified in {@link Renderer} then nothing will be rendered.
    */
-  static flush() {
-    if (!this.getCamera()) return;
+  static flush(z: number) {
+    const min = this.batchQueue.min || 0;
+    const max = this.batchQueue.max || Blaze.getZLevels();
 
-    // reset stats
-    this.batchRenderTime = performance.now();
-    this.batchDrawCalls = 0;
-    this.batchShapes.rect = 0;
-    this.batchShapes.circle = 0;
-    this.batchShapes.triangle = 0;
+    if (!this.getCamera() || z < min || z > max || !this.batchQueue[z]) return;
 
-    const queue = this.batchQueue;
-    const min = queue.min || 0;
-    const max = queue.max || Blaze.getZLevels();
+    const queue = this.batchQueue[z];
 
-    for (let z = min; z <= max; z++) {
-      if (!queue[z]) continue;
+    for (const type of Object.keys(queue)) {
+      const count = queue[type].length;
+      if (count <= 0) continue;
 
-      for (const type of Object.keys(queue[z])) {
-        const count = queue[z][type].length;
-        if (count <= 0) continue;
-
-        this.batchDrawCalls++;
-
-        switch (type) {
-          case "rect":
-            this.renderRects(queue[z][type] as Renderable<Rect>[], z);
-            this.batchShapes.rect += count;
-            break;
-          case "circle":
-            this.renderCircles(queue[z][type] as Renderable<Circle>[], z);
-            this.batchShapes.circle += count;
-            break;
-          case "triangle":
-            this.renderTriangles(queue[z][type] as Renderable<Triangle>[], z);
-            this.batchShapes.triangle += count;
-            break;
-          default:
-            break;
-        }
+      switch (type) {
+        case "rect":
+          this.renderRects(queue[type] as Renderable<Rect>[], z);
+          break;
+        case "circle":
+          this.renderCircles(queue[type] as Renderable<Circle>[], z);
+          break;
+        case "triangle":
+          this.renderTriangles(queue[type] as Renderable<Triangle>[], z);
+          break;
+        default:
+          break;
       }
-
-      delete queue[z];
     }
 
-    // calculate render time
-    this.batchRenderTime = performance.now() - this.batchRenderTime;
+    delete this.batchQueue[z];
   }
 
   /**
@@ -183,6 +160,9 @@ export default abstract class BatchRenderer extends Renderer {
     if (!this.batchQueue[zIndex][type]) this.batchQueue[zIndex][type] = [];
 
     this.batchQueue[zIndex][type].push(...renderables);
+
+    if (zIndex >= (this.batchQueue.max ? this.batchQueue.max : 0)) this.batchQueue.max = zIndex;
+    if (zIndex <= (this.batchQueue.min ? this.batchQueue.min : 0)) this.batchQueue.min = zIndex;
   }
 
   /**
@@ -429,5 +409,23 @@ export default abstract class BatchRenderer extends Renderer {
    */
   static getBatchQueue() {
     return this.batchQueue;
+  }
+
+  /**
+   * Gets the maximum zIndex used by the queue.
+   *
+   * @returns The max zIndex of the queue
+   */
+  static getQueueMax() {
+    return this.batchQueue.max;
+  }
+
+  /**
+   * Gets the minimum zIndex used by the queue.
+   *
+   * @returns The min zIndex of the queue
+   */
+  static getQueueMin() {
+    return this.batchQueue.min;
   }
 }
