@@ -21,7 +21,7 @@ void main() {
 	for(int i = 0; i < u_MetaballsCount; i++) {
 		vec2 pos = u_Metaballs[i];
 
-		float currInfl = u_Radius * u_Radius;
+		float currInfl = sqrRadius;
 		currInfl /= (pow(gl_FragCoord.x - pos.x, 2.0) + pow(u_Resolution.y - gl_FragCoord.y - pos.y, 2.0));
 
 		infl += currInfl;
@@ -32,4 +32,7 @@ void main() {
     discard;
 		
   outColor = u_Color;
+
+	// outColor.r = infl;
+	// outColor.a = 1.0; 
 }

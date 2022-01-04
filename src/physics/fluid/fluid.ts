@@ -83,7 +83,7 @@ export default class Fluid {
 
     this.color = opts.color || new Color("#1D7BE3");
     this.zIndex = opts.zIndex || 0;
-    this.renderThreshold = opts.renderThreshold || 1;
+    this.renderThreshold = opts.renderThreshold || 1.2;
 
     this.debug = opts.debug || false;
     this.debugTex = opts.debugTex;

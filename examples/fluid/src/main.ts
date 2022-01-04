@@ -55,7 +55,7 @@ const fluid = new Fluid({
   collisionGroup: 1,
 
   // debug: true,
-  // debugTex: fluidTex,
+  // debugTex: boundsTex,
 });
 
 const xLimit = BOUNDS.width - thickness * 2;

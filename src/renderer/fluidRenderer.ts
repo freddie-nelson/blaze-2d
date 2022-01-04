@@ -58,10 +58,12 @@ export default abstract class FluidRenderer extends Renderer {
     const particles = fluid.particles;
     const count = Math.min(fluid.particles.length, MAX_FLUID_PARTICLES);
 
-    const radius = fluid.particleRadius;
-    const positions = new Float32Array(count * 2);
-
     const world = Blaze.getScene().world;
+    const worldToPixel = world.getWorldToPixelSpace();
+
+    const radius = fluid.particleRadius * worldToPixel[0];
+    console.log(radius);
+    const positions = new Float32Array(count * 2);
 
     for (let i = 0; i < count; i++) {
       const pos = world.getPixelFromWorld(particles[i].getPosition());
@@ -92,7 +94,7 @@ export default abstract class FluidRenderer extends Renderer {
     gl.uniform2fv(programInfo.uniformLocations.metaballs, positions);
     gl.uniform1i(programInfo.uniformLocations.metaballsCount, count);
     gl.uniform1f(programInfo.uniformLocations.radius, radius);
-    gl.uniform1f(programInfo.uniformLocations.threshold, fluid.renderThreshold / 1000);
+    gl.uniform1f(programInfo.uniformLocations.threshold, fluid.renderThreshold);
     gl.uniform4fv(programInfo.uniformLocations.color, fluid.color.webgl);
 
     gl.drawElements(gl[this.getMode()], indices.length, gl.UNSIGNED_SHORT, 0);
