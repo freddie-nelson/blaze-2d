@@ -11,6 +11,7 @@ export interface ShaderProgramInfo {
     [index: string]: number;
   };
   uniformLocations: {
+    [index: string]: WebGLUniformLocation;
     zIndex: WebGLUniformLocation;
     texture?: WebGLUniformLocation;
     numOfTiles?: WebGLUniformLocation;

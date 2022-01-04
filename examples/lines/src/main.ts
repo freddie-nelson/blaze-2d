@@ -95,7 +95,7 @@ let entity: Entity;
 
 CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (pressed) {
-    const start = WORLD.getCellFromPixel(pixelPos);
+    const start = WORLD.getWorldFromPixel(pixelPos);
 
     if (CANVAS.keys.isPressed("KeyC")) {
       const circle = new Circle(1, vec2.create());
@@ -130,8 +130,8 @@ CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
 CANVAS.mouse.addListener(Mouse.MOVE, (pressed, pixelPos) => {
   if (!line) return;
 
-  line.setEnd(WORLD.getCellFromPixel(pixelPos));
-  collider.setEnd(WORLD.getCellFromPixel(pixelPos));
+  line.setEnd(WORLD.getWorldFromPixel(pixelPos));
+  collider.setEnd(WORLD.getWorldFromPixel(pixelPos));
 
   // move entity to line's world position and line to (0, 0) local position inside entity
   entity.setPosition(line.getPosition());

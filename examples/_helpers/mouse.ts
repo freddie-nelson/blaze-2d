@@ -13,7 +13,7 @@ export function mousePicker(cb: (picked: Entity, pick: boolean) => void, ...name
 
   CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
     if (pressed && !mouseConstraint) {
-      const point = WORLD.getCellFromPixel(pixelPos);
+      const point = WORLD.getWorldFromPixel(pixelPos);
 
       picked = <Entity>PHYSICS.pick(point)[0];
       if (!picked || nameFilter.includes(picked.name)) return;

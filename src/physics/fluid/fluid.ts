@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
 import Logger from "../../logger";
 import BatchRenderer from "../../renderer/batchRenderer";
+import FluidRenderer from "../../renderer/fluidRenderer";
 import Renderer from "../../renderer/renderer";
 import Circle from "../../shapes/circle";
 import Texture from "../../texture/texture";
@@ -9,6 +10,8 @@ import Physics from "../physics";
 import solveForces from "../solvers/dynamics/forces";
 import ParticlePair from "./pair";
 import Particle from "./particle";
+
+export const MAX_FLUID_PARTICLES = 1000;
 
 export interface FluidOptions {
   restDensity: number;
@@ -21,6 +24,8 @@ export interface FluidOptions {
   collisionGroup: number;
 
   color?: Color;
+  zIndex?: number;
+  renderThreshold?: number;
 
   debug?: boolean;
   debugTex?: Texture;
@@ -35,7 +40,6 @@ export interface FluidOptions {
  */
 export default class Fluid {
   particles: Particle[] = [];
-  pairs: ParticlePair[] = [];
 
   restDensity: number;
   smoothingRadius: number;
@@ -48,6 +52,12 @@ export default class Fluid {
   collisionGroup: number;
 
   color: Color;
+  renderThreshold: number;
+
+  /**
+   * The z layer of the fluid.
+   */
+  zIndex: number;
 
   debug: boolean;
   debugTex: Texture;
@@ -71,10 +81,12 @@ export default class Fluid {
     this.stiffnessNear = opts.stiffnessNear;
 
     this.particleRadius = opts.particleRadius;
-    this.maxParticles = opts.maxParticles;
+    this.maxParticles = Math.min(opts.maxParticles, MAX_FLUID_PARTICLES);
     this.collisionGroup = opts.collisionGroup;
 
     this.color = opts.color || new Color("#1D7BE3");
+    this.zIndex = opts.zIndex || 0;
+    this.renderThreshold = opts.renderThreshold || 1;
 
     this.debug = opts.debug || false;
     this.debugTex = opts.debugTex;
@@ -108,15 +120,20 @@ export default class Fluid {
    * @param delta The time since the last update
    */
   update(delta: number) {
-    this.integrate(delta);
+    const gravity = this.physics.getGravity() || vec2.create();
+    this.integrate(delta, gravity);
 
-    // const timer = performance.now();
-    this.findPairs();
-    // console.log(performance.now() - timer);
+    for (const p of this.particles) {
+      p.findNeighbours(this.particles, this.smoothingRadiusSqr);
 
-    this.computeDoubleDensityRelaxation(delta);
-    this.computePressure(delta);
-    this.advancePositions(delta);
+      p.computeDoubleDensityRelaxation(this.smoothingRadius);
+      p.computePressure(this.stiffness, this.stiffnessNear, this.restDensity);
+      p.advancePosition(delta, this.smoothingRadius);
+    }
+
+    for (const p of this.particles) {
+      p.computeNewVelocity(delta, gravity);
+    }
 
     if (this.debug) this.debugRender();
   }
@@ -128,8 +145,7 @@ export default class Fluid {
    *
    * @param delta The time since the last update
    */
-  integrate(delta: number) {
-    const gravity = this.physics.getGravity() || vec2.create();
+  integrate(delta: number, gravity: vec2) {
     const translate = vec2.create();
 
     for (const p of this.particles) {
@@ -147,108 +163,15 @@ export default class Fluid {
   }
 
   /**
-   * Finds particles which are closer than the fluid's smoothing radius.
-   *
-   * The pairs are stored in `this.pairs`.
-   *
-   * Each pair is ready to be solved at creation.
-   *
-   * @returns The found pairs
+   * Queues the fluid to be renderer using the fluid renderer.
    */
-  findPairs() {
-    this.pairs = [];
-
-    for (const a of this.particles) {
-      for (const b of this.particles) {
-        if (a === b) continue;
-
-        const sqrDist = vec2.sqrDist(a.getPosition(), b.getPosition());
-        if (sqrDist > this.smoothingRadiusSqr) continue;
-
-        const pair = new ParticlePair(a, b);
-        this.pairs.push(pair);
-      }
-    }
-
-    return this.pairs;
+  render() {
+    FluidRenderer.queueFluid(this);
   }
 
   /**
-   * Computes the density and density near of each particle in a pair.
-   *
-   * @param delta The time since the last update
+   * Renders the particles of the fluid as individual circles.
    */
-  computeDoubleDensityRelaxation(delta: number) {
-    for (const p of this.pairs) {
-      p.diff = vec2.sub(vec2.create(), p.b.getPosition(), p.a.getPosition());
-      p.diffLen = vec2.len(p.diff);
-      p.q = p.diffLen / this.smoothingRadius;
-
-      if (p.q < 1) {
-        p.qFlip = 1 - p.q;
-        p.qFlip2 = p.qFlip ** 2;
-
-        p.a.density += p.qFlip2;
-        // p.b.density += powerOfTemp;
-
-        p.qFlip3 = p.qFlip2 * p.qFlip;
-        p.a.densityNear += p.qFlip3;
-        // p.b.densityNear += powerOfTemp;
-      }
-    }
-  }
-
-  /**
-   * Calculate the pressure of each particle in the fluid.
-   *
-   * @param delta The time since the last update
-   */
-  computePressure(delta: number) {
-    for (const p of this.particles) {
-      p.pressure = this.stiffness * (p.density - this.restDensity);
-      p.pressureNear = this.stiffnessNear * p.densityNear;
-
-      vec2.zero(p.dx);
-    }
-  }
-
-  /**
-   * Advanced each pair's particle's positions and then calculate their new velocities.
-   *
-   * @param delta The time since the last update
-   */
-  advancePositions(delta: number) {
-    const aDir = vec2.create();
-    const negADir = vec2.create();
-
-    for (const p of this.pairs) {
-      if (p.q < 1) {
-        vec2.normalize(aDir, p.diff);
-        // const bDir = vec2.negate(vec2.create(), aDir);
-
-        vec2.scale(aDir, aDir, delta * delta * (p.a.pressure * p.qFlip + p.a.pressureNear * p.qFlip2) * 0.5);
-        // vec2.scale(bDir, bDir, delta * delta * (p.b.pressure * temp + p.b.pressureNear * temp * temp) * 0.5);
-
-        p.a.translate(vec2.negate(negADir, aDir));
-        p.b.translate(aDir);
-
-        vec2.sub(p.a.dx, p.a.dx, aDir);
-      }
-    }
-
-    const gravity = this.physics.getGravity() || vec2.create();
-
-    for (const p of this.particles) {
-      p.translate(p.dx);
-
-      vec2.sub(p.velocity, p.getPosition(), p.posPrev);
-      vec2.scale(p.velocity, p.velocity, 1 / delta);
-
-      // integrate forces
-      solveForces(p, delta, gravity);
-    }
-  }
-
   debugRender() {
     const circles: Circle[] = [];
 

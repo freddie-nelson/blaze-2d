@@ -43,7 +43,7 @@ export default class MouseConstraint extends PivotConstraint {
    */
   private getMousePosition() {
     const pixel = Blaze.getCanvas().mouse.getMousePos();
-    const world = Blaze.getScene().world.getCellFromPixel(pixel);
+    const world = Blaze.getScene().world.getWorldFromPixel(pixel);
 
     return world;
   }

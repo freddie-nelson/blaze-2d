@@ -10,6 +10,8 @@ import vsCircle from "../shaders/circle/vertex.glsl";
 import fsCircle from "../shaders/circle/fragment.glsl";
 import vsTriangle from "../shaders/triangle/vertex.glsl";
 import fsTriangle from "../shaders/triangle/fragment.glsl";
+import vsMetaball from "../shaders/metaball/vertex.glsl";
+import fsMetaball from "../shaders/metaball/fragment.glsl";
 
 import Color from "../utils/color";
 import Blaze from "../blaze";
@@ -57,6 +59,9 @@ export default abstract class Renderer {
 
   static triangleProgram: WebGLProgram;
   static triangleProgramInfo: ShaderProgramInfo;
+
+  static metaballProgram: WebGLProgram;
+  static metaballProgramInfo: ShaderProgramInfo;
 
   /**
    * Sets up the renderer to be used for rendering.
@@ -153,6 +158,24 @@ export default abstract class Renderer {
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.triangleProgram, "u_ZIndex"),
         texture: gl.getUniformLocation(this.triangleProgram, "u_Texture"),
+      },
+    };
+
+    // metaball shader
+    this.metaballProgram = createShaderProgram(gl, vsMetaball, fsMetaball);
+    this.metaballProgramInfo = {
+      program: this.metaballProgram,
+      attribLocations: {
+        vertex: gl.getAttribLocation(this.metaballProgram, "a_Vertex"),
+      },
+      uniformLocations: {
+        zIndex: gl.getUniformLocation(this.metaballProgram, "u_ZIndex"),
+        resolution: gl.getUniformLocation(this.metaballProgram, "u_Resolution"),
+        color: gl.getUniformLocation(this.metaballProgram, "u_Color"),
+        radius: gl.getUniformLocation(this.metaballProgram, "u_Radius"),
+        threshold: gl.getUniformLocation(this.metaballProgram, "u_Threshold"),
+        metaballsCount: gl.getUniformLocation(this.metaballProgram, "u_MetaballsCount"),
+        metaballs: gl.getUniformLocation(this.metaballProgram, "u_Metaballs"),
       },
     };
   }

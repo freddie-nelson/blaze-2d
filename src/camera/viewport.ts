@@ -124,18 +124,4 @@ export default class Viewport {
   getOriginalHeight() {
     return this.originalHeight;
   }
-
-  /**
-   * Gets the viewport's boundaries in world space.
-   *
-   * @returns An object containing the viewport's right, left, top and bottom boundary
-   */
-  getBoundaries() {
-    return {
-      right: this.centre[0] + this.width / 2,
-      left: this.centre[0] - this.width / 2,
-      top: this.centre[1] + this.height / 2,
-      bottom: this.centre[1] - this.height / 2,
-    };
-  }
 }

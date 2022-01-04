@@ -41,8 +41,8 @@ declare global {
   var GRID: { min: vec2; max: vec2; width: number; height: number };
 }
 
-const min = WORLD.getCellFromPixel(vec2.fromValues(0, CANVAS.element.clientHeight));
-const max = WORLD.getCellFromPixel(vec2.fromValues(CANVAS.element.clientWidth, 0));
+const min = WORLD.getWorldFromPixel(vec2.fromValues(0, CANVAS.element.clientHeight));
+const max = WORLD.getWorldFromPixel(vec2.fromValues(CANVAS.element.clientWidth, 0));
 
 globalThis.GRID = {
   min,

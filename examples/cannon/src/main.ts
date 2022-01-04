@@ -116,7 +116,7 @@ const minAngle = glMatrix.toRadian(-40);
 const maxAngle = glMatrix.toRadian(50);
 
 CANVAS.mouse.addListener(Mouse.MOVE, (pressed, pixelPos) => {
-  const point = WORLD.getCellFromPixel(pixelPos);
+  const point = WORLD.getWorldFromPixel(pixelPos);
   const diff = vec2.sub(vec2.create(), point, barrel.getPosition());
   const angle = Math.atan2(diff[1], diff[0]);
 
@@ -133,7 +133,7 @@ const strength = 400 * ballMass;
 CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (!pressed) return;
 
-  const point = WORLD.getCellFromPixel(pixelPos);
+  const point = WORLD.getWorldFromPixel(pixelPos);
   const diff = vec2.sub(vec2.create(), point, barrel.getPosition());
   const len = vec2.len(diff);
 

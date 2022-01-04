@@ -53,8 +53,8 @@ const fluid = new Fluid({
   maxParticles: 400,
   collisionGroup: 1,
 
-  debug: true,
-  debugTex: fluidTex,
+  // debug: true,
+  // debugTex: fluidTex,
 });
 
 const xLimit = BOUNDS.width - thickness * 2;
@@ -63,6 +63,7 @@ while (true) {
   if (!fluid.addParticle(vec2.fromValues(Math.random() * xLimit - xLimit / 2, Math.random() * 3))) break;
 }
 
+WORLD.addFluid(fluid);
 PHYSICS.addFluid(fluid);
 
 // add rect

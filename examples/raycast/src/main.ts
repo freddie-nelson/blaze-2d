@@ -73,7 +73,7 @@ WORLD.addEntity(rayEntity);
 
 // update ray on mouse move
 CANVAS.mouse.addListener(Mouse.MOVE, (pressed, pixelPos) => {
-  const pos = WORLD.getCellFromPixel(pixelPos);
+  const pos = WORLD.getWorldFromPixel(pixelPos);
   const length = vec2.len(vec2.sub(vec2.create(), pos, origin));
 
   const direction = vec2.sub(vec2.create(), pos, origin);

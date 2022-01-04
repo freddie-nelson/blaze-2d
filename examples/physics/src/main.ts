@@ -164,7 +164,7 @@ CANVAS.keys.addListener("KeyT", (pressed) => {
 CANVAS.mouse.addListener(Mouse.LEFT, (pressed, pixelPos) => {
   if (!pressed) return;
 
-  const pos = WORLD.getCellFromPixel(pixelPos);
+  const pos = WORLD.getWorldFromPixel(pixelPos);
 
   const maxSize = 1;
   const minSize = 1;

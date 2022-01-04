@@ -101,7 +101,7 @@ export default abstract class Blaze {
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
 
-    this.renderController.addRenderers(Renderer, BatchRenderer, FluidRenderer);
+    this.renderController.addRenderers(FluidRenderer, BatchRenderer, Renderer);
 
     this.scene = new Scene();
 

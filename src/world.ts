@@ -14,6 +14,7 @@ import Color, { RGBAColor } from "./utils/color";
 import Viewport from "./camera/viewport";
 import Logger from "./logger";
 import TimeStep from "./timestep";
+import Fluid from "./physics/fluid/fluid";
 
 export type EntityListener = (event: "add" | "remove", entity: Entity, index: number, entities: Entity[]) => void;
 
@@ -26,6 +27,7 @@ export default class World implements System {
 
   private camera: Camera;
   private entities: Entity[] = [];
+  private fluids: Fluid[] = [];
 
   /**
    * Callbacks which are fired whenever an entity is added or removed.
@@ -89,19 +91,13 @@ export default class World implements System {
       }
     }
 
-    // render entities
+    // rendering
     this.renderEntities();
+    this.renderFluids();
   }
 
   /**
    * Renders the entities in the world using the world's current camera.
-   *
-   * If `this.useBatchRenderer` is true then the batch renderer will be used, otherwise the
-   * entities will be sorted by zIndex and rendered normally.
-   *
-   * Draw calls are sent before this function terminates.
-   *
-   * @param delta Time since last frame
    */
   renderEntities() {
     const worldToClipSpace = this.getWorldtoClipSpace();
@@ -118,6 +114,21 @@ export default class World implements System {
       for (const e of this.entities) {
         e.render();
       }
+    }
+  }
+
+  /**
+   * Renders the fluids in the world using the world's current camera.
+   */
+  renderFluids() {
+    const worldToClipSpace = this.getWorldtoClipSpace();
+
+    // Renderer.setMode("TRIANGLES");
+    Renderer.useCamera(this.camera);
+    Renderer.setScale(worldToClipSpace);
+
+    for (const fluid of this.fluids) {
+      fluid.render();
     }
   }
 
@@ -157,13 +168,13 @@ export default class World implements System {
   }
 
   /**
-   * Gets the world cell location of a pixel on the screen.
+   * Gets the world location of a pixel on the screen.
    *
    * This is calculated using the viewport of the world camera.
    *
    * @param pixel A pixel position on the screen
    */
-  getCellFromPixel(pixel: vec2) {
+  getWorldFromPixel(pixel: vec2) {
     const view = this.camera.viewport;
     const vw = view.getOriginalWidth();
     const vh = view.getOriginalHeight();
@@ -174,12 +185,33 @@ export default class World implements System {
     const world = vec2.fromValues(p[0] * pixelToWorld[0], p[1] * pixelToWorld[1]);
 
     // get world position inside current view
-
     const centre = this.camera.getPosition();
     vec2.add(world, world, centre);
     vec2.rotate(world, world, centre, -this.camera.getRotation());
 
     return world;
+  }
+
+  /**
+   * Gets the pixel coordinate of a world location.
+   *
+   * This is calculated using the viewport of the world camera.
+   *
+   * @param world A world position
+   */
+  getPixelFromWorld(world: vec2) {
+    const centre = this.camera.getPosition();
+    const pos = vec2.rotate(vec2.create(), world, centre, this.camera.getRotation());
+    vec2.sub(pos, pos, centre);
+
+    const worldToPixel = this.getWorldToPixelSpace();
+    const pixel = vec2.fromValues(pos[0] * worldToPixel[0], pos[1] * worldToPixel[1]);
+
+    const view = this.camera.viewport;
+    const vw = view.getOriginalWidth();
+    const vh = view.getOriginalHeight();
+
+    return vec2.fromValues(pixel[0] + vw / 2, vh / 2 - pixel[1]);
   }
 
   /**
@@ -274,6 +306,27 @@ export default class World implements System {
     if (index === -1) return;
 
     this.entityListeners.splice(index, 1);
+  }
+
+  /**
+   * Adds a fluid to the world.
+   *
+   * @param fluid The fluid to add
+   */
+  addFluid(fluid: Fluid) {
+    this.fluids.push(fluid);
+  }
+
+  /**
+   * Removes a fluid from the world.
+   *
+   * @param fluid The fluid to remove
+   */
+  removeFluid(fluid: Fluid) {
+    const index = this.fluids.findIndex((f) => f === fluid);
+    if (index === -1) return;
+
+    this.fluids.splice(index, 1);
   }
 
   /**
