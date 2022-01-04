@@ -41,10 +41,12 @@ export default class Object2D {
    * @param pos The object's new position
    */
   setPosition(pos: vec2) {
-    this.position = vec2.clone(pos);
+    vec2.copy(this.position, pos);
 
     this.fireEvent("position", this.position);
   }
+
+  private setVec = vec2.create();
 
   /**
    * Sets the x component of the object's position.
@@ -53,7 +55,10 @@ export default class Object2D {
    */
   setPositionX(x: number) {
     // weird implementation so custom position setting is easier to setup in child classes, see CollisionObject
-    this.setPosition(vec2.fromValues(x, this.getPosition()[1]));
+    this.setVec[0] = x;
+    this.setVec[1] = this.getPosition()[1];
+
+    this.setPosition(this.setVec);
   }
 
   /**
@@ -62,7 +67,11 @@ export default class Object2D {
    * @param y The object's new y coordinate
    */
   setPositionY(y: number) {
-    this.setPosition(vec2.fromValues(this.getPosition()[0], y));
+    // weird implementation so custom position setting is easier to setup in child classes, see CollisionObject
+    this.setVec[0] = this.getPosition()[0];
+    this.setVec[1] = y;
+
+    this.setPosition(this.setVec);
   }
 
   /**
@@ -80,7 +89,7 @@ export default class Object2D {
    * @param v The vector to translate by
    */
   translate(v: vec2) {
-    this.setPosition(vec2.add(vec2.create(), this.getPosition(), v));
+    this.setPosition(vec2.add(this.setVec, this.getPosition(), v));
   }
 
   /**

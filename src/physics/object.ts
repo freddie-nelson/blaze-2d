@@ -161,6 +161,8 @@ export default class PhysicsObject extends Object2D {
     }
   }
 
+  private forceVec = vec2.create();
+
   /**
    * Applies a force to the object at an angle.
    *
@@ -177,12 +179,12 @@ export default class PhysicsObject extends Object2D {
     const dir = vec2.fromValues(0, 1);
     vec2.rotate(dir, dir, vec2.create(), angle);
 
-    const forceVec = vec2.scale(vec2.create(), dir, force);
+    vec2.scale(this.forceVec, dir, force);
 
-    vec2.add(this.force, this.force, forceVec);
+    vec2.add(this.force, this.force, this.forceVec);
 
     if (contact) {
-      this.torque += contact[0] * forceVec[1] - contact[1] * forceVec[0];
+      this.torque += contact[0] * this.forceVec[1] - contact[1] * this.forceVec[0];
     }
   }
 
