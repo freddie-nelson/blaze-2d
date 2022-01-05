@@ -1,8 +1,8 @@
 import { vec2 } from "gl-matrix";
 import CircleCollider from "../collider/circle";
-import CollisionObject from "../collisionObject";
 import RigidBody from "../rigidbody";
 import solveForces from "../solvers/dynamics/forces";
+import kdTree from "./kdTree";
 
 const diff = vec2.create();
 const dir = vec2.create();
@@ -52,20 +52,11 @@ export default class Particle extends RigidBody {
    *
    * Particles which are closer than this distance are added to this particle's neighbours array.
    *
-   * @param Particles The particles of the fluid
+   * @param kdTree The {@link kdTree} of the fluid
    * @param smoothingRadiusSqr The fluid's smoothing radius squared
    */
-  findNeighbours(particles: Particle[], smoothingRadiusSqr: number) {
-    this.neighbours.length = 0;
-
-    for (const p of particles) {
-      if (this === p) continue;
-
-      const sqrDist = vec2.sqrDist(this.getPosition(), p.getPosition());
-      if (sqrDist > smoothingRadiusSqr) continue;
-
-      this.neighbours.push(p);
-    }
+  findNeighbours(kdTree: kdTree, smoothingRadiusSqr: number) {
+    this.neighbours = kdTree.findNeighbours(this, smoothingRadiusSqr);
   }
 
   /**

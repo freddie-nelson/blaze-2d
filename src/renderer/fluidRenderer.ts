@@ -62,7 +62,6 @@ export default abstract class FluidRenderer extends Renderer {
     const worldToPixel = world.getWorldToPixelSpace();
 
     const radius = fluid.particleRadius * worldToPixel[0];
-    console.log(radius);
     const positions = new Float32Array(count * 2);
 
     for (let i = 0; i < count; i++) {

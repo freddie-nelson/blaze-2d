@@ -22,8 +22,8 @@ const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
 const PHYSICS = SCENE.physics;
 
-// const EDITOR = new Editor();
-// Blaze.editor = EDITOR;
+const EDITOR = new Editor();
+Blaze.editor = EDITOR;
 
 // MAIN
 // setup atlas
@@ -51,11 +51,11 @@ const fluid = new Fluid({
   stiffnessNear: 80,
 
   particleRadius: particleRadius,
-  maxParticles: 400,
+  maxParticles: 250,
   collisionGroup: 1,
 
-  // debug: true,
-  // debugTex: boundsTex,
+  debug: true,
+  debugTex: boundsTex,
 });
 
 const xLimit = BOUNDS.width - thickness * 2;
@@ -76,8 +76,8 @@ const rect2 = new Rect(2, 2);
 rect2.texture = rectTex;
 const entity2 = new Entity(vec2.fromValues(3, 0), new RectCollider(2, 2), [rect2], 10);
 
-WORLD.addEntities(entity1, entity2);
-PHYSICS.addBodies(entity1, entity2);
+// WORLD.addEntities(entity1, entity2);
+// PHYSICS.addBodies(entity1, entity2);
 
 // pick entity on click
 mousePicker(() => undefined, "bounds");

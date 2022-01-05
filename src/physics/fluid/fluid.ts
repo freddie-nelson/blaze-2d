@@ -1,4 +1,5 @@
 import { vec2 } from "gl-matrix";
+import Blaze from "../../blaze";
 import BatchRenderer from "../../renderer/batchRenderer";
 import FluidRenderer from "../../renderer/fluidRenderer";
 import Circle from "../../shapes/circle";
@@ -6,6 +7,7 @@ import Texture from "../../texture/texture";
 import Color from "../../utils/color";
 import Physics from "../physics";
 import solveForces from "../solvers/dynamics/forces";
+import kdTree from "./kdTree";
 import Particle from "./particle";
 
 export const MAX_FLUID_PARTICLES = 1000;
@@ -48,6 +50,8 @@ export default class Fluid {
   maxParticles: number;
   collisionGroup: number;
 
+  kdTree: kdTree;
+
   color: Color;
   renderThreshold: number;
 
@@ -87,6 +91,8 @@ export default class Fluid {
 
     this.debug = opts.debug || false;
     this.debugTex = opts.debugTex;
+
+    this.kdTree = new kdTree([]);
   }
 
   /**
@@ -120,9 +126,53 @@ export default class Fluid {
     const gravity = this.physics.getGravity() || vec2.create();
     this.integrate(delta, gravity);
 
-    for (const p of this.particles) {
-      p.findNeighbours(this.particles, this.smoothingRadiusSqr);
+    this.kdTree.build(this.particles);
 
+    for (const p of this.particles) {
+      p.findNeighbours(this.kdTree, this.smoothingRadiusSqr);
+    }
+
+    // bruteforce comparison
+    for (const a of this.particles) {
+      let neighboursCount = 0;
+      const bruteforceDists: number[] = [];
+
+      a.neighbours.length = 0;
+      for (const b of this.particles) {
+        if (a === b) continue;
+
+        const dist = vec2.dist(a.getPosition(), b.getPosition());
+        if (dist > this.smoothingRadius) continue;
+
+        neighboursCount++;
+
+        bruteforceDists.push(dist);
+        a.neighbours.push(b);
+      }
+
+      const dists: number[] = [];
+      for (const n of a.neighbours) {
+        const dist = vec2.dist(a.getPosition(), n.getPosition());
+        dists.push(dist);
+      }
+
+      dists.sort((a, b) => a - b);
+      bruteforceDists.sort((a, b) => a - b);
+
+      if (neighboursCount !== a.neighbours.length) {
+        console.log("invalid neighbours");
+        continue;
+      }
+
+      for (let i = 0; i < dists.length; i++) {
+        if (dists[i] !== bruteforceDists[i]) {
+          console.log(dists, bruteforceDists);
+          break;
+        }
+      }
+    }
+
+    for (const p of this.particles) {
       p.computeDoubleDensityRelaxation(this.smoothingRadius);
       p.computePressure(this.stiffness, this.stiffnessNear, this.restDensity);
       p.advancePosition(delta, this.smoothingRadius);
