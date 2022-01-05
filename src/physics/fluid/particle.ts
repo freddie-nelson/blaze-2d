@@ -53,10 +53,11 @@ export default class Particle extends RigidBody {
    * Particles which are closer than this distance are added to this particle's neighbours array.
    *
    * @param kdTree The {@link kdTree} of the fluid
+   * @param smoothingRadius The fluid's smoothing radius
    * @param smoothingRadiusSqr The fluid's smoothing radius squared
    */
-  findNeighbours(kdTree: kdTree, smoothingRadiusSqr: number) {
-    this.neighbours = kdTree.findNeighbours(this, smoothingRadiusSqr);
+  findNeighbours(kdTree: kdTree, smoothingRadius: number, smoothingRadiusSqr: number) {
+    this.neighbours = kdTree.findNeighbours(this, smoothingRadius, smoothingRadiusSqr);
   }
 
   /**

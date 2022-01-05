@@ -11,6 +11,8 @@ import Fluid from "@blz/physics/fluid/fluid";
 import Rect from "@blz/shapes/rect";
 import Entity from "@blz/entity";
 import RectCollider from "@blz/physics/collider/rect";
+import Particle from "@blz/physics/fluid/particle";
+import kdTree from "@blz/physics/fluid/kdTree";
 
 // setup engine
 Blaze.init(document.querySelector("canvas"));
@@ -43,15 +45,15 @@ const thickness = 2;
 const BOUNDS = createBounds(thickness, boundsTex);
 
 // add fluid
-const particleRadius = 0.3;
+const particleRadius = 0.4;
 const fluid = new Fluid({
-  restDensity: 20 * particleRadius,
-  smoothingRadius: particleRadius * 5.5,
+  restDensity: 6 * particleRadius,
+  smoothingRadius: particleRadius * 4,
   stiffness: 10,
-  stiffnessNear: 80,
+  stiffnessNear: 50,
 
   particleRadius: particleRadius,
-  maxParticles: 250,
+  maxParticles: 400,
   collisionGroup: 1,
 
   debug: true,
@@ -76,8 +78,8 @@ const rect2 = new Rect(2, 2);
 rect2.texture = rectTex;
 const entity2 = new Entity(vec2.fromValues(3, 0), new RectCollider(2, 2), [rect2], 10);
 
-// WORLD.addEntities(entity1, entity2);
-// PHYSICS.addBodies(entity1, entity2);
+WORLD.addEntities(entity1, entity2);
+PHYSICS.addBodies(entity1, entity2);
 
 // pick entity on click
 mousePicker(() => undefined, "bounds");

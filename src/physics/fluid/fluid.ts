@@ -87,7 +87,7 @@ export default class Fluid {
 
     this.color = opts.color || new Color("#1D7BE3");
     this.zIndex = opts.zIndex || 0;
-    this.renderThreshold = opts.renderThreshold || 1.2;
+    this.renderThreshold = opts.renderThreshold || 2.3;
 
     this.debug = opts.debug || false;
     this.debugTex = opts.debugTex;
@@ -129,50 +129,60 @@ export default class Fluid {
     this.kdTree.build(this.particles);
 
     for (const p of this.particles) {
-      p.findNeighbours(this.kdTree, this.smoothingRadiusSqr);
+      p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
     }
 
     // bruteforce comparison
-    for (const a of this.particles) {
-      let neighboursCount = 0;
-      const bruteforceDists: number[] = [];
+    // for (const a of this.particles) {
+    //   let neighboursCount = 0;
+    //   const bruteforceDists: number[] = [];
 
-      a.neighbours.length = 0;
-      for (const b of this.particles) {
-        if (a === b) continue;
+    //   // a.neighbours.length = 0;
+    //   for (const b of this.particles) {
+    //     if (a === b) continue;
 
-        const dist = vec2.dist(a.getPosition(), b.getPosition());
-        if (dist > this.smoothingRadius) continue;
+    //     const dist = vec2.dist(a.getPosition(), b.getPosition());
+    //     if (dist > this.smoothingRadius) continue;
 
-        neighboursCount++;
+    //     neighboursCount++;
 
-        bruteforceDists.push(dist);
-        a.neighbours.push(b);
-      }
+    //     bruteforceDists.push(dist);
+    //     // a.neighbours.push(b);
+    //   }
 
-      const dists: number[] = [];
-      for (const n of a.neighbours) {
-        const dist = vec2.dist(a.getPosition(), n.getPosition());
-        dists.push(dist);
-      }
+    //   const dists: number[] = [];
+    //   for (const n of a.neighbours) {
+    //     const dist = vec2.dist(a.getPosition(), n.getPosition());
+    //     dists.push(dist);
+    //   }
 
-      dists.sort((a, b) => a - b);
-      bruteforceDists.sort((a, b) => a - b);
+    //   dists.sort((a, b) => a - b);
+    //   bruteforceDists.sort((a, b) => a - b);
 
-      if (neighboursCount !== a.neighbours.length) {
-        console.log("invalid neighbours");
-        continue;
-      }
+    //   if (neighboursCount !== a.neighbours.length) {
+    //     console.log(Math.abs(neighboursCount - a.neighbours.length));
+    //     continue;
+    //   }
 
-      for (let i = 0; i < dists.length; i++) {
-        if (dists[i] !== bruteforceDists[i]) {
-          console.log(dists, bruteforceDists);
-          break;
-        }
-      }
-    }
+    //   for (let i = 0; i < dists.length; i++) {
+    //     if (dists[i] !== bruteforceDists[i]) {
+    //       // console.log(dists, bruteforceDists);
+    //       break;
+    //     }
+    //   }
+    // }
 
     for (const p of this.particles) {
+      // p.neighbours.length = 0;
+      // for (const b of this.particles) {
+      //   if (p === b) continue;
+
+      //   const dist = vec2.dist(p.getPosition(), b.getPosition());
+      //   if (dist > this.smoothingRadius) continue;
+
+      //   p.neighbours.push(b);
+      // }
+
       p.computeDoubleDensityRelaxation(this.smoothingRadius);
       p.computePressure(this.stiffness, this.stiffnessNear, this.restDensity);
       p.advancePosition(delta, this.smoothingRadius);
