@@ -128,9 +128,9 @@ export default class Fluid {
 
     this.kdTree.build(this.particles);
 
-    for (const p of this.particles) {
-      p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
-    }
+    // for (const p of this.particles) {
+    //   p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
+    // }
 
     // bruteforce comparison
     // for (const a of this.particles) {
@@ -182,6 +182,7 @@ export default class Fluid {
 
       //   p.neighbours.push(b);
       // }
+      p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
 
       p.computeDoubleDensityRelaxation(this.smoothingRadius);
       p.computePressure(this.stiffness, this.stiffnessNear, this.restDensity);

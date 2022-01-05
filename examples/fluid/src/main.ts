@@ -24,8 +24,8 @@ const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
 const PHYSICS = SCENE.physics;
 
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 // MAIN
 // setup atlas
@@ -45,18 +45,20 @@ const thickness = 2;
 const BOUNDS = createBounds(thickness, boundsTex);
 
 // add fluid
-const particleRadius = 0.4;
+const particleRadius = 0.35;
 const fluid = new Fluid({
-  restDensity: 6 * particleRadius,
-  smoothingRadius: particleRadius * 4,
-  stiffness: 10,
-  stiffnessNear: 50,
+  restDensity: 12 * particleRadius,
+  smoothingRadius: particleRadius * 3.5,
+  stiffness: 14,
+  stiffnessNear: 20,
 
   particleRadius: particleRadius,
-  maxParticles: 400,
+  maxParticles: 600,
   collisionGroup: 1,
 
-  debug: true,
+  renderThreshold: 3,
+
+  // debug: true,
   debugTex: boundsTex,
 });
 
