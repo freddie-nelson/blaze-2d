@@ -71,6 +71,9 @@ export default class Particle extends RigidBody {
     let qFlip = 0;
     let qFlipSqr = 0;
 
+    this.density = 0;
+    this.densityNear = 0;
+
     for (const n of this.neighbours) {
       vec2.sub(diff, n.getPosition(), this.getPosition());
       diffLen = vec2.len(diff);
@@ -94,8 +97,6 @@ export default class Particle extends RigidBody {
   computePressure(stiffness: number, stiffnessNear: number, restDensity: number) {
     this.pressure = stiffness * (this.density - restDensity);
     this.pressureNear = stiffnessNear * this.densityNear;
-
-    vec2.zero(this.dx);
   }
 
   /**
@@ -109,6 +110,8 @@ export default class Particle extends RigidBody {
     let q = 0;
     let qFlip = 0;
     let qFlipSqr = 0;
+
+    vec2.zero(this.dx);
 
     for (const n of this.neighbours) {
       vec2.sub(diff, n.getPosition(), this.getPosition());

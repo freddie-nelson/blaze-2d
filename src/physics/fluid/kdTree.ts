@@ -97,6 +97,7 @@ export default class kdTree {
     if (!node) return;
 
     if (node.isLeaf()) {
+      // check if particle is close enough to be considered a neighbour
       const d = vec2.sqrDist(pos, node.particle.getPosition());
       if (d < distSqr && node.particle !== particle) {
         neighbours.push(node.particle);
@@ -106,6 +107,7 @@ export default class kdTree {
       const k = 2;
       const axis = depth % k;
 
+      // check if particle is close enough to be considered a neighbour
       const d = vec2.sqrDist(pos, node.particle.getPosition());
       if (d < distSqr && node.particle !== particle) {
         neighbours.push(node.particle);
@@ -121,26 +123,9 @@ export default class kdTree {
         // search right first
         this.findNeighboursHelper(particle, pos, dist, distSqr, node.right, depth + 1, neighbours);
 
-        if (pos[axis] - dist <= node.particle.getPosition()[axis])
+        if (pos[axis] - dist < node.particle.getPosition()[axis])
           this.findNeighboursHelper(particle, pos, dist, distSqr, node.left, depth + 1, neighbours);
       }
     }
-
-    // const d = vec2.sqrDist(pos, node.particle.getPosition());
-    // if (d <= distSqr && node.particle !== particle) {
-    //   neighbours.push(node.particle);
-    // }
-
-    // if (node.left) this.findNeighboursHelper(particle, pos, dist, distSqr, node.left, depth + 1, neighbours);
-    // if (node.right) this.findNeighboursHelper(particle, pos, dist, distSqr, node.right, depth + 1, neighbours);
-
-    // const other = next === node.left ? node.right : node.left;
-    // if (!other) return;
-
-    // // check if other branch (plane) is close enough to contain neighbours
-    // if (Math.abs(pos[axis] - node.particle.getPosition()[axis]) ** 2 <= distSqr) {
-    //   // traverse other branch
-    //   this.findNeighboursHelper(particle, pos, distSqr, other, depth + 1, neighbours);
-    // }
   }
 }

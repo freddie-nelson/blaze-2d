@@ -128,49 +128,9 @@ export default class Fluid {
 
     this.kdTree.build(this.particles);
 
-    // for (const p of this.particles) {
-    //   p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
-    // }
-
-    // bruteforce comparison
-    // for (const a of this.particles) {
-    //   let neighboursCount = 0;
-    //   const bruteforceDists: number[] = [];
-
-    //   // a.neighbours.length = 0;
-    //   for (const b of this.particles) {
-    //     if (a === b) continue;
-
-    //     const dist = vec2.dist(a.getPosition(), b.getPosition());
-    //     if (dist > this.smoothingRadius) continue;
-
-    //     neighboursCount++;
-
-    //     bruteforceDists.push(dist);
-    //     // a.neighbours.push(b);
-    //   }
-
-    //   const dists: number[] = [];
-    //   for (const n of a.neighbours) {
-    //     const dist = vec2.dist(a.getPosition(), n.getPosition());
-    //     dists.push(dist);
-    //   }
-
-    //   dists.sort((a, b) => a - b);
-    //   bruteforceDists.sort((a, b) => a - b);
-
-    //   if (neighboursCount !== a.neighbours.length) {
-    //     console.log(Math.abs(neighboursCount - a.neighbours.length));
-    //     continue;
-    //   }
-
-    //   for (let i = 0; i < dists.length; i++) {
-    //     if (dists[i] !== bruteforceDists[i]) {
-    //       // console.log(dists, bruteforceDists);
-    //       break;
-    //     }
-    //   }
-    // }
+    for (const p of this.particles) {
+      p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
+    }
 
     for (const p of this.particles) {
       // p.neighbours.length = 0;
@@ -182,7 +142,6 @@ export default class Fluid {
 
       //   p.neighbours.push(b);
       // }
-      p.findNeighbours(this.kdTree, this.smoothingRadius, this.smoothingRadiusSqr);
 
       p.computeDoubleDensityRelaxation(this.smoothingRadius);
       p.computePressure(this.stiffness, this.stiffnessNear, this.restDensity);
@@ -196,6 +155,8 @@ export default class Fluid {
     if (this.debug) this.debugRender();
   }
 
+  private translate = vec2.create();
+
   /**
    * Integrate any forces on the particle, including gravity, and integrate velocity.
    *
@@ -204,19 +165,14 @@ export default class Fluid {
    * @param delta The time since the last update
    */
   integrate(delta: number, gravity: vec2) {
-    const translate = vec2.create();
-
     for (const p of this.particles) {
-      p.density = 0;
-      p.densityNear = 0;
+      vec2.copy(p.posPrev, p.getPosition());
 
       // integrate forces
       solveForces(p, delta, gravity);
 
       // integrate velocity
-      vec2.copy(p.posPrev, p.getPosition());
-
-      p.translate(vec2.scale(translate, p.velocity, delta));
+      p.translate(vec2.scale(this.translate, p.velocity, delta));
     }
   }
 
