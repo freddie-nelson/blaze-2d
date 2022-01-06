@@ -24,8 +24,8 @@ const SCENE = Blaze.getScene();
 const WORLD = SCENE.world;
 const PHYSICS = SCENE.physics;
 
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 // MAIN
 // setup atlas
