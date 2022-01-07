@@ -54,7 +54,7 @@ export default abstract class Blaze {
   private static systems: System[] = [];
   private static fixedSystems: System[] = [];
 
-  private static threadPool = new ThreadPool();
+  private static threadPool: ThreadPool;
 
   /**
    * The {@link TimeStep} for normal updates.
