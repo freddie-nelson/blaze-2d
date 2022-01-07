@@ -1,6 +1,5 @@
 import { vec2 } from "gl-matrix";
-import { cross2D, cross2DWithScalar } from "../../../utils/vectors";
-import CollisionObject from "../../collisionObject";
+import { cross2DWithScalar } from "../../../utils/vectors";
 import Manifold from "../../manifold";
 import Physics from "../../physics";
 
@@ -21,8 +20,8 @@ export default function solveImpulse(m: Manifold) {
 
   for (const contact of m.contactPoints) {
     // calculate contact vectors
-    let contactA = contact.contactA;
-    let contactB = contact.contactB;
+    const contactA = contact.contactA;
+    const contactB = contact.contactB;
 
     let relativeVelocity = calculateRelativeVelocity(m, contactA, contactB);
 

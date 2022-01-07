@@ -141,6 +141,7 @@ export default class GradientTexture extends Texture {
           this.resolution / 2,
           this.resolution,
         );
+        break;
       default:
         break;
     }

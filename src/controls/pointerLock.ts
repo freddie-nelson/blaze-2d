@@ -14,7 +14,7 @@ export default class PointerLockControls extends Controls {
    * @param object An optional object to follow the camera's yaw
    * @param sensitivity Movement sensitivity
    */
-  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity: number = 0.1) {
+  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity = 0.1) {
     super(element, camera, object, sensitivity);
 
     element.addEventListener("click", this.clickHandler);

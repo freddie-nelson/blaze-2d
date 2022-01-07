@@ -6,27 +6,27 @@
   "keywords": [
     "webgl",
     "webgl2",
-    "voxel",
+    "2d",
+    "2d-game",
+    "2d-game-engine",
+    "physics",
     "game",
     "gamedev",
-    "3d",
     "game-engine",
     "engine",
     "typescript"
   ],
-  "homepage": "https://github.com/freddie-nelson/blaze",
+  "homepage": "https://github.com/freddie-nelson/blaze-2d",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/freddie-nelson/blaze"
+    "url": "git+https://github.com/freddie-nelson/blaze-2d"
   },
   "bugs": {
     "email": "freddie0208@hotmail.com",
-    "url": "https://github.com/freddie-nelson/blaze/issues"
+    "url": "https://github.com/freddie-nelson/blaze-2d/issues"
   },
-  "main": "lib/bundle/blaze.js",
-  "types": "lib/src/blaze.d.ts",
   "files": [
-    "lib",
+    "lib/src",
     "README.md",
     "LICENSE",
     "package.json"

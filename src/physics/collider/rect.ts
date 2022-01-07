@@ -4,7 +4,7 @@ import Rect from "../../shapes/rect";
 import Collider, { CollisionResult } from "./collider";
 import EPA from "../epa";
 
-let time = 0;
+const time = 0;
 
 /**
  * Represents a rectangle collider in 2D world space with a position and dimensions.

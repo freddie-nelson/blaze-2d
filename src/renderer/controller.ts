@@ -7,8 +7,6 @@ import Renderer from "./renderer";
 export default class RenderController {
   renderers: typeof Renderer[] = [];
 
-  constructor() {}
-
   /**
    * Flushes all {@link Renderer}s.
    */

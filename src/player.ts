@@ -1,7 +1,4 @@
-import PointerLockControls from "./controls/pointerLock";
 import { mergeDeep } from "./utils/objects";
-import Controls from "./controls/controls";
-import TouchControls from "./controls/touchControls";
 import Entity from "./entity";
 import Camera from "./camera/camera";
 import Viewport from "./camera/viewport";
@@ -68,7 +65,7 @@ export default class Player extends Entity {
   update(delta: number) {
     super.update(delta);
 
-    const speed = 0.5;
+    // const speed = 0.5;
     // if (isKeyPressed("KeyD")) {
     //   this.moveRight(speed);
     // }

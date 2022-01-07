@@ -30,8 +30,6 @@ export default class AABBTree {
    */
   insertionsLastUpdate = 0;
 
-  constructor() {}
-
   /**
    * Updates the tree.
    */

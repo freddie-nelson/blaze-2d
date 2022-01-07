@@ -20,7 +20,7 @@ export default abstract class Controls {
    * @param object An optional object to follow the camera's yaw
    * @param sensitivity Movement sensitivity
    */
-  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity: number = 0.1) {
+  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity = 0.1) {
     this.element = element;
     this.camera = camera;
     this.object = object;

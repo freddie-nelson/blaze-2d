@@ -8,8 +8,6 @@ import Manifold from "./manifold";
 export default class ManifoldMap {
   map: Map<CollisionObject, Map<CollisionObject, Manifold>> = new Map();
 
-  constructor() {}
-
   /**
    * Gets all the manifolds in the map and returns them as a contiguous array.
    *

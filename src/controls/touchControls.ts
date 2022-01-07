@@ -13,7 +13,7 @@ export default class TouchControls extends Controls {
    * @param object An optional object to follow the camera's yaw
    * @param sensitivity Movement sensitivity
    */
-  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity: number = 0.7) {
+  constructor(element: HTMLElement, camera: Camera, object?: Object2D, sensitivity = 0.7) {
     super(element, camera, object, sensitivity);
 
     element.addEventListener("touchstart", this.touchStartHandler);

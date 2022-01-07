@@ -1,5 +1,4 @@
 import { vec2 } from "gl-matrix";
-import { cross2DWithScalar } from "../../utils/vectors";
 import CollisionObject from "../collisionObject";
 import Constraint, { ConstraintOptions } from "./constraint";
 

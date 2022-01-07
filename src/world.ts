@@ -1,18 +1,10 @@
 import { vec2 } from "gl-matrix";
-import Blaze from "./blaze";
 import Camera from "./camera/camera";
 import Entity from "./entity";
-import RectCollider from "./physics/collider/rect";
-import CircleCollider from "./physics/collider/circle";
 import BatchRenderer from "./renderer/batchRenderer";
 import Renderer from "./renderer/renderer";
-import Circle from "./shapes/circle";
-import Rect from "./shapes/rect";
 import { System } from "./system";
-import Texture from "./texture/texture";
-import Color, { RGBAColor } from "./utils/color";
 import Viewport from "./camera/viewport";
-import Logger from "./logger";
 import TimeStep from "./timestep";
 import Fluid from "./physics/fluid/fluid";
 
@@ -57,7 +49,7 @@ export default class World implements System {
       this.camera = new Camera(vec2.fromValues(0, 0), canvas.width, canvas.height);
 
       // setup resize observer
-      const observer = new ResizeObserver((entries) => {
+      const observer = new ResizeObserver(() => {
         if (
           canvas.clientWidth === this.camera.viewport.getWidth() &&
           canvas.clientHeight === this.camera.viewport.getHeight()
@@ -87,8 +79,8 @@ export default class World implements System {
     for (const e of this.entities) {
       e.update(ts.dt);
 
-      if (this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())) {
-      }
+      // if (this.camera.viewport.containsRectCollider(e.collider as RectCollider, this.getWorldToPixelSpace())) {
+      // }
     }
 
     // rendering
@@ -254,7 +246,7 @@ export default class World implements System {
   addEntities(...entities: (Entity | boolean)[]) {
     let fireListeners = true;
     if (typeof entities[entities.length - 1] === "boolean") {
-      fireListeners = <any>entities[entities.length - 1];
+      fireListeners = <boolean>entities[entities.length - 1];
       entities.pop();
     }
 

@@ -16,29 +16,27 @@ const ctx: BLZWorker = <any>self;
 class BlazeWorker {
   // geometryGenerator: GeometryGenerakor;
 
-  constructor() {}
-
   handleTask(task: WorkerMessage) {
     let data;
-    switch (
-      task.task
-      // case "init-geometry-generator":
-      //   const arr = task.data as Uint16Array;
-      //   this.geometryGenerator = new GeometryGenerator({
-      //     chunkSize: arr[0],
-      //     chunkHeight: arr[1],
-      //     excludeList: new Uint8Array(arr.slice(2)),
-      //   });
-      //   break;
-      // case "chunk-geometry":
-      //   if (this.geometryGenerator) data = this.chunkGeometry(task.data as any);
-      //   else
-      //     throw new Error(
-      //       "Worker: 'init-geometry-generator' must be executed at least once on a worker before 'chunk-geometry' can be executed."
-      //     );
-      //   break;
-    ) {
-    }
+    // switch (
+    // task.task
+    // case "init-geometry-generator":
+    //   const arr = task.data as Uint16Array;
+    //   this.geometryGenerator = new GeometryGenerator({
+    //     chunkSize: arr[0],
+    //     chunkHeight: arr[1],
+    //     excludeList: new Uint8Array(arr.slice(2)),
+    //   });
+    //   break;
+    // case "chunk-geometry":
+    //   if (this.geometryGenerator) data = this.chunkGeometry(task.data as any);
+    //   else
+    //     throw new Error(
+    //       "Worker: 'init-geometry-generator' must be executed at least once on a worker before 'chunk-geometry' can be executed."
+    //     );
+    //   break;
+    // ) {
+    // }
 
     ctx.postMessage({ task: "completed", data });
   }

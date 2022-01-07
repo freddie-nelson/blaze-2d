@@ -1,7 +1,6 @@
 import { vec2 } from "gl-matrix";
 import AABB from "../aabb/aabb";
 import AABBTree from "../aabb/aabbTree";
-import { CollisionResult } from "../collider/collider";
 import CollisionObject from "../collisionObject";
 import CollisionPair from "../collisionPair";
 import Manifold from "../manifold";
@@ -132,7 +131,6 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
       if (res.hasCollision) {
         const manifold = new Manifold(A, B, res, this.gravity, delta);
 
-        let timer = performance.now();
         if (A.isTrigger || B.isTrigger) {
           this.triggers.addManifold(A, B, manifold);
         } else {

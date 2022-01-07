@@ -30,13 +30,10 @@ export default class ThreadPool {
    * @param queue Wether or not to add the task to the queue if no thread is open
    * @returns true/false depending on wether an open thread was found
    */
-  requestThread(task: ThreadTask, queue: boolean = true): boolean {
+  requestThread(task: ThreadTask, queue = true): boolean {
     let openThread: Thread;
     for (const t of this.threads) {
-      if (
-        t.isFree() &&
-        t.getNumInQueue() < (openThread ? openThread.getNumInQueue() : Number.MAX_SAFE_INTEGER)
-      ) {
+      if (t.isFree() && t.getNumInQueue() < (openThread ? openThread.getNumInQueue() : Number.MAX_SAFE_INTEGER)) {
         openThread = t;
       }
     }

@@ -11,7 +11,6 @@ export default abstract class Space<O, S> {
   /**
    * Creates a {@link Space} instance.
    */
-  constructor() {}
 
   /**
    * Executes a solver on every object in the space.

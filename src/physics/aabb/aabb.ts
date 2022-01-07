@@ -198,7 +198,7 @@ export default class AABB {
     let fDimHigh = (this.max[dim] - v0[dim]) / (v1[dim] - v0[dim]);
 
     if (fDimHigh < fDimLow) {
-      let temp = fDimLow;
+      const temp = fDimLow;
       fDimLow = fDimHigh;
       fDimHigh = temp;
     }
