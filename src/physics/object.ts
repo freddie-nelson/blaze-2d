@@ -65,7 +65,7 @@ export default class PhysicsObject extends Object2D {
   /**
    * The damping applied to the object's linear velocity every physics update.
    */
-  linearDamping = 0.001;
+  airFriction = 0;
 
   // ROTATIONAL MOMENTUM
 
@@ -94,7 +94,7 @@ export default class PhysicsObject extends Object2D {
   /**
    * The damping applied to the object's angular velocity every physics update.
    */
-  angularDamping = 0.001;
+  angularDamping = 0;
 
   // OPTIONS
 
