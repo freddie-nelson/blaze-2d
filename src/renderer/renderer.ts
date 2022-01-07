@@ -240,8 +240,8 @@ export default abstract class Renderer {
     if (this.queue[zIndex]) this.queue[zIndex].push(item);
     else this.queue[zIndex] = [item];
 
-    if (zIndex >= (this.queue.max ? this.queue.max : 0)) this.queue.max = zIndex;
-    if (zIndex <= (this.queue.min ? this.queue.min : 0)) this.queue.min = zIndex;
+    if (zIndex > this.queue.max) this.queue.max = zIndex;
+    if (zIndex < this.queue.min) this.queue.min = zIndex;
   }
 
   /**
@@ -424,5 +424,23 @@ export default abstract class Renderer {
    */
   static getQueueMin() {
     return this.queue.min;
+  }
+
+  /**
+   * Sets the maximum zIndex used by the queue.
+   *
+   * @param max The max zIndex of the queue
+   */
+  static setQueueMax(max: number) {
+    this.queue.max = max;
+  }
+
+  /**
+   * Sets the minimum zIndex used by the queue.
+   *
+   * @param min The min zIndex of the queue
+   */
+  static setQueueMin(min: number) {
+    this.queue.min = min;
   }
 }

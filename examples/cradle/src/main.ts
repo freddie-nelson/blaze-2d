@@ -26,8 +26,8 @@ const PHYSICS = SCENE.physics;
 // PHYSICS.CONFIG.VELOCITY_ITERATIONS = 100;
 // PHYSICS.CONFIG.CONSTRAINT_ITERATIONS = 10;
 
-const EDITOR = new Editor();
-Blaze.editor = EDITOR;
+// const EDITOR = new Editor();
+// Blaze.editor = EDITOR;
 
 // MAIN
 // setup atlas
@@ -44,7 +44,7 @@ const circleTexs = randomTexs(20, ATLAS);
 
 // create demo scene
 const thickness = 2;
-const BOUNDS = createBounds(thickness, boundsTex);
+// const BOUNDS = createBounds(thickness, boundsTex);
 
 // create cradle
 const distance = 4;

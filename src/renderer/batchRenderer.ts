@@ -161,8 +161,8 @@ export default abstract class BatchRenderer extends Renderer {
 
     this.batchQueue[zIndex][type].push(...renderables);
 
-    if (zIndex >= (this.batchQueue.max ? this.batchQueue.max : 0)) this.batchQueue.max = zIndex;
-    if (zIndex <= (this.batchQueue.min ? this.batchQueue.min : 0)) this.batchQueue.min = zIndex;
+    if (zIndex > this.batchQueue.max) this.batchQueue.max = zIndex;
+    if (zIndex < this.batchQueue.min) this.batchQueue.min = zIndex;
   }
 
   /**
@@ -427,5 +427,23 @@ export default abstract class BatchRenderer extends Renderer {
    */
   static getQueueMin() {
     return this.batchQueue.min;
+  }
+
+  /**
+   * Sets the maximum zIndex used by the queue.
+   *
+   * @param max The max zIndex of the queue
+   */
+  static setQueueMax(max: number) {
+    this.batchQueue.max = max;
+  }
+
+  /**
+   * Sets the minimum zIndex used by the queue.
+   *
+   * @param min The min zIndex of the queue
+   */
+  static setQueueMin(min: number) {
+    this.batchQueue.min = min;
   }
 }

@@ -110,8 +110,8 @@ export default abstract class FluidRenderer extends Renderer {
     if (!this.fluidQueue[zIndex]) this.fluidQueue[zIndex] = [fluid];
     else this.fluidQueue[zIndex].push(fluid);
 
-    if (zIndex >= (this.fluidQueue.max ? this.fluidQueue.max : 0)) this.fluidQueue.max = zIndex;
-    if (zIndex <= (this.fluidQueue.min ? this.fluidQueue.min : 0)) this.fluidQueue.min = zIndex;
+    if (zIndex > this.fluidQueue.max) this.fluidQueue.max = zIndex;
+    if (zIndex < this.fluidQueue.min) this.fluidQueue.min = zIndex;
   }
 
   /**
@@ -139,5 +139,23 @@ export default abstract class FluidRenderer extends Renderer {
    */
   static getQueueMin() {
     return this.fluidQueue.min;
+  }
+
+  /**
+   * Sets the maximum zIndex used by the queue.
+   *
+   * @param max The max zIndex of the queue
+   */
+  static setQueueMax(max: number) {
+    this.fluidQueue.max = max;
+  }
+
+  /**
+   * Sets the minimum zIndex used by the queue.
+   *
+   * @param min The min zIndex of the queue
+   */
+  static setQueueMin(min: number) {
+    this.fluidQueue.min = min;
   }
 }
