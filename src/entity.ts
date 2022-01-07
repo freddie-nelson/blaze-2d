@@ -29,6 +29,8 @@ export default class Entity extends RigidBody {
 
     this.pieces = pieces;
     this.name = name;
+
+    this.setupEvents();
   }
 
   /**
@@ -41,12 +43,14 @@ export default class Entity extends RigidBody {
   }
 
   /**
-   * Updates the entity's physics and bounds.
+   * Updates the entity.
    *
-   * @param delta Time since last tick
+   * Also fires the "update" event.
+   *
+   * @param delta The time since the last update
    */
-  update(delta?: number) {
-    this.fireEvent("update", delta || 0);
+  update(delta: number) {
+    this.fireEvent("update", delta);
   }
 
   /**
