@@ -19,8 +19,6 @@ export default class RenderController {
       if (r.getQueueMin() < min) min = r.getQueueMin();
     }
 
-    console.log(max, min);
-
     for (let z = min; z <= max; z++) {
       for (const r of this.renderers) {
         r.flush(z);
