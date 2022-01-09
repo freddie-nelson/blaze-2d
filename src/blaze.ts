@@ -34,6 +34,10 @@ export default abstract class Blaze {
    * The webgl canvas used by blaze.
    */
   private static canvas: BlazeElement<HTMLCanvasElement>;
+  static canvasContextMenuListener = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   /**
    * The color used to clear the {@link Renderer}.
@@ -97,6 +101,7 @@ export default abstract class Blaze {
   static init(canvas: HTMLCanvasElement, opts: BlazeOptions = defaultOpts) {
     canvas.id = "blzCanvas";
     this.canvas = new BlazeElement(canvas);
+    this.canvas.element.addEventListener("contextmenu", this.canvasContextMenuListener);
 
     Renderer.init(canvas, { antialias: opts.antialias });
     TextureLoader.init(Renderer.getGL());
