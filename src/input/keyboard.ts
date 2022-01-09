@@ -1,7 +1,7 @@
 /**
  * A callback to be executed on key events.
  */
-export type KeyCallback = (pressed: boolean) => void;
+export type KeyCallback = (pressed: boolean, e: KeyboardEvent) => void;
 
 /**
  * Handles keyboard events for an {@link HTMLElement}.
@@ -24,12 +24,12 @@ export default class KeyboardHandler {
   private addListeners() {
     this.element.addEventListener("keydown", (e) => {
       this.keys[e.code] = true;
-      this.listeners[e.code]?.forEach((cb) => cb(true));
+      this.listeners[e.code]?.forEach((cb) => cb(true, e));
     });
 
     this.element.addEventListener("keyup", (e) => {
       this.keys[e.code] = false;
-      this.listeners[e.code]?.forEach((cb) => cb(false));
+      this.listeners[e.code]?.forEach((cb) => cb(false, e));
     });
   }
 

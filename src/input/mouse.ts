@@ -13,7 +13,7 @@ export enum Mouse {
 /**
  * A callback to be executed on mouse button events.
  */
-export type MouseCallback = (pressed: boolean, pos: vec2) => void;
+export type MouseCallback = (pressed: boolean, pos: vec2, e: MouseEvent) => void;
 
 /**
  * Handles mouse events for an {@link HTMLElement}.
@@ -39,21 +39,21 @@ export default class MouseHandler {
       this.buttons[e.button] = true;
 
       const pos = vec2.fromValues(e.offsetX, e.offsetY);
-      this.listeners[e.button]?.forEach((cb) => cb(true, pos));
+      this.listeners[e.button]?.forEach((cb) => cb(true, pos, e));
     });
 
     this.element.addEventListener("mouseup", (e) => {
       this.buttons[e.button] = false;
 
       const pos = vec2.fromValues(e.offsetX, e.offsetY);
-      this.listeners[e.button]?.forEach((cb) => cb(false, pos));
+      this.listeners[e.button]?.forEach((cb) => cb(false, pos, e));
     });
 
     this.element.addEventListener("mousemove", (e) => {
       const pos = vec2.fromValues(e.offsetX, e.offsetY);
       vec2.copy(this.position, pos);
 
-      this.listeners[Mouse.MOVE]?.forEach((cb) => cb(this.isPressed(), pos));
+      this.listeners[Mouse.MOVE]?.forEach((cb) => cb(this.isPressed(), pos, e));
     });
   }
 
