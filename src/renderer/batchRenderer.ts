@@ -35,6 +35,7 @@ interface Geometry {
   indices: Uint16Array;
   texCoords: Float32Array;
   uvs: Float32Array;
+  opacity: Float32Array;
 }
 
 /**
@@ -261,6 +262,13 @@ export default abstract class BatchRenderer extends Renderer {
     gl.vertexAttribPointer(programInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
+    // opacity
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.opacityBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, geometry.opacity, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(programInfo.attribLocations.opacity, 1, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.opacity);
+
     // index buffer
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
@@ -285,6 +293,7 @@ export default abstract class BatchRenderer extends Renderer {
     const indices: number[] = [];
     const texCoords: number[] = [];
     const uvs: number[] = [];
+    const opacity: number[] = [];
 
     let indicesOffset = 0;
 
@@ -308,10 +317,14 @@ export default abstract class BatchRenderer extends Renderer {
         }
       });
 
+      // opacity
+      const o = new Float32Array(v.length / 2).fill(r.shape.opacity);
+
       vertices.push(...v);
       indices.push(...i);
       texCoords.push(...texCoord);
       uvs.push(...uv);
+      opacity.push(...o);
     }
 
     return <Geometry>{
@@ -319,6 +332,7 @@ export default abstract class BatchRenderer extends Renderer {
       indices: new Uint16Array(indices),
       texCoords: new Float32Array(texCoords),
       uvs: new Float32Array(uvs),
+      opacity: new Float32Array(opacity),
     };
   }
 

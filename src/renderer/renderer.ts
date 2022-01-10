@@ -49,6 +49,7 @@ export default abstract class Renderer {
   static texBuffer: WebGLBuffer;
   static uvBuffer: WebGLBuffer;
   static indexBuffer: WebGLBuffer;
+  static opacityBuffer: WebGLBuffer;
 
   // shader programs
   static rectProgram: WebGLProgram;
@@ -116,6 +117,7 @@ export default abstract class Renderer {
     this.indexBuffer = gl.createBuffer();
     this.texBuffer = gl.createBuffer();
     this.uvBuffer = gl.createBuffer();
+    this.opacityBuffer = gl.createBuffer();
 
     this.rectProgram = createShaderProgram(gl, vsRect, fsRect);
     this.rectProgramInfo = {
@@ -124,6 +126,7 @@ export default abstract class Renderer {
         vertex: gl.getAttribLocation(this.rectProgram, "a_Vertex"),
         texCoord: gl.getAttribLocation(this.rectProgram, "a_TexCoord"),
         uv: gl.getAttribLocation(this.rectProgram, "a_Uv"),
+        opacity: gl.getAttribLocation(this.rectProgram, "a_Opacity"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.rectProgram, "u_ZIndex"),
@@ -139,6 +142,7 @@ export default abstract class Renderer {
         vertex: gl.getAttribLocation(this.circleProgram, "a_Vertex"),
         texCoord: gl.getAttribLocation(this.circleProgram, "a_TexCoord"),
         uv: gl.getAttribLocation(this.circleProgram, "a_Uv"),
+        opacity: gl.getAttribLocation(this.circleProgram, "a_Opacity"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.circleProgram, "u_ZIndex"),
@@ -154,6 +158,7 @@ export default abstract class Renderer {
         vertex: gl.getAttribLocation(this.triangleProgram, "a_Vertex"),
         texCoord: gl.getAttribLocation(this.circleProgram, "a_TexCoord"),
         uv: gl.getAttribLocation(this.triangleProgram, "a_Uv"),
+        opacity: gl.getAttribLocation(this.triangleProgram, "a_Opacity"),
       },
       uniformLocations: {
         zIndex: gl.getUniformLocation(this.triangleProgram, "u_ZIndex"),
@@ -287,11 +292,21 @@ export default abstract class Renderer {
     gl.vertexAttribPointer(programInfo.attribLocations.uv, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.uv);
 
+    // opacity
+    const opacityVals = new Float32Array(vertices.length / 2).fill(shape.opacity);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.opacityBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, opacityVals, gl.STATIC_DRAW);
+
+    gl.vertexAttribPointer(programInfo.attribLocations.opacity, 1, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.opacity);
+
     // indices
     const indices = shape.getIndices();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
+    // uniforms
     gl.useProgram(programInfo.program);
     gl.uniform1f(programInfo.uniformLocations.zIndex, zIndex / Blaze.getZLevels());
 

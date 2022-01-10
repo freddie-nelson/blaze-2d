@@ -4,6 +4,7 @@ precision mediump float;
 
 in vec2 texCoord;
 in vec2 uv;
+in float opacity;
 
 uniform sampler2D u_Texture;
 
@@ -23,6 +24,7 @@ void main() {
 
   // sample texture
   outColor = texture(u_Texture, texCoord);
+  outColor.a *= opacity;
 
   // anti-aliasing
   // outColor.a = smoothstep(0.0, 0.008, dist);

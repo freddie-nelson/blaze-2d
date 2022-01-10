@@ -12,9 +12,9 @@ export interface ShaderProgramInfo {
   };
   uniformLocations: {
     [index: string]: WebGLUniformLocation;
+    opacity?: WebGLUniformLocation;
     zIndex: WebGLUniformLocation;
     texture?: WebGLUniformLocation;
-    numOfTiles?: WebGLUniformLocation;
   };
 }
 

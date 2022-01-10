@@ -18,6 +18,15 @@ export default abstract class Shape extends Object2D {
   // protected width: number;
   texture = defaultTexture;
 
+  /**
+   * Opacity of the shape.
+   *
+   * This is an opacity of the whole shape which is applied to the shape's entire texture equally.
+   *
+   * Range is 0 (completely transparent) to 1 (completely opaque)
+   */
+  opacity = 1;
+
   constructor() {
     super();
   }
