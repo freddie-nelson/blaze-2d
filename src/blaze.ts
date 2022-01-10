@@ -103,7 +103,7 @@ export default abstract class Blaze {
     this.canvas = new BlazeElement(canvas);
     this.canvas.element.addEventListener("contextmenu", this.canvasContextMenuListener);
 
-    Renderer.init(canvas, { antialias: opts.antialias });
+    Renderer.init(canvas, { antialias: opts.antialias, premultipliedAlpha: false, alpha: false });
     TextureLoader.init(Renderer.getGL());
 
     this.renderController.addRenderers(FluidRenderer, BatchRenderer, Renderer);
