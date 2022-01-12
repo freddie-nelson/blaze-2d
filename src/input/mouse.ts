@@ -38,19 +38,19 @@ export default class MouseHandler {
     this.element.addEventListener("mousedown", (e) => {
       this.buttons[e.button] = true;
 
-      const pos = vec2.fromValues(e.offsetX, e.offsetY);
+      const pos = vec2.fromValues(e.pageX - this.element.offsetLeft, e.pageY - this.element.offsetTop);
       this.listeners[e.button]?.forEach((cb) => cb(true, pos, e));
     });
 
     this.element.addEventListener("mouseup", (e) => {
       this.buttons[e.button] = false;
 
-      const pos = vec2.fromValues(e.offsetX, e.offsetY);
+      const pos = vec2.fromValues(e.pageX - this.element.offsetLeft, e.pageY - this.element.offsetTop);
       this.listeners[e.button]?.forEach((cb) => cb(false, pos, e));
     });
 
     this.element.addEventListener("mousemove", (e) => {
-      const pos = vec2.fromValues(e.offsetX, e.offsetY);
+      const pos = vec2.fromValues(e.pageX - this.element.offsetLeft, e.pageY - this.element.offsetTop);
       vec2.copy(this.position, pos);
 
       this.listeners[Mouse.MOVE]?.forEach((cb) => cb(this.isPressed(), pos, e));

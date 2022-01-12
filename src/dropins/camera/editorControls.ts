@@ -44,7 +44,10 @@ export default class EditorCameraControls {
   private onMousedown = (e: MouseEvent) => {
     if (e.button === this.panButton) {
       this.isPanPressed = true;
-      this.last = vec2.fromValues(e.clientX, this.canvas.height - e.clientY);
+      this.last = vec2.fromValues(
+        e.pageX - this.canvas.offsetLeft,
+        this.canvas.height - (e.pageY - this.canvas.offsetTop),
+      );
     }
   };
 
@@ -65,7 +68,10 @@ export default class EditorCameraControls {
   private onMousemove = (e: MouseEvent) => {
     if (!this.isPanPressed) return;
 
-    const curr = vec2.fromValues(e.clientX, this.canvas.height - e.clientY);
+    const curr = vec2.fromValues(
+      e.pageX - this.canvas.offsetLeft,
+      this.canvas.height - (e.pageY - this.canvas.offsetTop),
+    );
     const diff = vec2.sub(vec2.create(), this.last, curr);
     vec2.mul(diff, diff, Blaze.getScene().world.getPixelToWorldSpace());
     vec2.rotate(diff, diff, vec2.create(), -this.camera.getRotation());

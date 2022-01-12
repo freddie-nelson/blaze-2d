@@ -1,4 +1,4 @@
-examples=($(ls -d */ | grep -v '^_'))
+examples=($(ls -d */ | grep -v '*'))
 
 for example in "${examples[@]}"
 do
