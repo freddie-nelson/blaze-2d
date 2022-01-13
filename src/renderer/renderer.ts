@@ -91,7 +91,7 @@ export default abstract class Renderer {
 
       // fixes infinite resize loop
       // https://stackoverflow.com/questions/4288253/html5-canvas-100-width-height-of-viewport
-      if (canvas.style.display !== "block") canvas.style.display = "block";
+      // if (canvas.style.display !== "block") canvas.style.display = "block";
 
       this.resizeToCanvas();
     });
