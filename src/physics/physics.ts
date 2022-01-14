@@ -426,6 +426,14 @@ export default class Physics implements System {
   }
 
   /**
+   * Removes all bodies from the world's dynamics and collision spaces.
+   */
+  removeAllBodies() {
+    this.dynamicsSpace.getObjects().length = 0;
+    this.collisionsSpace.getObjects().length = 0;
+  }
+
+  /**
    * Adds a {@link Constraint} to the world's constraint space.
    *
    * @param constraint The constraint to add
@@ -441,6 +449,13 @@ export default class Physics implements System {
    */
   removeConstraint(constraint: Constraint) {
     this.constraintSpace.removeObject(constraint);
+  }
+
+  /**
+   * Removes all constraints from the world.
+   */
+  removeAllConstraints() {
+    this.constraintSpace.getObjects().length = 0;
   }
 
   /**
@@ -468,6 +483,15 @@ export default class Physics implements System {
 
     this.fluids.splice(i, 1);
     this.removeBodies(...fluid.particles);
+  }
+
+  /**
+   * Removes all fluids from the world.
+   */
+  removeAllFluids() {
+    for (const fluid of this.fluids) {
+      this.removeFluid(fluid);
+    }
   }
 
   /**

@@ -273,6 +273,41 @@ export default class World implements System {
     return true;
   }
 
+  /**
+   * Removes the given entities from the world.
+   *
+   * By default entity listeners are fired for each entity added however, if the last argument
+   * passed to this function is a boolean then it will be used to decide wether or not to fire entity listeners.
+   *
+   * @param entities The entities to remove
+   */
+  removeEntities(...entities: (Entity | boolean)[]) {
+    let fireListeners = true;
+    if (typeof entities[entities.length - 1] === "boolean") {
+      fireListeners = <boolean>entities[entities.length - 1];
+      entities.pop();
+    }
+
+    entities.forEach((entity) => {
+      if (typeof entity === "boolean") return;
+
+      this.removeEntity(entity, fireListeners);
+    });
+  }
+
+  /**
+   * Removes all entities from the world.
+   *
+   * @param fireListeners Wether or not to fire entity listeners (default is true)
+   */
+  removeAllEntities(fireListeners = true) {
+    if (fireListeners) {
+      this.removeEntities(...this.entities);
+    } else {
+      this.entities.length = 0;
+    }
+  }
+
   private callEntityListeners(event: "add" | "remove", entity: Entity, index: number) {
     for (const l of this.entityListeners) {
       l(event, entity, index, this.entities);
