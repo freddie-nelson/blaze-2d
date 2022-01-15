@@ -25,6 +25,8 @@ export default class EditorCameraControls {
   posRotateKey = "ArrowRight";
   negRotateKey = "ArrowLeft";
 
+  disabled = false;
+
   /**
    * Create an {@link EditorCameraControls} instance.
    *
@@ -42,6 +44,8 @@ export default class EditorCameraControls {
    * @param e The mouse event
    */
   private onMousedown = (e: MouseEvent) => {
+    if (this.disabled) return;
+
     if (e.button === this.panButton) {
       this.isPanPressed = true;
       this.last = vec2.fromValues(
@@ -57,6 +61,8 @@ export default class EditorCameraControls {
    * @param e The mouse event
    */
   private onMouseup = (e: MouseEvent) => {
+    if (this.disabled) return;
+
     if (e.button === this.panButton) this.isPanPressed = false;
   };
 
@@ -66,7 +72,7 @@ export default class EditorCameraControls {
    * @param e The mouse event
    */
   private onMousemove = (e: MouseEvent) => {
-    if (!this.isPanPressed) return;
+    if (!this.isPanPressed || this.disabled) return;
 
     const curr = vec2.fromValues(
       e.pageX - this.canvas.offsetLeft,
@@ -87,6 +93,8 @@ export default class EditorCameraControls {
    * @param e The wheel event
    */
   private onWheel = (e: WheelEvent) => {
+    if (this.disabled) return;
+
     this.camera.zoom(-e.deltaY * this.zoomSensitivity);
   };
 
@@ -96,6 +104,8 @@ export default class EditorCameraControls {
    * @param e The keyboard event
    */
   private onKeydown = (e: KeyboardEvent) => {
+    if (this.disabled) return;
+
     if (e.key === this.posRotateKey) {
       this.camera.rotate((1 * Math.PI) / 180);
     } else if (e.key === this.negRotateKey) {
