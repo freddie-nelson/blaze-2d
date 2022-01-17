@@ -31,6 +31,6 @@ export default function solveForces(obj: RigidBody, delta: number, gravity: vec2
 
   vec2.scaleAndAdd(obj.velocity, obj.velocity, force, halfDelta);
 
-  obj.angularVelocity += -obj.angularDamping * obj.angularVelocity * obj.angularVelocity;
   obj.angularVelocity += torque * halfDelta;
+  obj.angularVelocity *= 1 - obj.angularDamping;
 }
