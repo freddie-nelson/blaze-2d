@@ -89,6 +89,17 @@ export default class World implements System {
   }
 
   /**
+   * Performs the world's fixed update operations.
+   *
+   * @param ts The {@link TimeStep} for this fixed update
+   */
+  fixedUpdate(ts: TimeStep) {
+    for (const e of this.entities) {
+      e.fixedUpdate(ts.dt);
+    }
+  }
+
+  /**
    * Renders the entities in the world using the world's current camera.
    */
   renderEntities() {

@@ -40,6 +40,7 @@ export default class Entity extends RigidBody {
     super.setupEvents();
 
     this.listeners.update = [];
+    this.listeners.fixedUpdate = [];
   }
 
   /**
@@ -51,6 +52,15 @@ export default class Entity extends RigidBody {
    */
   update(delta: number) {
     this.fireEvent("update", delta);
+  }
+
+  /**
+   * Fires the "fixedUpdate" event.
+   *
+   * @param delta The time since the last fixed update
+   */
+  fixedUpdate(delta: number) {
+    this.fireEvent("fixedUpdate", delta);
   }
 
   /**

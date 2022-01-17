@@ -173,6 +173,7 @@ export default abstract class Blaze {
     this.nextTimestep(true);
 
     this.scene?.physics.update(this.fixedTimeStep);
+    this.scene?.world.fixedUpdate(this.fixedTimeStep);
 
     for (const system of this.fixedSystems) {
       system.update(this.fixedTimeStep);
