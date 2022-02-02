@@ -133,8 +133,12 @@ export default class CollisionsSpace extends Space<CollisionObject, CollisionSol
 
         if (A.isTrigger || B.isTrigger) {
           this.triggers.addManifold(A, B, manifold);
+          A.fireEvent("trigger", A, B, manifold);
+          B.fireEvent("trigger", A, B, manifold);
         } else {
           this.collisions.addManifold(A, B, manifold);
+          A.fireEvent("collision", A, B, manifold);
+          B.fireEvent("collision", A, B, manifold);
         }
       }
     }

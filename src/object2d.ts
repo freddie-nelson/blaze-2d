@@ -16,7 +16,7 @@ export interface Neighbours<T> {
   bottomRight?: T;
 }
 
-export type Listener = (e?: any, obj?: Object2D) => void;
+export type Listener = (...args: any[]) => void;
 
 /**
  * Represents an object in 2D space with a position and rotation.
@@ -43,7 +43,7 @@ export default class Object2D {
   setPosition(pos: vec2) {
     vec2.copy(this.position, pos);
 
-    this.fireEvent("position", this.getPosition());
+    this.fireEvent("position", this.getPosition(), this);
   }
 
   private setVec = vec2.create();
@@ -103,7 +103,7 @@ export default class Object2D {
     vec2.rotate(forwardVec, forwardVec, vec2.fromValues(0, 0), this.getRotation());
     vec2.scaleAndAdd(pos, pos, forwardVec, dist);
 
-    this.fireEvent("position", pos);
+    this.fireEvent("position", pos, this);
   }
 
   /**
@@ -117,7 +117,7 @@ export default class Object2D {
     vec2.rotate(upVec, upVec, vec2.fromValues(0, 0), this.getRotation());
     vec2.scaleAndAdd(pos, pos, upVec, dist);
 
-    this.fireEvent("position", pos);
+    this.fireEvent("position", pos, this);
   }
 
   /**
@@ -128,7 +128,7 @@ export default class Object2D {
   setRotation(angle: number) {
     this.rotation = angle;
 
-    this.fireEvent("rotate", this.rotation);
+    this.fireEvent("rotate", this.rotation, this);
   }
 
   /**
@@ -182,11 +182,11 @@ export default class Object2D {
    * @param event The event to fire
    * @param e The data to pass to each event listener
    */
-  fireEvent(event: string, e: any): void {
+  fireEvent(event: string, ...e: any[]): void {
     if (!this.listeners[event]) return void Logger.error("Object2D", `'${event}' is not a supported event.`);
 
     for (const l of this.listeners[event]) {
-      l(e, this);
+      l(...e);
     }
   }
 

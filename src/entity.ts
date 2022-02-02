@@ -51,7 +51,7 @@ export default class Entity extends RigidBody {
    * @param delta The time since the last update
    */
   update(delta: number) {
-    this.fireEvent("update", delta);
+    this.fireEvent("update", delta, this);
   }
 
   /**
@@ -60,7 +60,7 @@ export default class Entity extends RigidBody {
    * @param delta The time since the last fixed update
    */
   fixedUpdate(delta: number) {
-    this.fireEvent("fixedUpdate", delta);
+    this.fireEvent("fixedUpdate", delta, this);
   }
 
   /**

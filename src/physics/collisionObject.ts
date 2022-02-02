@@ -94,6 +94,23 @@ export default class CollisionObject extends PhysicsObject {
   //   this.terrainCollisionFlags[zIndex] = collides;
   // }
 
+  // COLLISION HANDLERS
+  // ! TODO: Create proper collision handlers
+
+  // /**
+  //  * This is called when two {@link CollisionObject}s start touching for the first time.
+  //  *
+  //  * @param b {@link CollisionObject} this object is colliding with
+  //  * @returns true to continue with collision resolution, false to ignore the collision entirely
+  //  */
+  // beginCollision(b: CollisionObject): boolean {
+  //   return true;
+  // }
+
+  // preSolve() {
+
+  // }
+
   /**
    * Sets the object's position.
    *
