@@ -16,7 +16,7 @@ export interface Neighbours<T> {
   bottomRight?: T;
 }
 
-export type Listener = (...args: any[]) => void;
+export type Listener = (...args: any) => void;
 
 /**
  * Represents an object in 2D space with a position and rotation.
@@ -182,7 +182,7 @@ export default class Object2D {
    * @param event The event to fire
    * @param e The data to pass to each event listener
    */
-  fireEvent(event: string, ...e: any[]): void {
+  fireEvent(event: string, ...e: any): void {
     if (!this.listeners[event]) return void Logger.error("Object2D", `'${event}' is not a supported event.`);
 
     for (const l of this.listeners[event]) {
